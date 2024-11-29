@@ -1,9 +1,10 @@
 <script>
     import { onMount } from 'svelte';
-    import NewUser from '../../client/new/+page.svelte'
+    import NewUser from './client/new/+page.svelte';
+    import { client } from "$lib/appwrite";
+    import { Databases } from "appwrite";
+    import { selectedUser } from '../stores/userStore';
 
-    export let selectedUser = null;
-    
     let searchTerm = '';
     let users = [];
     let filteredUsers = [];
@@ -14,20 +15,28 @@
         email: ''
     };
 
-    // Simulated users data - replace with your actual API call
+    // Fetch users from Appwrite
     onMount(async () => {
-        users = [
-            { id: 1, name: 'Jan de Vries', email: 'jan@example.com' },
-            { id: 2, name: 'Emma van Dijk', email: 'emma@example.com' },
-            // Add more users or fetch from API
-        ];
+        try {
+            const databases = new Databases(client);
+            const response = await databases.listDocuments(
+            'PriceCalc', // databaseId
+            '67362abc0039525e36b6', // collectionId
+            [] // queries (optional)
+        );
+
+            users = response.documents;
+            console.log(users);
+        } catch (error) {
+            console.error('Error fetching users:', error);
+        }
     });
 
     $: {
         if (searchTerm) {
             filteredUsers = users.filter(user => 
-                user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                user.email.toLowerCase().includes(searchTerm.toLowerCase())
+                (user.name.toLowerCase() + ' ' + user.lastname.toLowerCase()).includes(searchTerm.toLowerCase()) ||
+                (user.adress.toLowerCase() + ' ' + user.huisnummer.toLowerCase() + ' ' + user.postcode.toLowerCase() + ' ' + user.woonplaats.toLowerCase()).includes(searchTerm.toLowerCase())
             );
         } else {
             filteredUsers = [];
@@ -45,7 +54,8 @@
     }
 
     function handleSelectUser(user) {
-        selectedUser = user;
+        selectedUser.set(user);
+        console.log($selectedUser);
         searchTerm = ''; // Clear search
         isSearching = false; // Exit search mode
     }
@@ -62,13 +72,21 @@
             searchTerm = '';
         }, 200);
     }
+
+    function closeDialog() {
+        showDialog = false;
+    }
+
+    function stopPropagation(e) {
+        e.stopPropagation();
+    }
 </script>
 
 <div class="search-container">
     <input
         type="text"
         placeholder="Zoek gebruikers..."
-        value={isSearching ? searchTerm : (selectedUser?.name || '')}
+        value={isSearching ? searchTerm : (`${$selectedUser?.name} ${$selectedUser?.lastname}` || '')}
         on:input={(e) => searchTerm = e.target.value}
         on:focus={handleInputFocus}
         on:blur={handleInputBlur}
@@ -82,8 +100,8 @@
                     class="dropdown-item"
                     on:click={() => handleSelectUser(user)}
                 >
-                    <span>{user.name}</span>
-                    <span class="email">{user.email}</span>
+                    <span>{user.name} {user.lastname}</span>
+                    <span>{user.adress} {user.huisnummer}, {user.postcode} {user.woonplaats}</span>
                 </li>
             {/each}
         </ul>
@@ -96,8 +114,9 @@
 </div>
 
 {#if showDialog}
-    <div class="dialog-overlay">
-        <div class="dialog">
+    <div class="dialog-overlay" on:click={closeDialog}>
+        <div class="dialog" on:click={stopPropagation}>
+            <button on:click={closeDialog}>x</button>
             <NewUser></NewUser>
         </div>
     </div>

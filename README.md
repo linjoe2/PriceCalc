@@ -1,6 +1,7 @@
 # how to setup Appwrite:
 - create a project in appwrite
 - add the url of your appwrite and the project inside the .env.example file and rename it to .env
+- 
 
 
 

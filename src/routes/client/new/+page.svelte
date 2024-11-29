@@ -53,12 +53,13 @@
             huisnummer: houseNumber,
             woonplaats: woonplaats,
             oppervlakte: parseInt(oppervlakte),
-            Bouwjaar: parseInt(bouwjaar),
+            bouwjaar: parseInt(bouwjaar),
             email: email,
             telefoonnummer: parseInt(telefoonnummer)
         };
 
         try {
+            console.log(user);
             const result = await databases.createDocument(
                 'PriceCalc',
                 '67362abc0039525e36b6',

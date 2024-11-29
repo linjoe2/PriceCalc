@@ -1,225 +1,34 @@
 <script lang="ts">
-  import UserSearch from './userSearch.svelte';
-    interface ServiceOption {
-      label: string;
-      price: number;
-      unit: string;
+  // import UserSearch from '../../userSearch.svelte';
+  import { onMount } from 'svelte';
+  import { Databases, Query } from "appwrite";
+  import { client } from "$lib/appwrite";
+
+  const databases = new Databases(client);
+  const databaseId = 'PriceCalc'; // Your database ID
+  const collectionId = '6735eb1000013509eaf3'; // Your collection ID
+
+  let services = {};
+
+  onMount(async () => {
+    try {
+        const response = await databases.listDocuments(databaseId, collectionId, [Query.limit(100),Query.offset(0)]);
+        console.log(response)
+        services = response.documents.reduce((acc, doc) => {
+            const { category, subcategory, type, price, unit } = doc;
+            if (!acc[category]) {
+                acc[category] = [];
+            }
+            acc[category].push({ subcategory, type, price, unit });
+            return acc;
+        }, {});
+    } catch (error) {
+        console.error('Error fetching services:', error);
     }
-  
-    const services = {
-    "Dakbedekking & Isolatie": [
-      {
-        "subcategory": "Dakbedekking vernieuwen",
-        "type": "Zonder isolatie",
-        "price": "110",
-        "unit": "m²"
-      },
-      {
-        "subcategory": "Dakbedekking vernieuwen",
-        "type": "8cm Pir",
-        "price": "130",
-        "unit": "m²"
-      },
-      {
-        "subcategory": "Dakbedekking vernieuwen",
-        "type": "10cm Pir",
-        "price": "140",
-        "unit": "m²"
-      },
-      {
-        "subcategory": "Dakbedekking vernieuwen",
-        "type": "14cm Pir",
-        "price": "150",
-        "unit": "m²"
-      },
-      {
-        "subcategory": "Dakbedekking overlagen",
-        "type": "Standaard",
-        "price": "90",
-        "min": "1100",
-        "unit": "m²"
-      }
-    ],
-    "Dakdoorvoeren & Lichttoetreding": [
-      {
-        "subcategory": "Koepels",
-        "type": "custom",
-        "price": "custom",
-        "unit": "custom"
-      },
-      {
-        "subcategory": "Lichtstraat",
-        "type": "custom",
-        "price": "custom",
-        "unit": "custom"
-      },
-      {
-        "subcategory": "Kantelraam",
-        "type": "custom",
-        "price": "custom",
-        "unit": "custom"
-      }
-    ],
-    "Dakrand & Afwerking": [
-      {
-        "subcategory": "Boeidelen hout",
-        "type": "Standaard",
-        "price": "200",
-        "unit": "m¹"
-      },
-      {
-        "subcategory": "Boeidelen kunststof",
-        "type": "Standaard",
-        "price": "200",
-        "unit": "m¹"
-      },
-      {
-        "subcategory": "Verhogen dakrand",
-        "type": "Standaard",
-        "price": "100",
-        "unit": "m¹"
-      },
-      {
-        "subcategory": "Vervangen trim",
-        "type": "Standaard",
-        "price": "100",
-        "unit": "m¹"
-      },
-         {
-        "subcategory": "Zink deklijst",
-        "type": "Standaard",
-        "price": "50",
-        "unit": "m¹"
-      }
-    ],
-    "Dakrenovatie & Shingles": [
-      {
-        "subcategory": "Shinglewerk",
-        "type": "Standaard",
-        "price": "120",
-        "unit": "m²"
-      }
-    ],
-    "Hemelwaterafvoer & Goten": [
-      {
-        "subcategory": "Hemelwaterafvoer ZINK",
-        "type": "Standaard",
-        "price": "150",
-        "unit": "m¹"
-      },
-      {
-        "subcategory": "Hemelwaterafvoer PVC",
-        "type": "Standaard",
-        "price": "100",
-        "unit": "m¹"
-      },
-      {
-        "subcategory": "Zinken dakgoten",
-        "type": "Uitslag <1m",
-        "price": "200",
-        "unit": "m¹"
-      },
-      {
-        "subcategory": "Zinken dakgoten",
-        "type": "Uitslag >1m",
-        "price": "300",
-        "unit": "m¹"
-      },
-      {
-        "subcategory": "Zinken borstwering",
-        "type": "Standaard",
-        "price": "250",
-        "unit": "m¹"
-      },
-      {
-        "subcategory": "Zinkwerk dakkapel",
-        "type": "custom",
-        "price": "custom",
-        "unit": "custom"
-      }
-    ],
-    "Groendak & Sedum": [
-      {
-        "subcategory": "Sedum beplanting",
-        "type": "Standaard",
-        "price": "200",
-        "unit": "m²"
-      }
-    ],
-    "Nokvorsten & Loodwerk": [
-      {
-        "subcategory": "Nokvorsten",
-        "type": "Volledig vervangen",
-        "price": "450",
-        "unit": "m¹"
-      },
-      {
-        "subcategory": "Nokvorsten",
-        "type": "Schoonmaken & herstellen",
-        "price": "150",
-        "unit": "m¹"
-      },
-      {
-        "subcategory": "Nokvorsten",
-        "type": "Verwijderen & terugplaatsen",
-        "price": "100",
-        "unit": "m¹"
-      },
-      {
-        "subcategory": "Voeglood vervangen",
-        "type": "Standaard",
-        "price": "100",
-        "unit": "m¹"
-      }
-    ],
-    "Schoorstenen & Metselwerk": [
-      {
-        "subcategory": "Schoorstenen renovatie",
-        "type": "Klein",
-        "price": "1450",
-        "unit": "custom"
-      },
-      {
-        "subcategory": "Schoorstenen renovatie",
-        "type": "Middel",
-        "price": "1850",
-        "unit": "custom"
-      },
-      {
-        "subcategory": "Schoorstenen renovatie",
-        "type": "Groot",
-        "price": "2250",
-        "unit": "custom"
-      },
-      {
-        "subcategory": "Schoorsteen vernieuwen",
-        "type": "custom",
-        "price": "custom",
-        "unit": "custom"
-      },
-      {
-        "subcategory": "Schoorsteen verwijderen",
-        "type": "Standaard",
-        "price": "2500",
-        "unit": "custom"
-      }
-    ],
-    "Dakterrassen & Vlonders": [
-      {
-        "subcategory": "Houten dakterras",
-        "type": "Standaard",
-        "price": "270",
-        "unit": "m²"
-      },
-      {
-        "subcategory": "Composiet dakterras",
-        "type": "Standaard",
-        "price": "270",
-        "unit": "m²"
-      }
-    ]
-  }
-  
+  });
+
+  let showInvoice = false;
+
     let selectedType: string | null = null;
     let length: number = 0;
     let width: number = 0;
@@ -308,10 +117,26 @@
     function removeImage(category: string, index: number) {
       uploadedImages[category] = uploadedImages[category].filter((_, i) => i !== index);
     }
+  
+    async function saveProject() {
+      try {
+        const projectData = {
+          items: selectedItems,
+          totalPrice: totalPrice,
+          // Add any other relevant project data here
+        };
+        
+        // Assuming you have a method to create a document in your projects database
+        const response = await databases.createDocument(databaseId, 'projectsCollectionId', 'unique()', projectData);
+        console.log('Project saved successfully:', response);
+      } catch (error) {
+        console.error('Error saving project:', error);
+      }
+    }
   </script>
   
   <div class="w-full max-w-4xl mx-auto p-4 space-y-2 flex flex-col gap-4"> 
-    <UserSearch />
+    <!-- <UserSearch /> -->
     {#each Object.entries(services) as [category, items]}
       <div class="border rounded-lg">
         <button
@@ -514,8 +339,23 @@
   
     {#if selectedItems.length > 0}
       <div class="fixed bottom-4 right-4 bg-white shadow-lg rounded-lg p-4 border">
-        <div class="text-lg font-medium">Totaal: €{totalPrice.toFixed(2)}</div>
-        <div class="text-sm text-gray-600">{selectedItems.length} item{selectedItems.length === 1 ? '' : 's'} geselecteerd</div>
+        <div on:click={() => showInvoice = !showInvoice}>
+          <div class="text-lg font-medium">Totaal: €{totalPrice.toFixed(2)}</div>
+          <div class="text-sm text-gray-600">{selectedItems.length} item{selectedItems.length === 1 ? '' : 's'} geselecteerd</div>
+        </div>
+        {#if showInvoice}
+          <div class="mt-4">
+            {#each selectedItems as item, index}
+              <div class="flex justify-between items-center mt-2">
+                <div>{item.subcategory} - {item.type}</div>
+                <div>{item.quantity} x €{item.price}</div>
+              </div>
+            {/each}
+            <button class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" on:click={saveProject}>
+              Opslaan
+            </button>
+          </div>
+        {/if}
       </div>
     {/if}
   </div>
