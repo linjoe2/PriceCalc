@@ -6,7 +6,7 @@
     import Package from "lucide-svelte/icons/package";
     import House from "lucide-svelte/icons/house";
     import ShoppingCart from "lucide-svelte/icons/shopping-cart";
-    import Bell from "lucide-svelte/icons/bell";
+    import Plus from "lucide-svelte/icons/plus";
     import Menu from "lucide-svelte/icons/menu";
     import Calendar from "lucide-svelte/icons/calendar"
     import Package2 from "lucide-svelte/icons/package-2";
@@ -23,15 +23,21 @@
     import { writable } from 'svelte/store';
     import { page } from '$app/stores';
     import UserSearch from './userSearch.svelte'
-      
-     $: pathSegments = $page.url.pathname.split('/').filter(Boolean);
-     let loggedInUser = {name: ''}
+    import { derived } from 'svelte/store';
+
+    $: pathSegments = $page.url.pathname.split('/').filter(Boolean);
+    let loggedInUser = {name: ''}
+    let activeRoute = ''
+    // Add sheet open state store
+    const sheetOpen = writable(false);
     
-     // Add sheet open state store
-     const sheetOpen = writable(false);
+    // Function to close sheet
+    const closeSheet = () => sheetOpen.set(false);
     
-     // Function to close sheet
-     const closeSheet = () => sheetOpen.set(false);
+    // Create a derived store to determine the active route
+    $: activeRoute = pathSegments[0];
+    $: console.log(activeRoute)
+
     
     onMount(async ()=>{
        try{
@@ -60,34 +66,54 @@
            window.location.replace('/')
            alert('test')
        }
+    
+    let showNewItemMenu = false; // State to manage the visibility of the new item menu
+
+    // Function to toggle the new item menu
+    const toggleNewItemMenu = () => {
+        showNewItemMenu = !showNewItemMenu;
+    };
 </script>
   
 
 <div class="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-  <div class="bg-muted/40 hidden border-r md:block">
+  <div class="bg-muted/40 hidden border-r md:block z-30">
     <div class="flex h-full max-h-screen flex-col gap-2">
       <div class="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
         <a href="/" class="flex items-center gap-2 font-semibold">
           <Package2 class="h-6 w-6" />
           <span class="">{import.meta.env.VITE_BUSSINESS_NAME}</span>
         </a>
-        <Button variant="outline" size="icon" class="ml-auto h-8 w-8">
-          <Bell class="h-4 w-4" />
-          <span class="sr-only">Toggle notifications</span>
-        </Button>
+        <div class="relative ml-auto h-8 w-8">
+          <Button variant="outline" size="icon" class="h-8 w-8" on:click={toggleNewItemMenu}>
+            <Plus class="h-4 w-4" />
+            <span class="sr-only">Nieuwe item</span>
+          </Button>
+          {#if showNewItemMenu} <!-- Conditional rendering of the menu -->
+            <div class="absolute right-0 mt-2 w-56 origin-top-right rounded-md shadow-lg">
+              <div class="rounded-md bg-white shadow-xs">
+                <div class="py-1">
+                  <a href="/client/new" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Klant</a>
+                  <a href="/project/edit/new" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Project</a>
+                  <a href="/agenda" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Afspraak</a>
+                </div>
+              </div>
+            </div>
+          {/if}
+        </div>
       </div>
       <div class="flex-1">
         <nav class="grid items-start px-2 text-sm font-medium lg:px-4">
           <a
             href="/client"
-            class="text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
+            class={`text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${activeRoute === 'client' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
           >
             <Users class="h-4 w-4" />
             Klanten
           </a>
           <a
             href="/project"
-            class="text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
+            class={`text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${activeRoute === 'project' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
           >
             <ShoppingCart class="h-4 w-4" />
             Projecten
@@ -98,33 +124,32 @@
             </Badge>
           </a>
           <a
-            href="/diensten"
-            class="bg-muted text-primary hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
+            href="/item"
+            class={`bg-muted text-primary hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${activeRoute === 'item' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
           >
             <Package class="h-4 w-4" />
             Diensten
           </a>
           <a
             href="/agenda"
-            class="text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
+            class={`text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${activeRoute === 'agenda' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
           >
             <Calendar class="h-4 w-4" />
             Agenda
           </a>
           <a
             href="##"
-            class="text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
+            class={`text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${activeRoute === '##' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
           >
             <ChartLine class="h-4 w-4" />
             Analytics
           </a>
         </nav>
       </div>
-     
     </div>
   </div>
   <div class="flex flex-col">
-    <header class="bg-muted/40 flex h-14 items-center gap-4 border-b px-4 lg:h-[60px] lg:px-6">
+    <header class="bg-muted/40 flex h-14 items-center gap-4 border-b px-4 lg:h-[60px] lg:px-6 z-30">
       <Sheet.Root>
         <Sheet.Trigger asChild let:builder>
           <Button

@@ -6,6 +6,7 @@
     import PencilRuler from "lucide-svelte/icons/pencil-ruler";
     import { client } from '$lib/appwrite';
     import { onMount } from "svelte";
+    import { selectedUser } from '../../stores/userStore';
 
     const databases = new Databases(client);
     let clients = [];
@@ -26,11 +27,15 @@
     function openDialog(client) {
         selectedClient = client;
         isDialogOpen = true;
+        selectedUser.set(selectedClient); // Uncomment and modify as needed
+
     }
 
     function closeDialog() {
         isDialogOpen = false;
     }
+
+
 </script>
 
 <h1>Klanten</h1>
@@ -56,19 +61,25 @@
 </ul>
 
 {#if isDialogOpen}
-<Dialog.Root>
-    <Dialog.Trigger>Open</Dialog.Trigger>
+<Dialog.Root open={isDialogOpen} onOpenChange={closeDialog}>
+    <Dialog.Trigger style="display: none;">Open</Dialog.Trigger>
     <Dialog.Content>
       <Dialog.Header>
-        <Dialog.Title>Are you sure absolutely sure?</Dialog.Title>
+        <Dialog.Title>{selectedClient.name} {selectedClient.lastname}</Dialog.Title>
         <Dialog.Description>
-        <h2>Client Details</h2>
         {#if selectedClient}
-            <p>Name: {selectedClient.name} {selectedClient.lastname}</p>
-            <p>Address: {selectedClient.adress} {selectedClient.huisnummer}, {selectedClient.postcode}, {selectedClient.woonplaats}</p>
-            <!-- Add more details as needed -->
-        {/if}
-        <button on:click={closeDialog}>Close</button>
+            <p>Bedrijf: {selectedClient.businessname}</p>
+            <p>Address: {selectedClient.adress} {selectedClient.huisnummer}, {selectedClient.postcode}, {selectedClient.woonplaats}</p><br>
+            {#each selectedClient.projects as project}
+                <p>{project.datum}</p>
+                <p>{JSON.parse(project.items).length} items</p>
+                <p>Current fase: {project.fase}</p>
+                <a href={`/project/edit/${project.$id}`} class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Edit</a>
+            {/each}
+            <br>
+            <a href="/project/edit/new" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Start nieuw project</a>
+            <a href="/agenda" class="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Agenda inplannen</a>
+            {/if}
         </Dialog.Description>
       </Dialog.Header>
     </Dialog.Content>

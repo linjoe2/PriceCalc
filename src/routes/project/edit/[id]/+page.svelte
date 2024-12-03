@@ -3,16 +3,20 @@
   import { onMount } from 'svelte';
   import { Databases, Query } from "appwrite";
   import { client } from "$lib/appwrite";
+  import { selectedUser } from "../../../../stores/userStore";
+  import { page } from '$app/stores';
+  import { goto } from '$app/navigation';
 
+  let projectId = $page.params.id;
   const databases = new Databases(client);
   const databaseId = 'PriceCalc'; // Your database ID
-  const collectionId = '6735eb1000013509eaf3'; // Your collection ID
-
+  const itemsCollectionId = '6735eb1000013509eaf3'; // Your collection ID
+  const projectsCollectionId = '67362a9400133ceb48ac'; // Your collection ID
   let services = {};
 
   onMount(async () => {
     try {
-        const response = await databases.listDocuments(databaseId, collectionId, [Query.limit(100),Query.offset(0)]);
+        const response = await databases.listDocuments(databaseId, itemsCollectionId, [Query.limit(100),Query.offset(0)]);
         console.log(response)
         services = response.documents.reduce((acc, doc) => {
             const { category, subcategory, type, price, unit } = doc;
@@ -25,6 +29,16 @@
     } catch (error) {
         console.error('Error fetching services:', error);
     }
+  if (projectId === "new") {
+    console.log("New project creation initiated.");
+  } else {
+    const databases = new Databases(client);
+    const result = await databases.getDocument(databaseId, projectsCollectionId, projectId);
+    console.log("Project data fetched:", result);
+    result.items = JSON.parse(result.items);
+    selectedItems = result.items;
+    $selectedUser = result.client;
+  }
   });
 
   let showInvoice = false;
@@ -119,20 +133,26 @@
     }
   
     async function saveProject() {
-      try {
+    console.log(selectedItems);
+    try {
         const projectData = {
-          items: selectedItems,
-          totalPrice: totalPrice,
-          // Add any other relevant project data here
+            items: JSON.stringify(selectedItems),
+            totalPrice: totalPrice,
+            client: $selectedUser.$id,
+            // Add any other relevant project data here
         };
         
-        // Assuming you have a method to create a document in your projects database
-        const response = await databases.createDocument(databaseId, 'projectsCollectionId', 'unique()', projectData);
+        // Check if projectId is "new" to create a new document, otherwise update the existing one
+        const response = projectId === "new"
+            ? await databases.createDocument(databaseId, projectsCollectionId, 'unique()', projectData)
+            : await databases.updateDocument(databaseId, projectsCollectionId, projectId, projectData);
+        
         console.log('Project saved successfully:', response);
-      } catch (error) {
+        goto('/project/view/' + response.$id);
+    } catch (error) {
         console.error('Error saving project:', error);
-      }
     }
+  }
   </script>
   
   <div class="w-full max-w-4xl mx-auto p-4 space-y-2 flex flex-col gap-4"> 
@@ -354,10 +374,17 @@
             <button class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" on:click={saveProject}>
               Opslaan
             </button>
+            <button class="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" on:click={saveProject}>
+              Opslaan & Inplannen
+            </button>
           </div>
         {/if}
       </div>
     {/if}
   </div>
   
-
+{#if !$selectedUser}
+  <div class="absolute inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-20">
+    <div class="text-lg font-medium text-white">Please select a user</div>
+  </div>
+{/if}
