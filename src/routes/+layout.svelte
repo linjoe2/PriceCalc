@@ -45,8 +45,8 @@
        } catch (error) {
                await account.createOAuth2Session(
                 OAuthProvider.Oidc,   // provider
-               'http://localhost:5173/offertes', // redirect here on success
-               'http://localhost:5173/fail', // redirect here on failure
+               'http://bouw.toekomst.org/offertes', // redirect here on success
+               'http://bouw.toekomst.org/fail', // redirect here on failure
                //['openid', 'profile', 'email'] // scopes (optional)
               );
      } finally {
