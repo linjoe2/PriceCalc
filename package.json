@@ -38,6 +38,7 @@
   "description": "Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).",
   "main": "eslint.config.js",
   "dependencies": {
+    "@sveltejs/adapter-node": "^5.2.9",
     "acorn": "^8.14.0",
     "acorn-jsx": "^5.3.2",
     "acorn-typescript": "^1.4.13",
@@ -180,7 +181,6 @@
     "pathe": "^1.1.2",
     "pathval": "^2.0.0",
     "picocolors": "^1.1.1",
-    "picomatch": "^2.3.1",
     "pify": "^2.3.0",
     "pirates": "^4.0.6",
     "playwright": "^1.48.2",
