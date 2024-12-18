@@ -45,8 +45,8 @@
        } catch (error) {
                await account.createOAuth2Session(
                 OAuthProvider.Oidc,   // provider
-               'http://bouw.toekomst.org/offertes', // redirect here on success
-               'http://bouw.toekomst.org/fail', // redirect here on failure
+               'http://localhost:5173/offertes', // redirect here on success
+               'http://localhost:5173/fail', // redirect here on failure
                //['openid', 'profile', 'email'] // scopes (optional)
               );
      } finally {
@@ -138,11 +138,11 @@
             Agenda
           </a>
           <a
-            href="##"
-            class={`text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${activeRoute === '##' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
+            href="/work"
+            class={`text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${activeRoute === '/work' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
           >
             <ChartLine class="h-4 w-4" />
-            Analytics
+            Werkbonnen
           </a>
         </nav>
       </div>

@@ -6,6 +6,7 @@
   import { selectedUser } from "../../../../stores/userStore";
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
+  import ImageUploader from './ImageUploader.svelte'; // Adjust the path as necessary
 
   let projectId = $page.params.id;
   const databases = new Databases(client);
@@ -13,6 +14,7 @@
   const itemsCollectionId = '6735eb1000013509eaf3'; // Your collection ID
   const projectsCollectionId = '67362a9400133ceb48ac'; // Your collection ID
   let services = {};
+  let uploadedImages: any[] = []; // Declare uploadedImages as an array
 
   onMount(async () => {
     try {
@@ -93,44 +95,7 @@
       const price = typeof item.price === 'string' ? parseFloat(item.price) : item.price;
       return sum + (price * item.quantity);
     }, 0);
-  
-    // Add this for managing uploaded images
-    interface UploadedImage {
-      file: File;
-      preview: string;
-    }
-    
-    let uploadedImages: Record<string, UploadedImage[]> = {};
-  
-    function handleFileUpload(event: Event, category: string) {
-      const input = event.target as HTMLInputElement;
-      const files = input.files;
-      
-      if (!files) return;
-      
-      // Initialize the category array if it doesn't exist
-      if (!uploadedImages[category]) {
-        uploadedImages[category] = [];
-      }
-      
-      // Create preview URLs for each file
-      Array.from(files).forEach(file => {
-        if (file.type.startsWith('image/')) {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            uploadedImages[category] = [...(uploadedImages[category] || []), {
-              file,
-              preview: e.target?.result as string
-            }];
-          };
-          reader.readAsDataURL(file);
-        }
-      });
-    }
-  
-    function removeImage(category: string, index: number) {
-      uploadedImages[category] = uploadedImages[category].filter((_, i) => i !== index);
-    }
+
   
     async function saveProject() {
     console.log(selectedItems);
@@ -139,13 +104,17 @@
             items: JSON.stringify(selectedItems),
             totalPrice: totalPrice,
             client: $selectedUser.$id,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            uploadedImages: uploadedImages.map(image => (JSON.stringify({ id: image.id, category: image.category }))), // Only upload file ID and category
             // Add any other relevant project data here
         };
+        console.log(projectData);
         
         // Check if projectId is "new" to create a new document, otherwise update the existing one
         const response = projectId === "new"
             ? await databases.createDocument(databaseId, projectsCollectionId, 'unique()', projectData)
-            : await databases.updateDocument(databaseId, projectsCollectionId, projectId, projectData);
+            : await databases.updateDocument(databaseId, projectsCollectionId, projectId, { ...projectData, updatedAt: new Date().toISOString() });
         
         console.log('Project saved successfully:', response);
         goto('/project/view/' + response.$id);
@@ -177,7 +146,7 @@
           </svg>
         </button>
         
-        {#if items.isOpen}
+        {#if items.isOpen || items.some(item => selectedItems.some(selected => selected.category === category && selected.subcategory === item.subcategory && selected.type === item.type))}
           <div class="p-4 pt-0 space-y-4">
             {#each items as item}
               <div 
@@ -308,50 +277,7 @@
               </div>
             {/if}
   
-            <div class="space-y-3">
-              <h3 class="font-medium">Foto's uploaden:</h3>
-              <div class="border-2 border-dashed border-gray-300 rounded-lg p-6">
-                <div class="text-center">
-                  <label for="fileUpload-{category}" class="cursor-pointer">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <p class="mt-1 text-sm text-gray-600">Klik om foto's te uploaden</p>
-                    <p class="mt-1 text-xs text-gray-500">PNG, JPG tot 10MB</p>
-                  </label>
-                  <input 
-                    id="fileUpload-{category}"
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    class="hidden"
-                    on:change={(e) => handleFileUpload(e, category)}
-                  />
-                </div>
-  
-                {#if uploadedImages[category]?.length > 0}
-                  <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    {#each uploadedImages[category] as image, index}
-                      <div class="relative group">
-                        <img 
-                          src={image.preview} 
-                          alt="Preview" 
-                          class="w-full h-32 object-cover rounded-lg"
-                        />
-                        <button
-                          class="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                          on:click={() => removeImage(category, index)}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </div>
-                    {/each}
-                  </div>
-                {/if}
-              </div>
-            </div>
+            <ImageUploader {category} bind:uploadedImages={uploadedImages} on:upload={event => console.log('File uploaded:', event.detail.file)} />
           </div>
         {/if}
       </div>

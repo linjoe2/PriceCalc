@@ -7,6 +7,7 @@
     import { client } from '$lib/appwrite';
     import { onMount } from "svelte";
     import { selectedUser } from '../../stores/userStore';
+    import ClientDialog from './ClientDialog.svelte'; // Import the new dialog component
 
     const databases = new Databases(client);
     let clients = [];
@@ -31,8 +32,9 @@
 
     }
 
-    function closeDialog() {
+    function handleDialogClose() {
         isDialogOpen = false;
+        selectedClient = null; // Reset selectedClient when closing the dialog
     }
 
 
@@ -40,8 +42,10 @@
 
 <h1>Klanten</h1>
 <div class="flex justify-end items-center">
-    <a href="/client/new"><button class="mr-2">+ Nieuw</button></a>
-    <UserRoundPen />
+    <a href="/client/new">
+        <button class="mr-2 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">+ Nieuw</button>
+    </a>
+   
 </div>
 
 <ul class="list-disc pl-5">
@@ -53,7 +57,7 @@
             </a>
             <div class="flex space-x-2">
                 <a href={`/client/edit/${client.$id}`} class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                    <PencilRuler />
+                     <UserRoundPen />
                 </a>
             </div>
         </li>
@@ -61,28 +65,12 @@
 </ul>
 
 {#if isDialogOpen}
-<Dialog.Root open={isDialogOpen} onOpenChange={closeDialog}>
-    <Dialog.Trigger style="display: none;">Open</Dialog.Trigger>
-    <Dialog.Content>
-      <Dialog.Header>
-        <Dialog.Title>{selectedClient.name} {selectedClient.lastname}</Dialog.Title>
-        <Dialog.Description>
-        {#if selectedClient}
-            <p>Bedrijf: {selectedClient.businessname}</p>
-            <p>Address: {selectedClient.adress} {selectedClient.huisnummer}, {selectedClient.postcode}, {selectedClient.woonplaats}</p><br>
-            {#each selectedClient.projects as project}
-                <p>{project.datum}</p>
-                <p>{JSON.parse(project.items).length} items</p>
-                <p>Current fase: {project.fase}</p>
-                <a href={`/project/edit/${project.$id}`} class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Edit</a>
-            {/each}
-            <br>
-            <a href="/project/edit/new" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Start nieuw project</a>
-            <a href="/agenda" class="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Agenda inplannen</a>
-            {/if}
-        </Dialog.Description>
-      </Dialog.Header>
-    </Dialog.Content>
-  </Dialog.Root>
-
+    <ClientDialog {selectedClient} on:close={handleDialogClose} isOpen={isDialogOpen} />
 {/if}
+
+
+<style>
+    li {
+        margin-bottom: 20px;
+    }
+</style>

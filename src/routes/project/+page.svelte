@@ -3,8 +3,9 @@
   import { Databases, Query } from "appwrite";
   import { client } from "$lib/appwrite";
   import Plus from "lucide-svelte/icons/plus";
-  import Eye from "lucide-svelte/icons/eye";
   import Pencil from "lucide-svelte/icons/pencil";
+  import Trash from "lucide-svelte/icons/trash";
+  import Eye from "lucide-svelte/icons/eye";
 
   const databases = new Databases(client);
   const databaseId = 'PriceCalc'; // Your database ID
@@ -22,6 +23,11 @@
         console.error('Error fetching services:', error);
     }
   });
+
+  async function deleteProject(id: string) {
+    await databases.deleteDocument(databaseId, collectionId, id);
+    services = services.filter(service => service.$id !== id);
+  }
 </script>
 
 <div class="flex flex-col gap-4 max-w-400px">
@@ -43,17 +49,24 @@
     </thead>
     <tbody>
       {#each services as offer}
-        <tr>
+        <tr on:click={() => window.location.href = `/project/view/${offer.$id}`} class="cursor-pointer">
           <td>{offer.client?.name} {offer.client?.lastname}</td>
           <td>{offer.client?.adress} {offer.client?.huisnummer}</td>
-          <td>{offer.date}</td>
+          <td>{new Date(offer.updatedAt).toLocaleDateString('nl-NL', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
           <td>{JSON.parse(offer.items).length} items</td>
           <td class="text-right">
             <a href="/project/edit/{offer.$id}" class="mr-2"><button><Pencil class="h-4 w-4" /></button></a>
-            <a href="/project/view/{offer.$id}" class="ml-2"><button><Eye class="h-4 w-4" /></button></a>
+            <button on:click={() => deleteProject(offer.$id)} class="ml-2"><Trash class="h-4 w-4" /></button>
           </td>
         </tr>
       {/each}
     </tbody>
   </table>
 </div>
+
+
+<style>
+ tr {
+    margin-bottom: 20px;
+  }
+</style>

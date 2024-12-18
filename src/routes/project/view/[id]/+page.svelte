@@ -3,9 +3,11 @@
   import { Databases } from "appwrite";
   import { client } from "$lib/appwrite";
   import { page } from '$app/stores';
-  import Pencil from "lucide-svelte/icons/pencil";
+  import FetchImages from "./fetchImages.svelte";
+  
   let projectId = $page.params.id;
   let projectData = null;
+  let uploadedImages: string[] = [];
 
   onMount(async () => {
     const databases = new Databases(client);
@@ -15,6 +17,9 @@
     try {
       projectData = await databases.getDocument(databaseId, projectsCollectionId, projectId);
       projectData.items = JSON.parse(projectData.items);
+      uploadedImages = projectData.uploadedImages;
+      console.log(uploadedImages);
+      console.log(projectData);
     } catch (error) {
       console.error('Error fetching project data:', error);
     }
@@ -26,12 +31,26 @@
   }, 0) : 0;
 </script>
 
-<div class="invoice">
-  <div class="flex justify-between items-center">
-    <h1 class="text-2xl font-bold">Offerte</h1>
-    <a href="/project/edit/{projectId}"><button><Pencil class="h-4 w-4" /></button></a>
-  </div>
   {#if projectData}
+<div class="top-bar flex justify-end items-center mb-4">
+    <div class="flex items-center space-x-4">
+      <select bind:value={projectData.fase} class="form-select block w-full mt-1">
+        <option value="start">start</option>
+        <option value="in-progress">acceptatie</option>
+        <option value="completed">ingeplanned</option>
+        <option value="cancelled">in uitvoering</option>
+        <option value="cancelled">afgerond</option>
+      </select>
+     
+    </div>
+  <button class="send-email-button bg-green-500 text-white px-4 py-2 rounded">Verstuur Email</button>
+  <a href="/project/edit/{projectId}"><button class="bg-blue-500 text-white px-4 py-2 rounded">Bewerk</button></a>
+</div>
+<div class="flex justify-center">
+  <div class="invoice">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold">Offerte</h1>
+     </div>
     <h2 class="text-md">Project ID: {projectId}</h2>
     <br>
     <div class="text-lg">
@@ -77,16 +96,23 @@
         <li>Voor het aansluiten van de hemelwaterafvoer dient er een voorziening onder straat niveau aanwezig te zijn, indien niet aanwezig zal de gemeente deze moeten aanleggen.</li>
       </ul>
     </div>
+  </div>
+  <div class="new-div">
+    <div class="header">
+      <h2 class="text-2xl font-bold">Gerelateerde Foto's</h2>
+    </div>
+    <FetchImages bind:uploadedImages />
+  </div>
+</div>
   {:else}
     <p>Loading project data...</p>
   {/if}
-</div>
 
 <style>
   .invoice {
     padding: 20px;
     max-width: 600px;
-    margin: auto;
+    margin: 0 20px;
     border: 1px solid #ccc;
     border-radius: 8px;
   }
@@ -98,5 +124,9 @@
   .total {
     margin-top: 20px;
     font-size: 1.2em;
+  }
+
+  ul {
+    list-style-type: disc;
   }
 </style>

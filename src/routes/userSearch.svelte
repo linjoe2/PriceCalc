@@ -1,9 +1,10 @@
-<script>
+<script lang="ts">
     import { onMount } from 'svelte';
     import NewUser from './client/new/+page.svelte';
     import { client } from "$lib/appwrite";
     import { Databases } from "appwrite";
     import { selectedUser } from '../stores/userStore';
+    import ClientDialog from './client/ClientDialog.svelte'; // Adjust the path as necessary
 
     let searchTerm = '';
     let users = [];
@@ -14,6 +15,8 @@
         name: '',
         email: ''
     };
+    let selectedClient = null;
+    let isDialogOpen = false;
 
     // Fetch users from Appwrite
     onMount(async () => {
@@ -58,6 +61,7 @@
         console.log($selectedUser);
         searchTerm = ''; // Clear search
         isSearching = false; // Exit search mode
+        isDialogOpen = true; // Open user dialog
     }
 
     function handleInputFocus() {
@@ -79,6 +83,15 @@
 
     function stopPropagation(e) {
         e.stopPropagation();
+    }
+
+    function openDialog(client) {
+        selectedClient = client;
+        isDialogOpen = true;
+    }
+
+    function handleDialogClose() {
+        isDialogOpen = false;
     }
 </script>
 
@@ -111,6 +124,7 @@
             <button on:click={() => showDialog = true}>Nieuwe Gebruiker Toevoegen</button>
         </div>
     {/if}
+    
 </div>
 
 {#if showDialog}
@@ -120,6 +134,11 @@
             <NewUser></NewUser>
         </div>
     </div>
+{/if}
+
+{#if isDialogOpen}
+    <ClientDialog selectedClient={$selectedUser} on:close={handleDialogClose} />
+     <!-- {$selectedUser} -->
 {/if}
 
 <style>
