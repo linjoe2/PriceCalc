@@ -29,17 +29,31 @@
     const price = typeof item.price === 'string' ? parseFloat(item.price) : item.price;
     return sum + (price * item.quantity);
   }, 0) : 0;
+
+  async function updateProjectStatus(newStatus: string) {
+    const databases = new Databases(client);
+    const databaseId = 'PriceCalc'; // Your database ID
+    const projectsCollectionId = '67362a9400133ceb48ac'; // Your collection ID
+
+    try {
+      await databases.updateDocument(databaseId, projectsCollectionId, projectId, { fase: newStatus });
+      console.log('Project status updated successfully');
+    } catch (error) {
+      console.error('Error updating project status:', error);
+    }
+  }
 </script>
 
   {#if projectData}
 <div class="top-bar flex justify-end items-center mb-4">
     <div class="flex items-center space-x-4">
-      <select bind:value={projectData.fase} class="form-select block w-full mt-1">
+      <select bind:value={projectData.fase} class="form-select block w-full mt-1" on:change="{(e) => updateProjectStatus(e.target.value)}">
         <option value="start">start</option>
-        <option value="in-progress">acceptatie</option>
-        <option value="completed">ingeplanned</option>
-        <option value="cancelled">in uitvoering</option>
-        <option value="cancelled">afgerond</option>
+        <option value="accepted">acceptatie</option>
+        <option value="planned">ingeplanned</option>
+        <option value="started">gestart</option>
+        <option value="in progress">in uitvoering</option>
+        <option value="completed">afgerond</option>
       </select>
      
     </div>
@@ -75,25 +89,12 @@
     </div>
 
     <br><br>
-    <div class="voorwaarden">
-      <h3 class="font-bold">Voorwaarden:</h3>
+    <div class="taken">
+      <h3 class="font-bold">Taken:</h3>
       <ul>
-        <li>Kosteloos gebruik van toilet, stroom- & watervoorzieningen</li>
-        <li>Exclusief parkeerkosten, deze worden 1:1 in rekening gebracht</li>
-        <li>Exclusief vergunningskosten, deze kosten worden na de aanvraag 1:1 in rekening gebracht</li>
-        <li>Kosten dakbeschot vervangen per m2: € 95, - inclusief arbeidsloon indien nodig</li>
-        <li>Steiger benodigd voor uitvoering werkzaamheden, dit wordt geregeld door derde</li>
-        <li>Exclusief steigerwerk</li>
-        <li>Exclusief aanbrengen afschot gootbodem</li>
-        <li>Klant gaat akkoord met het gegeven dat er plassen water op het dak blijven liggen</li>
-        <li>Exclusief afwerken binnenzijde lichtkoepel/lichtstraat</li>
-        <li>Indien de buren meedoen met het renoveren van de dakbedekking kan er … % korting worden gegeven op de totaalprijs excl. BTW</li>
-        <li>Toegang tot de benedenwoning is vereist i.v.m. met het plaatsen van de steiger in de achtertuin</li>
-        <li>Dakterras dient verwijderd te zijn voor aanvang werkzaamheden</li>
-        <li>Extra kosten hoogwerker bij slechte weersomstandigheden worden doorberekend aan de klant</li>
-        <li>Opdrachtgever is zelf verantwoordelijk of schoorsteen nog in gebruik is</li>
-        <li>Planten bakken, tuinmeubilair, gaashekken etc. dienen verwijderd te zijn door opdrachtgever voor aanvang werkzaamheden, indien niet verwijderd zullen hier extra kosten voor in rekening gebracht worden</li>
-        <li>Voor het aansluiten van de hemelwaterafvoer dient er een voorziening onder straat niveau aanwezig te zijn, indien niet aanwezig zal de gemeente deze moeten aanleggen.</li>
+        {#each projectData.tasks as task}
+            <li>{task.description}</li>
+        {/each}
       </ul>
     </div>
   </div>
@@ -103,6 +104,7 @@
     </div>
     <FetchImages bind:uploadedImages />
   </div>
+
 </div>
   {:else}
     <p>Loading project data...</p>

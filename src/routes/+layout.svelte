@@ -45,8 +45,8 @@
        } catch (error) {
                await account.createOAuth2Session(
                 OAuthProvider.Oidc,   // provider
-               'http://localhost:5173/offertes', // redirect here on success
-               'http://localhost:5173/fail', // redirect here on failure
+                import.meta.env.VITE_URL + '/offertes', // redirect here on success
+               import.meta.env.VITE_URL + '/fail', // redirect here on failure
                //['openid', 'profile', 'email'] // scopes (optional)
               );
      } finally {
@@ -230,7 +230,7 @@
         <DropdownMenu.Content align="end">
           <DropdownMenu.Label>My Account</DropdownMenu.Label>
           <DropdownMenu.Separator />
-          <DropdownMenu.Item>Settings</DropdownMenu.Item>
+          <DropdownMenu.Item><a href="/settings">Instellingen</a></DropdownMenu.Item>
           <DropdownMenu.Item>Support</DropdownMenu.Item>
           <DropdownMenu.Separator />
           <DropdownMenu.Item>Logout</DropdownMenu.Item>

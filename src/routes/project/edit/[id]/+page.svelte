@@ -19,28 +19,32 @@
   onMount(async () => {
     try {
         const response = await databases.listDocuments(databaseId, itemsCollectionId, [Query.limit(100),Query.offset(0)]);
-        console.log(response)
         services = response.documents.reduce((acc, doc) => {
-            const { category, subcategory, type, price, unit } = doc;
+            const { category, subcategory, type, price, unit, taken } = doc;
             if (!acc[category]) {
                 acc[category] = [];
             }
-            acc[category].push({ subcategory, type, price, unit });
+            acc[category].push({ subcategory, type, price, unit, taken });
             return acc;
         }, {});
     } catch (error) {
         console.error('Error fetching services:', error);
     }
-  if (projectId === "new") {
-    console.log("New project creation initiated.");
-  } else {
-    const databases = new Databases(client);
-    const result = await databases.getDocument(databaseId, projectsCollectionId, projectId);
-    console.log("Project data fetched:", result);
-    result.items = JSON.parse(result.items);
-    selectedItems = result.items;
-    $selectedUser = result.client;
-  }
+    
+    if (projectId === "new") {
+      console.log("New project creation initiated.");
+    } else {
+      const databases = new Databases(client);
+      const result = await databases.getDocument(databaseId, projectsCollectionId, projectId);
+      result.items = JSON.parse(result.items);
+      selectedItems = result.items;
+      $selectedUser = result.client;
+
+      // Push uploaded images to the array
+      if (result.uploadedImages) {
+        uploadedImages = result.uploadedImages.map(image => JSON.parse(image));
+      }
+    }
   });
 
   let showInvoice = false;
@@ -56,6 +60,7 @@
       price: string | number;
       unit: string;
       quantity: number;
+      tasks: Task[];
     }
   
     let selectedItems: SelectedItem[] = [];
@@ -84,7 +89,8 @@
         selectedItems = [...selectedItems, {
           category,
           ...item,
-          quantity: quantity
+          quantity: quantity,
+          tasks: []
         }];
       } else {
         selectedItems = selectedItems.filter((_, i) => i !== index);
@@ -101,7 +107,10 @@
     console.log(selectedItems);
     try {
         const projectData = {
-            items: JSON.stringify(selectedItems),
+            items: JSON.stringify(selectedItems.map(item => ({
+              ...item,
+              tasks: item.tasks.map(task => ({ id: task.id, completed: task.completed }))
+            }))),
             totalPrice: totalPrice,
             client: $selectedUser.$id,
             createdAt: new Date().toISOString(),
@@ -109,6 +118,19 @@
             uploadedImages: uploadedImages.map(image => (JSON.stringify({ id: image.id, category: image.category }))), // Only upload file ID and category
             // Add any other relevant project data here
         };
+
+        // Process item.taken and add tasks to projectData
+        projectData.tasks = selectedItems.flatMap(item => {
+            return item.taken.split('*').map(task => ({
+                // id: `${item.category}-${item.subcategory}-${item.type}-${task.trim()}`,
+                category: item.category,
+                subcategory: item.subcategory,
+                type: item.type,
+                completed: false,
+                description: task.trim()
+            }));
+        });
+
         console.log(projectData);
         
         // Check if projectId is "new" to create a new document, otherwise update the existing one
@@ -122,6 +144,41 @@
         console.error('Error saving project:', error);
     }
   }
+
+  // Define a task structure
+  interface Task {
+    id: string;
+    subcategory: string;
+    type: string;
+    completed: boolean;
+    photo: string | null;
+  }
+
+  let tasks: Task[] = [];
+
+  // Function to create tasks from selected items
+  function createTasksFromInvoice() {
+    tasks = selectedItems.map(item => ({
+      id: `${item.category}-${item.subcategory}-${item.type}`,
+      subcategory: item.subcategory,
+      type: item.type,
+      completed: false,
+      photo: null
+    }));
+  }
+
+  function toggleTaskCompletion(task: Task) {
+    task.completed = !task.completed;
+  }
+
+  function handlePhotoUpload(event, task: Task) {
+    const file = event.target.files[0];
+    if (file) {
+      task.photo = URL.createObjectURL(file);
+    }
+  }
+
+
   </script>
   
   <div class="w-full max-w-4xl mx-auto p-4 space-y-2 flex flex-col gap-4"> 
@@ -308,6 +365,11 @@
       </div>
     {/if}
   </div>
+  
+
+  <style>
+    /* Add your styles here */
+  </style>
   
 {#if !$selectedUser}
   <div class="absolute inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-20">

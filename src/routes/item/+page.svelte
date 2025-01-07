@@ -16,16 +16,19 @@ let selectedCategory = ''; // Initialize selectedCategory
 let isEditDialogOpen = false; // Manage dialog visibility
 let serviceToEdit = null; // Store the service being edited
 
+// New reactive variable to track visibility of taken for each service
+let takenVisibility = {};
+
 onMount(async () => {
     try {
         const response = await databases.listDocuments(databaseId, collectionId, [Query.limit(100),Query.offset(0)]);
         console.log(response)
         services = response.documents.reduce((acc, doc) => {
-            const { category, subcategory, type, price, unit, $id } = doc;
+            const { category, subcategory, type, price, unit, $id, taken } = doc;
             if (!acc[category]) {
                 acc[category] = [];
             }
-            acc[category].push({ subcategory, type, price, unit, $id });
+            acc[category].push({ subcategory, type, price, unit, $id, taken});
             return acc;
         }, {});
         console.log(services)
@@ -39,7 +42,8 @@ let newService = {
     subcategory: '',
     type: '',
     price: '',
-    unit: ''
+    unit: '',
+    taken: ''
 };
 
 function addService(category) {
@@ -54,7 +58,8 @@ function resetNewService() {
         subcategory: '',
         type: '',
         price: '',
-        unit: ''
+        unit: '',
+        taken: ''
     };
 }
 
@@ -96,7 +101,8 @@ async function saveEditedService() {
                     type: serviceToEdit.type,
                     price: parseInt(serviceToEdit.price),
                     unit: serviceToEdit.unit,
-                    category: serviceToEdit.category // Optionally include the category
+                    category: serviceToEdit.category, // Optionally include the category
+                    taken: serviceToEdit.taken // Include taken
                 });
                 console.log('Service saved and updated successfully:', response);
             } catch (error) {
@@ -113,7 +119,8 @@ async function saveEditedService() {
                     type: serviceToEdit.type,
                     price: parseInt(serviceToEdit.price),
                     unit: serviceToEdit.unit,
-                    category: serviceToEdit.category // Optionally include the category
+                    category: serviceToEdit.category, // Optionally include the category
+                    taken: serviceToEdit.taken // Include taken
                 });
                 console.log('Service created successfully:', response);
             } catch (error) {
@@ -130,7 +137,10 @@ function createNewCategory() {
     selectedCategory = newCategory;
 }
 
-
+function toggletakenVisibility(category, index) {
+    const key = `${category}-${index}`;
+    takenVisibility[key] = !takenVisibility[key];
+}
 
 </script>
 <!-- Display existing services in a table with an edit button and Tailwind styling -->
@@ -156,8 +166,21 @@ function createNewCategory() {
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button on:click={() => editService(category, index, service)} class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Edit</button>
                         <button on:click={() => deleteService(category, index)} class="ml-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">Delete</button>
+                        <button on:click={() => toggletakenVisibility(category, index)} class="ml-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            {takenVisibility[`${category}-${index}`] ? 'Verberg' : 'Toon'} taken
+                        </button>
                     </td>
                 </tr>
+                {#if takenVisibility[`${category}-${index}`]}
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            taken:
+                            {#each service.taken.split('*') as part}
+                                <div>- {part}</div>
+                            {/each}
+                        </td>
+                    </tr>
+                {/if}
             {/each}
             <tr>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium"><button on:click={() => editService(category, serviceList.length, {})} class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">+</button></td>
@@ -180,6 +203,7 @@ function createNewCategory() {
                 <option value="stuk">stuk</option>
                 <option value="uur">uur</option>
             </select>
+            <textarea placeholder="taken" bind:value={serviceToEdit.taken} class="form-input block w-full mt-1 mb-4" />
             <button on:click={saveEditedService} class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Save Changes</button>
             <button on:click={() => isEditDialogOpen = false} class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-600 bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">Cancel</button>
         </div>

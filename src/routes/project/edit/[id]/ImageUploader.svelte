@@ -3,6 +3,7 @@
   import { createEventDispatcher } from 'svelte';
   import { Storage } from "appwrite";
   import { client } from "$lib/appwrite"; // Ensure you have the Appwrite client imported
+  import { onMount } from 'svelte';
 
 
   const storage = new Storage(client); // Create a storage instance
@@ -12,8 +13,24 @@
   export let category: string;
   export let uploadedImages: { file: File; preview: string; id: string; category: string }[] = [];
   let selectedImage: string | null = null;
-
   let isDialogOpen = false;
+
+
+
+  onMount(async () => {
+
+    // Fetch preview URLs for each uploaded image from Appwrite
+    for (let image of uploadedImages) {
+        try {
+          const previewUrl = storage.getFilePreview('67621eca0022af8c411f', image.id);
+          image.preview = previewUrl; // Set the preview URL
+        } catch (error) {
+          console.error('Error fetching image preview:', error);
+        }
+      uploadedImages = uploadedImages
+    }
+  });
+
 
   function handleFileUpload(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -21,27 +38,25 @@
 
     if (!files) return;
 
-    // Create preview URLs for each file
     Array.from(files).forEach(async file => {
       if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          uploadedImages = [...uploadedImages, {
-            file,
-            preview: e.target?.result as string,
-            id: file.name, // Store the file name or the actual fileId returned from upload
-            category: category
-          }];
-          dispatch('upload', { file }); // Dispatch an event for the parent component
-        };
-        reader.readAsDataURL(file);
-        
-        // Upload the image to Appwrite
-        const fileId = await uploadImageToAppwrite(file); // Capture the fileId returned from upload
-        // Update uploadedImages with the fileId
-        uploadedImages = uploadedImages.map(image => 
-          image.file.name === file.name ? { ...image, id: fileId || '' } : image
-        );
+        // Upload the image to Appwrite and get the file ID
+        const fileId = await uploadImageToAppwrite(file);
+
+        // Only add to the array if the upload was successful
+        if (fileId) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            uploadedImages = [...uploadedImages, {
+              file,
+              preview: e.target?.result as string,
+              id: fileId, // Use the fileId from the upload
+              category: category
+            }];
+            dispatch('upload', { file });
+          };
+          reader.readAsDataURL(file);
+        }
       }
     });
   }
@@ -100,6 +115,7 @@
     <div class="mt-4 grid grid-cols-4 sm:grid-cols-6 gap-2">
       {#each uploadedImages as image, index}
         <div class="relative group">
+          {#if image.category === category}
           <img 
             src={image.preview} 
             alt="Preview" 
@@ -115,8 +131,9 @@
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+              </svg>
+            </button>
+          {/if}
         </div>
       {/each}
     </div>
