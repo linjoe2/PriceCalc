@@ -224,7 +224,6 @@
     "supports-color": "^7.2.0",
     "supports-preserve-symlinks-flag": "^1.0.0",
     "svelte-eslint-parser": "^0.43.0",
-    "svelte-headless-table": "^0.18.3",
     "svelte-radix": "^2.0.1",
     "tailwind-merge": "^2.5.4",
     "tailwind-variants": "^0.3.0",

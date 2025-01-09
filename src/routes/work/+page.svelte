@@ -5,24 +5,26 @@
   import { ScrollArea } from "$lib/components/ui/scroll-area/index.js";
   import { Separator } from "$lib/components/ui/separator/index.js";
   import { client } from '$lib/appwrite';
-  import { Databases } from 'appwrite';
+  import { Databases, Query } from 'appwrite';
+	import ImageUploader from "../../components/ImageUploader.svelte";
   const databaseId = 'PriceCalc'; // Your database ID
   const projectsCollectionId = '67362a9400133ceb48ac'; // Your collection ID
+
 
   let projects = [];
   let selectedProject = null;
   let tasks = [];
+  let uploadedImages = [];
+  
 
   onMount(async () => {
     const databases = new Databases(client);
 
     try {
-      const response = await databases.listDocuments(databaseId, projectsCollectionId);
-      console.log(response)
-      projects = response.documents.filter(project => 
-        project.fase === 'started' || project.fase === "in progress"
-      );
+      const response = await databases.listDocuments(databaseId, projectsCollectionId, [Query.limit(100),Query.offset(0), Query.equal('fase', ['started', 'in progress'])]);
+      projects = response.documents;
       console.log(projects)
+
     } catch (error) {
       console.error('Failed to fetch projects:', error);
     }
@@ -41,6 +43,35 @@
     // Logic to save the tasks
     console.log('Tasks saved:', tasks);
     // You can add your API call here to save the tasks to the database
+    
+  }
+
+  async function updateTaskCompletion(task) {
+    const databases = new Databases(client);
+    console.log(task)
+    task.completed = !task.completed
+    try {
+      await databases.updateDocument(databaseId,"67648ca200024526b701", task.$id, {
+        completed: task.completed
+      });
+      console.log(`Task ${task.$id} updated successfully.`);
+    } catch (error) {
+      console.error(`Failed to update task ${task.$id}:`, error);
+    }
+  }
+
+  function groupTasksByCategory(tasks) {
+    const grouped = {};
+    tasks.forEach(task => {
+      if (!grouped[task.category]) {
+        grouped[task.category] = {};
+      }
+      if (!grouped[task.category][task.subcategory]) {
+        grouped[task.category][task.subcategory] = [];
+      }
+      grouped[task.category][task.subcategory].push(task);
+    });
+    return grouped;
   }
 </script>
 
@@ -67,11 +98,19 @@
           <p>Bedrijfsnaam: {selectedProject.client.businessname}</p>
         </Card.Header>
         <Card.Content>
-          {#each tasks as task}
-            <div>
-              <Checkbox bind:checked={task.completed} /> {task.description}
-            </div>
+          {#each Object.entries(groupTasksByCategory(tasks)) as [category, subcategories]}
+            <h5 class="text-lg font-bold">{category}</h5>
+            {#each Object.entries(subcategories) as [subcategory, tasks]}
+              <h6 class="text-md font-bold">{subcategory}</h6>
+              {#each tasks as task}
+                <div>
+                  <Checkbox bind:checked={task.completed} on:click={() => updateTaskCompletion(task)} /> {task.description}
+                </div>
+              {/each}
+            {/each}
           {/each}
+
+          <ImageUploader category="achter af" bind:uploadedImages={uploadedImages} on:upload={event => console.log('File uploaded:', event.detail.file)} />
         </Card.Content>
         <Card.Footer>
           <button on:click={confirmAllTasks}>Alles uitgevoerd</button>

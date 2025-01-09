@@ -144,13 +144,16 @@
   <Dialog.Trigger style="display: none;">Open</Dialog.Trigger>
   <Dialog.Content on:click={closeModal}>
     <Dialog.Header>
-      <Dialog.Title>Image Preview</Dialog.Title>
-      <Dialog.Description>
-        Click outside the image to close the preview.
-      </Dialog.Description>
+      <Dialog.Title>Afbeelding</Dialog.Title>
     </Dialog.Header>
     {#if selectedImage}
       <img src={selectedImage} alt="Enlarged Preview" class="w-full h-auto" />
+      <button 
+        class="mt-2 px-4 py-2 bg-blue-500 text-white rounded"
+        on:click={() => window.open(selectedImage, '_blank')}
+      >
+        Open in Tab
+      </button>
     {/if}
   </Dialog.Content>
 </Dialog.Root> 

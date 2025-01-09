@@ -45,7 +45,7 @@
        } catch (error) {
                await account.createOAuth2Session(
                 OAuthProvider.Oidc,   // provider
-                import.meta.env.VITE_URL + '/offertes', // redirect here on success
+                import.meta.env.VITE_URL + '/project', // redirect here on success
                import.meta.env.VITE_URL + '/fail', // redirect here on failure
                //['openid', 'profile', 'email'] // scopes (optional)
               );

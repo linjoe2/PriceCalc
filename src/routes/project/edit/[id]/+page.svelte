@@ -6,7 +6,7 @@
   import { selectedUser } from "../../../../stores/userStore";
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import ImageUploader from './ImageUploader.svelte'; // Adjust the path as necessary
+  import ImageUploader from '../../../../components/ImageUploader.svelte'; // Adjust the path as necessary
 
   let projectId = $page.params.id;
   const databases = new Databases(client);
@@ -181,6 +181,39 @@
 
   </script>
   
+  <div class="flex justify-between">
+    <div class="w-1/2 border border-gray-300 rounded-md m-4 p-4">
+      <h2 class="text-lg font-medium">Klantgegevens</h2>
+      <div>
+        <label>Naam:</label>
+        <span>{client?.name || 'N/A'}</span>
+      </div>
+      <div>
+        <label>Achternaam:</label>
+        <span>{client?.lastname || 'N/A'}</span>
+      </div>
+      <div>
+        <label>Adres:</label>
+        <span>{client?.address || 'N/A'}</span>
+      </div>
+      <div>
+        <label>Huisnummer:</label>
+        <span>{client?.houseNumber || 'N/A'}</span>
+      </div>
+      <div>
+        <label>Postcode:</label>
+        <span>{client?.postalCode || 'N/A'}</span>
+      </div>
+      <div>
+        <label>Stad:</label>
+        <span>{client?.city || 'N/A'}</span>
+      </div>
+    </div>
+    <div class="w-1/2 m-4 ">
+      <ImageUploader category="vooraf" bind:uploadedImages={uploadedImages} on:upload={event => console.log('File uploaded:', event.detail.file)} />
+    </div>
+  </div>
+
   <div class="w-full max-w-4xl mx-auto p-4 space-y-2 flex flex-col gap-4"> 
     <!-- <UserSearch /> -->
     {#each Object.entries(services) as [category, items]}
@@ -333,8 +366,6 @@
                 </div>
               </div>
             {/if}
-  
-            <ImageUploader {category} bind:uploadedImages={uploadedImages} on:upload={event => console.log('File uploaded:', event.detail.file)} />
           </div>
         {/if}
       </div>

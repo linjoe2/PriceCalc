@@ -54,7 +54,7 @@
             woonplaats: woonplaats,
             oppervlakte: parseInt(oppervlakte),
             bouwjaar: parseInt(bouwjaar),
-            email: email?,
+            email: email,
             telefoonnummer: parseInt(telefoonnummer)
         };
 

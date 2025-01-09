@@ -79,6 +79,12 @@
       <Dialog.Header>
         <Dialog.Title>{selectedImage.category}</Dialog.Title>
         <img src={selectedImage.url} alt="Selected Image" class="dialog-image" />
+        <button 
+          class="mt-2 px-4 py-2 bg-blue-500 text-white rounded"
+          on:click={() => window.open(selectedImage.url, '_blank')}
+        >
+          Open in Tab
+        </button>
       </Dialog.Header>
     </Dialog.Content>
   {/if}
