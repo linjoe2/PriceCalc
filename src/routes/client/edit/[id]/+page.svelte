@@ -1,9 +1,11 @@
 <script lang="ts">
-    import { Databases, ID } from "appwrite";
+    import { Databases, Query } from "appwrite";
     import { client } from "$lib/appwrite";
     import { onMount } from "svelte";
     import { goto } from '$app/navigation';
     import { page } from '$app/stores';
+    import Eye from "lucide-svelte/icons/eye";
+    import Pencil from "lucide-svelte/icons/pencil";
 
     let clientId = '';
     let clientData = {
@@ -23,9 +25,25 @@
     onMount(async () => {
         clientId = $page.params.id;
         const databases = new Databases(client);
-        const result = await databases.getDocument('PriceCalc', '67362abc0039525e36b6', clientId);
-        clientData = result;
-        console.log(clientData)
+
+        // Check if clientId is an email address
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (emailRegex.test(clientId)) {
+            // Query by email address
+            const result = await databases.listDocuments('PriceCalc', '67362abc0039525e36b6', [
+                Query.equal('email', clientId)
+            ]);
+            if (result.documents.length > 0) {
+                clientData = result.documents[0];
+            } else {
+                console.error('No document found for the provided email address.');
+            }
+        } else {
+            // Query by client ID
+            const result = await databases.getDocument('PriceCalc', '67362abc0039525e36b6', clientId);
+            clientData = result;
+        }
+        console.log(clientData);
     });
 
     async function updateClient() {

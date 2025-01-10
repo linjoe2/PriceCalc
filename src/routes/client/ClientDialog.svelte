@@ -62,9 +62,11 @@
                         </tbody>
                     </table>
                     <br>
-                    <a href="/project/edit/new" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Start nieuw project</a>
-                    <a href="/agenda" class="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Agenda inplannen</a>
-                    <a href={`/client/edit/${selectedClient.$id}`} class="mt-4 bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">Klant bewerken</a>
+                    <div class="flex flex-col gap-4">
+                        <a href="/project/edit/new" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Start nieuw project</a>
+                        <a href="/agenda" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Agenda inplannen</a>
+                        <a href={`/client/edit/${selectedClient.$id}`} class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">Klant bewerken</a>
+                    </div>
                 {/if}
             </Dialog.Description>
         </Dialog.Header>

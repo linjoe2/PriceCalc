@@ -60,7 +60,7 @@
   <button class="send-email-button bg-green-500 text-white px-4 py-2 rounded">Verstuur Email</button>
   <a href="/project/edit/{projectId}"><button class="bg-blue-500 text-white px-4 py-2 rounded">Bewerk</button></a>
 </div>
-<div class="flex justify-center">
+<div class="flex justify-center flex-wrap">
   <div class="invoice">
     <div class="flex justify-between items-center">
         <h1 class="text-2xl font-bold">Offerte</h1>

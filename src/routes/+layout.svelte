@@ -26,7 +26,7 @@
     import { derived } from 'svelte/store';
 
     $: pathSegments = $page.url.pathname.split('/').filter(Boolean);
-    let loggedInUser = {name: ''}
+    let loggedInUser = {name: '', labels: []};
     let activeRoute = ''
     // Add sheet open state store
     const sheetOpen = writable(false);
@@ -42,6 +42,7 @@
     onMount(async ()=>{
        try{
         loggedInUser = await account.get();
+        console.log('loggedInUser', loggedInUser)
        } catch (error) {
                await account.createOAuth2Session(
                 OAuthProvider.Oidc,   // provider
@@ -50,19 +51,23 @@
                //['openid', 'profile', 'email'] // scopes (optional)
               );
      } finally {
-    
+      console.log('test')
+      console.log(loggedInUser)
        const jwt = await account.createJWT();
+       console.log('jwt', jwt)
        // Add JWT to cookies
     
        document.cookie = `appwriteJWT=${jwt.jwt}; path=/; max-age=3600; SameSite=Strict; Secure`;
      }
     
      })
+
+     
     
     
        async function logout() {
            await account.deleteSession('current');
-           loggedInUser = null;
+           loggedInUser = {name: ''};
            window.location.replace('/')
            alert('test')
        }
@@ -73,6 +78,11 @@
     const toggleNewItemMenu = () => {
         showNewItemMenu = !showNewItemMenu;
     };
+
+    // Function to check if the user is an admin
+    function isAdmin() {
+        return loggedInUser.labels.includes('admin');
+    }
 </script>
   
 
@@ -188,7 +198,7 @@
               </Badge>
             </a>
             <a
-              href="/diensten"
+              href="/item"
               class="text-muted-foreground hover:text-foreground mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2"
             >
               <Package class="h-5 w-5" />
@@ -202,11 +212,11 @@
               Agenda
             </a>
             <a
-              href="##"
+              href="/work"
               class="text-muted-foreground hover:text-foreground mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2"
             >
               <ChartLine class="h-5 w-5" />
-              Analytics
+              Werkbonnen
             </a>
           </nav>
           

@@ -7,7 +7,7 @@
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import ImageUploader from '../../../../components/ImageUploader.svelte'; // Adjust the path as necessary
-
+  import { Pencil } from 'lucide-svelte';
   let projectId = $page.params.id;
   const databases = new Databases(client);
   const databaseId = 'PriceCalc'; // Your database ID
@@ -27,6 +27,7 @@
             acc[category].push({ subcategory, type, price, unit, taken });
             return acc;
         }, {});
+        console.log(response)
     } catch (error) {
         console.error('Error fetching services:', error);
     }
@@ -184,29 +185,32 @@
   <div class="flex justify-between">
     <div class="w-1/2 border border-gray-300 rounded-md m-4 p-4">
       <h2 class="text-lg font-medium">Klantgegevens</h2>
-      <div>
-        <label>Naam:</label>
-        <span>{client?.name || 'N/A'}</span>
-      </div>
-      <div>
-        <label>Achternaam:</label>
-        <span>{client?.lastname || 'N/A'}</span>
-      </div>
-      <div>
-        <label>Adres:</label>
-        <span>{client?.address || 'N/A'}</span>
-      </div>
-      <div>
-        <label>Huisnummer:</label>
-        <span>{client?.houseNumber || 'N/A'}</span>
-      </div>
-      <div>
-        <label>Postcode:</label>
-        <span>{client?.postalCode || 'N/A'}</span>
-      </div>
-      <div>
-        <label>Stad:</label>
-        <span>{client?.city || 'N/A'}</span>
+      <div class="relative">
+        <a href="/client/edit/{$selectedUser?.$id}"><Pencil class="absolute top-0 right-0 cursor-pointer" /></a>
+        <div>
+          <label>Naam:</label>
+          <span>{$selectedUser?.name || 'N/A'}</span>
+        </div>
+        <div>
+          <label>Achternaam:</label>
+          <span>{$selectedUser?.lastname || 'N/A'}</span>
+        </div>
+        <div>
+          <label>Adres:</label>
+          <span>{$selectedUser?.address || 'N/A'}</span>
+        </div>
+        <div>
+          <label>Huisnummer:</label>
+          <span>{$selectedUser?.houseNumber || 'N/A'}</span>
+        </div>
+        <div>
+          <label>Postcode:</label>
+          <span>{$selectedUser?.postalCode || 'N/A'}</span>
+        </div>
+        <div>
+          <label>Stad:</label>
+          <span>{$selectedUser?.city || 'N/A'}</span>
+        </div>
       </div>
     </div>
     <div class="w-1/2 m-4 ">
