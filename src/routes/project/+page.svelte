@@ -9,6 +9,7 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import * as Table from "$lib/components/ui/table";
+  import { chatwootContact } from '../../stores/userStore';
 
 
   const databases = new Databases(client);
@@ -20,15 +21,23 @@
   let offset = 0;
   const limit = 100;
 
-  async function fetchServices() {
+  async function fetchServices(contact) {
+    
     try {
-      const response = await databases.listDocuments(databaseId, collectionId, [Query.limit(limit), Query.offset(offset), Query.orderDesc("createdAt")]);
-      services = response.documents;
+      if(!!contact.chatwootid){
+      const response = await databases.listDocuments(databaseId, collectionId, [Query.limit(limit), Query.offset(offset), Query.orderDesc("createdAt"), Query.equal('client.chatwootid', contact.chatwootid)]);
+        services = response.documents;
+      } else {
+        const response = await databases.listDocuments(databaseId, collectionId, [Query.limit(limit), Query.offset(offset), Query.orderDesc("createdAt")]);
+        services = response.documents;
+      }
       console.log(response);
     } catch (error) {
       console.error('Error fetching services:', error);
     }
   }
+
+  $: fetchServices(chatwootContact)
 
   onMount(fetchServices);
 
