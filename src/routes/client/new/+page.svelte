@@ -1,7 +1,9 @@
 <script>
     import { Databases, ID } from "appwrite";
     import { client } from "$lib/appwrite";
-
+	import { on } from "svelte/events";
+    import { onMount } from "svelte";
+    import { chatwootContact } from "../../../stores/userStore";
     let postcode = '';
     let houseNumber = '';
     let addressDetails = {};
@@ -36,6 +38,12 @@
                 console.error('Failed to fetch address details');
             }
         }
+
+        onMount(() => {
+            window.parent.postMessage('chatwoot-dashboard-app:fetch-info', '*')
+            console.log('contact',$chatwootContact)
+
+        })
     }
 
 

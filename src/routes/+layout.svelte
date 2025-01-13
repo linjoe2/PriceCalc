@@ -24,6 +24,7 @@
     import { page } from '$app/stores';
     import UserSearch from './userSearch.svelte'
     import { derived } from 'svelte/store';
+    import { chatwootContact } from "../stores/userStore";
 
     $: pathSegments = $page.url.pathname.split('/').filter(Boolean);
     let loggedInUser = {name: '', labels: []};
@@ -91,7 +92,12 @@
         console.log('chatwoot.event', event);
         const eventData = JSON.parse(event.data);
         console.log('chatwoot.eventData', eventData);
-
+        if(eventData.event == "appContext"){
+          $chatwootContact = eventData.data.contact;
+          // check if user exists in database
+//          const user = await database.listDocuments('users', [Query.equal('email', chatwootContact.email)]);
+          console.log('user', $chatwootContact);
+        }
     }
 </script>
   
