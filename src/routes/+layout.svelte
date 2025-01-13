@@ -94,8 +94,7 @@
     }
 </script>
   
-
-<svelte:window on:message={handleMessage} />
+<svelte:window on:event={handleMessage} />
 
 
 <div class="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
