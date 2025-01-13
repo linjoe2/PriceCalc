@@ -41,19 +41,21 @@
 
         onMount(() => {
             window.parent.postMessage('chatwoot-dashboard-app:fetch-info', '*')
-            console.log('contact',$chatwootContact)
-            //if not empty, save to database
-            if(!!$chatwootContact){
-                const names = $chatwootContact.name.split(' ');
-                naam = names[0]; // First name
-                achternaam = names.slice(1).join(' '); // Last name (rest of the names)
-                email = $chatwootContact.email;
-                postcode = $chatwootContact.custom_attributes.postcode;
-                huisnummer = $chatwootContact.custom_attributes.huisnummer;
-                telefoonnummer = $chatwootContact.phone_number || $chatwootContact.custom_attributes.phone;
-            }
+
         })
     }
+
+    function updateContacts(chatwootContact){
+        const names = chatwootContact.name.split(' ');
+        naam = names[0]; // First name
+        achternaam = names.slice(1).join(' '); // Last name (rest of the names)
+        email = chatwootContact.email;
+        postcode = chatwootContact.custom_attributes.postcode;
+        huisnummer = chatwootContact.custom_attributes.huisnummer;
+        telefoonnummer = chatwootContact.phone_number || chatwootContact.custom_attributes.phone;
+    }
+
+    $: updateContacts($chatwootContact)
 
 
 
