@@ -54,7 +54,9 @@
             // check if chatwoot contact exists id database
             const result = await databases.listDocuments('PriceCalc', '67362abc0039525e36b6', [Query.equal('chatwootid', chatwootContact.id)]);
             console.log(result);
-            //else
+            if(result.total > 0){
+                window.location.href = `https://app.jhfbouw.nl/client/edit/${result.documents[0].$id}`;
+            }else{
             const names = chatwootContact.name.split(' ');
             naam = names[0]; // First name
             achternaam = names.slice(1).join(' '); // Last name (rest of the names)
@@ -63,6 +65,7 @@
             houseNumber = chatwootContact.custom_attributes.huisnummer;
             chatwootid = chatwootContact.id;
             telefoonnummer = chatwootContact.phone_number || chatwootContact.custom_attributes.phone;
+            }
         }
     }
 
