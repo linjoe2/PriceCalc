@@ -37,7 +37,7 @@
     }
   }
 
-  $: fetchServices(chatwootContact)
+  $: fetchServices($chatwootContact)
 
   onMount(fetchServices);
 
