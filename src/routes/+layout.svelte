@@ -59,6 +59,7 @@
     
        document.cookie = `appwriteJWT=${jwt.jwt}; path=/; max-age=3600; SameSite=Strict; Secure`;
      }
+     window.parent.postMessage('chatwoot-dashboard-app:fetch-info', '*')
     
      })
 
@@ -94,7 +95,7 @@
     }
 </script>
   
-<svelte:window on:event={handleMessage} />
+<svelte:window on:message={handleMessage} />
 
 
 <div class="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
