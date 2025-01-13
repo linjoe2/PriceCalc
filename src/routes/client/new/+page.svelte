@@ -1,5 +1,5 @@
 <script>
-    import { Databases, ID } from "appwrite";
+    import { Databases, ID, Query } from "appwrite";
     import { client } from "$lib/appwrite";
 	import { on } from "svelte/events";
     import { onMount } from "svelte";
@@ -16,7 +16,11 @@
     let telefoonnummer = '';
     let oppervlakte = '';
     let bouwjaar = '';
+    let chatwootid = '';
+ 
+    const databases = new Databases(client);
 
+ 
     async function fetchAddressDetails(postcode, houseNumber) {
         if (postcode && houseNumber) {
             const response = await fetch('/api/address', {
@@ -45,15 +49,20 @@
         })
     }
 
-    function updateContacts(chatwootContact){
+    async function updateContacts(chatwootContact){
         if(!!chatwootContact){
+            // check if chatwoot contact exists id database
+            const result = await databases.listDocuments('PriceCalc', '67362abc0039525e36b6', [Query.equal('chatwootid', chatwootContact.id)]);
+            console.log(result);
+            //else
             const names = chatwootContact.name.split(' ');
             naam = names[0]; // First name
             achternaam = names.slice(1).join(' '); // Last name (rest of the names)
             email = chatwootContact.email;
             postcode = chatwootContact.custom_attributes.postcode;
             houseNumber = chatwootContact.custom_attributes.huisnummer;
-        telefoonnummer = chatwootContact.phone_number || chatwootContact.custom_attributes.phone;
+            chatwootid = chatwootContact.id;
+            telefoonnummer = chatwootContact.phone_number || chatwootContact.custom_attributes.phone;
         }
     }
 
@@ -63,8 +72,6 @@
 
 
     async function saveToAppwriteDB() {
-        const databases = new Databases(client);
-
 
 
         const user = {
@@ -78,7 +85,8 @@
             oppervlakte: parseInt(oppervlakte),
             bouwjaar: parseInt(bouwjaar),
             email: email,
-            telefoonnummer: parseInt(telefoonnummer)
+            telefoonnummer: parseInt(telefoonnummer),
+            chatwootid: chatwootid
         };
 
         try {
