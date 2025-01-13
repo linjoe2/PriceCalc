@@ -22,7 +22,7 @@
   const limit = 100;
 
   async function fetchServices(contact) {
-    
+    console.log(contact)
     try {
       if(!!contact.id){
       const response = await databases.listDocuments(databaseId, collectionId, [Query.limit(limit), Query.offset(offset), Query.orderDesc("createdAt"), Query.equal('client.chatwootid', contact.id)]);
