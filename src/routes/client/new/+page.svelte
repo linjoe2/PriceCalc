@@ -38,14 +38,7 @@
         }
     }
 
-    //chatwoot recieve client data
- 
-   function handleMessage(event) {
-        console.log('chatwoot.event', event);
-        const eventData = JSON.parse(event.data);
-        console.log('chatwoot.eventData', eventData);
 
-    }
 
 
     async function saveToAppwriteDB() {
@@ -85,9 +78,6 @@
 
     $: fetchAddressDetails(postcode, houseNumber);
 </script>
-
-
-<svelte:window on:message={handleMessage} />
 
 
 <h1>Nieuwe klant</h1>

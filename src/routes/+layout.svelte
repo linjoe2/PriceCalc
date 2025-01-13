@@ -83,8 +83,20 @@
     function isAdmin() {
         return loggedInUser.labels.includes('admin');
     }
+
+    //chatwoot recieve client data
+ 
+   function handleMessage(event) {
+        console.log('chatwoot.event', event);
+        const eventData = JSON.parse(event.data);
+        console.log('chatwoot.eventData', eventData);
+
+    }
 </script>
   
+
+<svelte:window on:message={handleMessage} />
+
 
 <div class="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
   <div class="bg-muted/40 hidden border-r md:block z-30">
