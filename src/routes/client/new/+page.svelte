@@ -38,6 +38,15 @@
         }
     }
 
+    //chatwoot recieve client data
+ 
+   function handleMessage(event) {
+        console.log('chatwoot.event', event);
+        const eventData = JSON.parse(event.data);
+        console.log('chatwoot.eventData', eventData);
+
+    }
+
 
     async function saveToAppwriteDB() {
         const databases = new Databases(client);
@@ -76,6 +85,11 @@
 
     $: fetchAddressDetails(postcode, houseNumber);
 </script>
+
+
+<svelte:window on:message={handleMessage} />
+
+
 <h1>Nieuwe klant</h1>
 <form on:submit|preventDefault={fetchAddressDetails} class="shadow-md rounded px-8 pt-6 pb-8 mb-4">
     <label for="naam" class="block text-sm font-medium text-gray-700">Naam:</label>
