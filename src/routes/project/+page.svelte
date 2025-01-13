@@ -51,18 +51,19 @@
   }
 </script>
 
-<div class="flex flex-col gap-4 max-w-400px">
+<div class="flex flex-col gap-4 table-container">
+  <h1>Projects</h1>
   <div class="flex justify-between items-center">
-    <h1>Projects</h1>
-    <a href="/project/edit/new"><button><Plus class="h-4 w-4" /></button></a>
-  </div>
-
-  <Input
+  
+   <Input
     class="max-w-sm"
     placeholder="Filter projects..."
     type="text"
     bind:value={filterValue}
   />
+     <a href="/project/edit/new"><button><Plus class="h-4 w-4" /></button></a>
+
+</div>
 
   <div class="rounded-md border">
     <Table.Root>
@@ -109,5 +110,8 @@
 <style>
   tr {
     margin-bottom: 20px;
+  }
+  .table-container {
+    max-width: 90vw;
   }
 </style>
