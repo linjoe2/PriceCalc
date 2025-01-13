@@ -46,13 +46,15 @@
     }
 
     function updateContacts(chatwootContact){
-        const names = chatwootContact.name.split(' ');
-        naam = names[0]; // First name
-        achternaam = names.slice(1).join(' '); // Last name (rest of the names)
-        email = chatwootContact.email;
-        postcode = chatwootContact.custom_attributes.postcode;
-        houseNumber = chatwootContact.custom_attributes.huisnummer;
+        if(!!chatwootContact){
+            const names = chatwootContact.name.split(' ');
+            naam = names[0]; // First name
+            achternaam = names.slice(1).join(' '); // Last name (rest of the names)
+            email = chatwootContact.email;
+            postcode = chatwootContact.custom_attributes.postcode;
+            houseNumber = chatwootContact.custom_attributes.huisnummer;
         telefoonnummer = chatwootContact.phone_number || chatwootContact.custom_attributes.phone;
+        }
     }
 
     $: updateContacts($chatwootContact)
