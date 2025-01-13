@@ -24,7 +24,7 @@
   async function fetchServices(contact) {
     
     try {
-      if(!!contact.chatwootid){
+      if(!!contact.id){
       const response = await databases.listDocuments(databaseId, collectionId, [Query.limit(limit), Query.offset(offset), Query.orderDesc("createdAt"), Query.equal('client.chatwootid', contact.id)]);
         services = response.documents;
       } else {
