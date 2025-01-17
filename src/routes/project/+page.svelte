@@ -24,13 +24,9 @@
   async function fetchServices(contact) {
     console.log(contact)
     try {
-      if(!!contact.id){
-      const response = await databases.listDocuments(databaseId, collectionId, [Query.limit(limit), Query.offset(offset), Query.orderDesc("createdAt"), Query.equal('client.chatwootid', contact.id)]);
-        services = response.documents;
-      } else {
-        const response = await databases.listDocuments(databaseId, collectionId, [Query.limit(limit), Query.offset(offset), Query.orderDesc("createdAt")]);
-        services = response.documents;
-      }
+      const response = await databases.listDocuments(databaseId, collectionId, [Query.limit(limit), Query.offset(offset), Query.orderDesc("createdAt")]);
+      services = response.documents;
+      
       console.log(response);
     } catch (error) {
       console.error('Error fetching services:', error);

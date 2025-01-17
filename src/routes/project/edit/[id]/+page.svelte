@@ -103,7 +103,7 @@
       return sum + (price * item.quantity);
     }, 0);
 
-  
+    $: console.log(selectedItems);
     async function saveProject() {
     console.log(selectedItems);
     try {

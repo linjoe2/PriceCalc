@@ -89,7 +89,8 @@
             bouwjaar: parseInt(bouwjaar),
             email: email,
             telefoonnummer: parseInt(telefoonnummer),
-            chatwootid: chatwootid
+            chatwootid: chatwootid,
+            search: `${naam} ${achternaam} ${bedrijfsnaam} ${postcode} ${houseNumber} ${telefoonnummer}`
         };
 
         try {

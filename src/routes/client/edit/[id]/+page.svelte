@@ -19,8 +19,13 @@
         email: '',
         telefoonnummer: 0,
         oppervlakte: 0,
-        bouwjaar: 0
+        bouwjaar: 0,
+        chatwootid: '',
+        search: ''
+        
     };
+
+    $: clientData.search = `${clientData.name} ${clientData.lastname} ${clientData.businessname} ${clientData.postcode} ${clientData.huisnummer} ${clientData.telefoonnummer}`
 
     onMount(async () => {
         clientId = $page.params.id;
@@ -45,15 +50,7 @@
         }
         console.log(clientData);
 
-        //chatwoot recieve client data
-        window.addEventListener("message", function (event) {
-            // if (!isJSONValid(event.data)) {
-            //     return;
-            // }
 
-            const eventData = JSON.parse(event.data);
-            console.log(eventData);
-        });
     });
 
     async function updateClient() {

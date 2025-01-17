@@ -41,6 +41,7 @@
 
     
     onMount(async ()=>{
+      if($page.url.pathname.includes('/project/view/')) return;
        try{
         loggedInUser = await account.get();
         console.log('loggedInUser', loggedInUser)
@@ -103,8 +104,8 @@
   
 <svelte:window on:message={handleMessage} />
 
-
-<div class="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+{#if !$page.url.pathname.includes('/project/view/')}
+ <div class="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
   <div class="bg-muted/40 hidden border-r md:block z-30">
     <div class="flex h-full max-h-screen flex-col gap-2">
       <div class="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
@@ -266,7 +267,11 @@
       </DropdownMenu.Root>
     </header>
     <main class="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-      <slot />
-    </main>
+       <slot />
+   </main>
   </div>
 </div>
+      {:else}
+        <slot />
+      {/if}
+ 

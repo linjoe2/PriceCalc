@@ -2,7 +2,7 @@
     import { onMount } from 'svelte';
     import NewUser from './client/new/+page.svelte';
     import { client } from "$lib/appwrite";
-    import { Databases } from "appwrite";
+    import { Databases, Query } from "appwrite";
     import { selectedUser } from '../stores/userStore';
     import ClientDialog from './client/ClientDialog.svelte'; // Adjust the path as necessary
 
@@ -17,6 +17,7 @@
     };
     let selectedClient = null;
     let isDialogOpen = false;
+    let searchTimeout;
 
     // Fetch users from Appwrite
     onMount(async () => {
@@ -37,14 +38,31 @@
 
     $: {
         if (searchTerm) {
-            filteredUsers = users.filter(user => 
-                (user.name.toLowerCase() + ' ' + user.lastname.toLowerCase()).includes(searchTerm.toLowerCase()) ||
-                (user.adress.toLowerCase() + ' ' + user.huisnummer.toLowerCase() + ' ' + user.postcode.toLowerCase() + ' ' + user.woonplaats.toLowerCase()).includes(searchTerm.toLowerCase())
-            );
+            console.log(searchTerm);
+            clearTimeout(searchTimeout); // Clear previous timeout
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const databases = new Databases(client);
+                    const response = await databases.listDocuments(
+                        'PriceCalc', // databaseId
+                        '67362abc0039525e36b6', // collectionId
+                        [ // queries (optional)
+                            Query.search("search", searchTerm)
+                        ]
+                    );
+
+                    users = response.documents;
+                    filteredUsers = users; // Directly assign the fetched users
+                } catch (error) {
+                    console.error('Error fetching users:', error);
+                }
+            }, 150); // Delay of 150ms
         } else {
             filteredUsers = [];
         }
     }
+
+    
 
     function handleAddUser() {
         // Add validation here

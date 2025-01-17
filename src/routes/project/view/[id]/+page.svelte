@@ -30,6 +30,10 @@
     return sum + (price * item.quantity);
   }, 0) : 0;
 
+  $: totalPriceWithTax = projectData && projectData.client.businessname 
+    ? totalPrice 
+    : totalPrice * 1.21; // Add 21% tax if no business name
+
   async function updateProjectStatus(newStatus: string) {
     const databases = new Databases(client);
     const databaseId = 'PriceCalc'; // Your database ID
@@ -85,7 +89,14 @@
       {/each}
     </div>
     <div class="total">
-      <h3 class="font-bold">Total: €{totalPrice.toFixed(2)}</h3>
+      {#if projectData.client.businessname}
+        <h3>BTW Verlegd</h3>
+      {:else}
+        <h3 class="font-bold">Totaal (excl. BTW): €{totalPrice.toFixed(2)}</h3>
+      {/if}
+      <h3 class="font-bold">Totaal: €{totalPriceWithTax.toFixed(2)}</h3>
+
+      <p>Deze offerte is geldig voor 30 dagen</p>
     </div>
 
     <br><br>
