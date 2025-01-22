@@ -15,7 +15,12 @@
   const projectsCollectionId = '67362a9400133ceb48ac'; // Your collection ID
   let services = {};
   let uploadedImages: any[] = []; // Declare uploadedImages as an array
+  let projects: any[] = [];
+  let newProjectName: string = ''; // Variable to hold the new project name
+  let totalPrice: number = 0;
+  let totalItems: number = 0;
 
+  $: console.log(projects)
   onMount(async () => {
     try {
         const response = await databases.listDocuments(databaseId, itemsCollectionId, [Query.limit(100),Query.offset(0)]);
@@ -38,8 +43,9 @@
       const databases = new Databases(client);
       const result = await databases.getDocument(databaseId, projectsCollectionId, projectId);
       result.items = JSON.parse(result.items);
-      selectedItems = result.items;
+      // selectedItems = result.items;
       $selectedUser = result.client;
+      projects = JSON.parse(result.projects);
 
       // Push uploaded images to the array
       if (result.uploadedImages) {
@@ -69,8 +75,9 @@
     // Add these variables for calculations
     let calculations: Record<string, { length?: number; width?: number }> = {};
   
-    function toggleItemSelection(category: string, item: any) {
-      const index = selectedItems.findIndex(
+    function toggleItemSelection(category: string, item: any, project: any) {
+      console.log(project);
+      const index = project.items.findIndex(
         i => i.category === category && i.subcategory === item.subcategory && i.type === item.type
       );
       
@@ -87,31 +94,44 @@
       }
       
       if (index === -1) {
-        selectedItems = [...selectedItems, {
+        const newItem = {
           category,
           ...item,
           quantity: quantity,
           tasks: []
-        }];
+        };
+        // selectedItems = [...selectedItems, newItem];
+        project.items = [...(project.items || []), newItem];
       } else {
-        selectedItems = selectedItems.filter((_, i) => i !== index);
+        // selectedItems = selectedItems.filter((_, i) => i !== index);
+        project.items = project.items.filter((_, i) => i !== index);
       }
+      projects = projects
     }
   
-    $: totalPrice = selectedItems.reduce((sum, item) => {
-      const price = typeof item.price === 'string' ? parseFloat(item.price) : item.price;
-      return sum + (price * item.quantity);
+    $: totalPrice = projects.reduce((projectSum, project) => {
+      return projectSum + project.items.reduce((sum, item) => {
+        const price = typeof item.price === 'string' ? parseFloat(item.price) : item.price;
+        return sum + (price * item.quantity);
+      }, 0);
     }, 0);
 
-    $: console.log(selectedItems);
+    $: totalItems = projects.reduce((projectItemCount, project) => {
+      return projectItemCount + project.items.reduce((count, item) => {
+        return count + item.quantity;
+      }, 0);
+    }, 0);
+
+    $: console.log(projects);
+
     async function saveProject() {
-    console.log(selectedItems);
     try {
         const projectData = {
             items: JSON.stringify(selectedItems.map(item => ({
               ...item,
               tasks: item.tasks.map(task => ({ id: task.id, completed: task.completed }))
             }))),
+            projects: JSON.stringify(projects),
             totalPrice: totalPrice,
             client: $selectedUser.$id,
             createdAt: new Date().toISOString(),
@@ -168,17 +188,27 @@
     }));
   }
 
-  function toggleTaskCompletion(task: Task) {
-    task.completed = !task.completed;
-  }
+  // function toggleTaskCompletion(task: Task) {
+  //   task.completed = !task.completed;
+  // }
 
-  function handlePhotoUpload(event, task: Task) {
-    const file = event.target.files[0];
-    if (file) {
-      task.photo = URL.createObjectURL(file);
+  // function handlePhotoUpload(event, task: Task) {
+  //   const file = event.target.files[0];
+  //   if (file) {
+  //     task.photo = URL.createObjectURL(file);
+  //   }
+  // }
+
+  function addProject() {
+    if (newProjectName.trim()) {
+      projects = [...projects, {name: newProjectName, items: []}]; // Add the new project name to the projects array
+      newProjectName = ''; // Clear the input field after adding
     }
   }
 
+  function removeProject(projectName: string) {
+    projects = projects.filter(project => project.name !== projectName);
+  }
 
   </script>
   
@@ -197,19 +227,31 @@
         </div>
         <div>
           <label>Adres:</label>
-          <span>{$selectedUser?.address || 'N/A'}</span>
+          <span>{$selectedUser?.adress || 'N/A'}</span>
         </div>
         <div>
           <label>Huisnummer:</label>
-          <span>{$selectedUser?.houseNumber || 'N/A'}</span>
+          <span>{$selectedUser?.huisnummer || 'N/A'}</span>
         </div>
         <div>
           <label>Postcode:</label>
-          <span>{$selectedUser?.postalCode || 'N/A'}</span>
+          <span>{$selectedUser?.postcode || 'N/A'}</span>
         </div>
         <div>
           <label>Stad:</label>
-          <span>{$selectedUser?.city || 'N/A'}</span>
+          <span>{$selectedUser?.woonplaats || 'N/A'}</span>
+        </div>
+        <div>
+          <label>Bedrijfsnaam:</label>
+          <span>{$selectedUser?.businessname || 'N/A'}</span>
+        </div>
+        <div>
+          <label>Email:</label>
+          <span>{$selectedUser?.email || 'N/A'}</span>
+        </div>
+        <div>
+          <label>Telefoonnummer:</label>
+          <span>{$selectedUser?.telefoonnummer || 'N/A'}</span>
         </div>
       </div>
     </div>
@@ -220,8 +262,16 @@
 
   <div class="w-full max-w-4xl mx-auto p-4 space-y-2 flex flex-col gap-4"> 
     <!-- <UserSearch /> -->
+     {#each projects as project}
+      <div class="border rounded-lg p-2 bg-gray-100">
+        <div class="flex justify-between items-center p-2">
+          <h1 class="text-lg font-medium">{project.name}</h1>
+          <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" on:click={() => removeProject(project.name)}>
+            Verwijder
+          </button>
+        </div>
     {#each Object.entries(services) as [category, items]}
-      <div class="border rounded-lg">
+      <div class="border rounded-lg bg-white">
         <button
           class="w-full p-4 flex items-center justify-between hover:bg-gray-50"
           on:click={() => items.isOpen = !items.isOpen}
@@ -240,12 +290,12 @@
           </svg>
         </button>
         
-        {#if items.isOpen || items.some(item => selectedItems.some(selected => selected.category === category && selected.subcategory === item.subcategory && selected.type === item.type))}
+        {#if items.isOpen || items.some(item => project.items.some(selected => selected.category === category && selected.subcategory === item.subcategory && selected.type === item.type))}
           <div class="p-4 pt-0 space-y-4">
             {#each items as item}
               <div 
-                class="flex justify-between p-2 border rounded-md cursor-pointer hover:bg-gray-50 {selectedItems.some(i => i.category === category && i.subcategory === item.subcategory && i.type === item.type) ? 'bg-blue-50 border-blue-200' : ''}"
-                on:click={() => item.price !== 'custom' && toggleItemSelection(category, item)}
+                class="flex justify-between p-2 border rounded-md cursor-pointer hover:bg-gray-50 {project.items.some(i => i.category === category && i.subcategory === item.subcategory && i.type === item.type) ? 'bg-blue-50 border-blue-200' : ''}"
+                on:click={() => item.price !== 'custom' && toggleItemSelection(category, item, project)}
               >
                 <div>
                   <span class="font-medium">{item.subcategory}</span>
@@ -255,11 +305,24 @@
                   {#if item.price === "custom"}
                     <input 
                       type="number"
-                      placeholder="Vul prijs in"
+                      bind:value={item.price}
                       class="w-32 p-1 border rounded-md text-right"
+                      on:blur={() => item.isEditing = false}
                     />
                   {:else}
-                    €{item.price}{#if item.unit !== "custom"}/{item.unit}{/if}
+                    {#if item.isEditing}
+                      <input 
+                        type="number"
+                        bind:value={item.price}
+                        class="w-32 p-1 border rounded-md text-right"
+                        on:blur={() => item.isEditing = false}
+                        on:keydown={(event) => event.key === 'Enter' && (item.isEditing = false)}
+                      />
+                    {:else}
+                      <div on:click={() => item.isEditing = true}>
+                        €{item.price}{#if item.unit !== "custom"}/{item.unit}{/if}
+                      </div>
+                    {/if}
                   {/if}
                 </span>
               </div>
@@ -281,7 +344,7 @@
                           calculations[category] = calculations[category] || {};
                           calculations[category].length = parseFloat(event.target.value);
                           // Update quantities for selected items in this category
-                          selectedItems = selectedItems.map(item => {
+                          project.items = project.items.map(item => {
                             if (item.category === category) {
                               return {
                                 ...item,
@@ -303,7 +366,7 @@
                           calculations[category] = calculations[category] || {};
                           calculations[category].width = parseFloat(event.target.value);
                           // Update quantities for selected items in this category
-                          selectedItems = selectedItems.map(item => {
+                          project.items = project.items.map(item => {
                             if (item.category === category) {
                               return {
                                 ...item,
@@ -327,7 +390,7 @@
                         calculations[category] = calculations[category] || {};
                         calculations[category].length = parseFloat(event.target.value);
                         // Update quantities for selected items in this category
-                        selectedItems = selectedItems.map(item => {
+                        project.items = project.items.map(item => {
                           if (item.category === category) {
                             return {
                               ...item,
@@ -355,7 +418,7 @@
                       calculations[category] = calculations[category] || {};
                       calculations[category].length = parseFloat(event.target.value);
                       // Update quantities for selected items in this category
-                      selectedItems = selectedItems.map(item => {
+                      project.items = project.items.map(item => {
                         if (item.category === category) {
                           return {
                             ...item,
@@ -374,20 +437,40 @@
         {/if}
       </div>
     {/each}
+    </div>
+
+    
+    
+    {/each}
   
-    {#if selectedItems.length > 0}
+    <input 
+      type="text" 
+      bind:value={newProjectName} 
+      placeholder="Vul daknaam in" 
+      class="mt-2 p-2 border rounded-md"
+      on:keypress={(event) => event.key === 'Enter' && addProject()}
+    />
+   
+    <button class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" on:click={addProject}>
+      Voeg dak toe
+    </button>
+
+    {#if projects.length > 0 || uploadedImages.length > 0}
       <div class="fixed bottom-4 right-4 bg-white shadow-lg rounded-lg p-4 border">
         <div on:click={() => showInvoice = !showInvoice}>
           <div class="text-lg font-medium">Totaal: €{totalPrice.toFixed(2)}</div>
-          <div class="text-sm text-gray-600">{selectedItems.length} item{selectedItems.length === 1 ? '' : 's'} geselecteerd</div>
+          <div class="text-sm text-gray-600">{totalItems} item{totalItems === 1 ? '' : 's'} geselecteerd</div>
         </div>
         {#if showInvoice}
           <div class="mt-4">
-            {#each selectedItems as item, index}
-              <div class="flex justify-between items-center mt-2">
-                <div>{item.subcategory} - {item.type}</div>
+            {#each projects as project}
+              <h2 class="text-lg font-medium">{project.name}</h2>
+              {#each project.items as item, index}
+                <div class="flex justify-between items-center mt-2">
+                  <div>{item.subcategory} - {item.type}</div>
                 <div>{item.quantity} x €{item.price}</div>
               </div>
+            {/each}
             {/each}
             <button class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" on:click={saveProject}>
               Opslaan
@@ -408,6 +491,6 @@
   
 {#if !$selectedUser}
   <div class="absolute inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-20">
-    <div class="text-lg font-medium text-white">Please select a user</div>
+    <div class="text-lg font-medium text-white">Selecteer eerst een klant</div>
   </div>
 {/if}

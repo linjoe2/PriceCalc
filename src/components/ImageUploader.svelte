@@ -18,19 +18,26 @@
 
 
   onMount(async () => {
-
+    console.log("test",uploadedImages)
     // Fetch preview URLs for each uploaded image from Appwrite
-    for (let image of uploadedImages) {
+
+  });
+
+
+  function getPreviewUrl(array) {
+    for (let image of array) {
+      console.log(image)
         try {
           const previewUrl = storage.getFilePreview('67621eca0022af8c411f', image.id);
           image.preview = previewUrl; // Set the preview URL
         } catch (error) {
           console.error('Error fetching image preview:', error);
         }
-      uploadedImages = uploadedImages
+      array = array
     }
-  });
+  }
 
+  $: getPreviewUrl(uploadedImages)
 
   function handleFileUpload(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -117,10 +124,10 @@
         <div class="relative group">
           {#if image.category === category}
           <img 
-            src={image.preview} 
+            src={image.preview || image.url} 
             alt="Preview" 
             class="w-16 h-16 object-cover rounded-lg cursor-pointer"
-            on:click={() => openModal(image.preview)}
+            on:click={() => openModal(image.preview || image.url)}
           />
           <button
             class="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"

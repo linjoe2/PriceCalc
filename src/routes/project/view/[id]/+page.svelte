@@ -9,6 +9,9 @@
   let projectData = null;
   let uploadedImages: string[] = [];
 
+
+  $: console.log(projectData)
+
   onMount(async () => {
     const databases = new Databases(client);
     const databaseId = 'PriceCalc'; // Your database ID
@@ -17,6 +20,7 @@
     try {
       projectData = await databases.getDocument(databaseId, projectsCollectionId, projectId);
       projectData.items = JSON.parse(projectData.items);
+      projectData.projects = JSON.parse(projectData.projects);
       uploadedImages = projectData.uploadedImages;
       console.log(uploadedImages);
       console.log(projectData);
@@ -46,6 +50,15 @@
       console.error('Error updating project status:', error);
     }
   }
+
+      function showPDF() {
+        console.log('PDF is shown');
+
+      }
+
+      function sendEmail() {
+        console.log('Email is sent');
+      }
 </script>
 
   {#if projectData}
@@ -61,6 +74,7 @@
       </select>
      
     </div>
+  <button class="show-pdf-button bg-red-500 text-white px-4 py-2 rounded" on:click={showPDF}>Toon PDF</button>
   <button class="send-email-button bg-green-500 text-white px-4 py-2 rounded">Verstuur Email</button>
   <a href="/project/edit/{projectId}"><button class="bg-blue-500 text-white px-4 py-2 rounded">Bewerk</button></a>
 </div>
@@ -81,11 +95,14 @@
     </div>
     <br><br>
     <div class="items">
-      {#each projectData.items as item}
+      {#each projectData.projects as project}
+      <h2>{project.name}</h2>
+      {#each project.items as item}
         <div class="item">
           <span>{item.subcategory} - {item.type}</span>
           <span>{item.quantity} x €{item.price}</span>
         </div>
+      {/each}
       {/each}
     </div>
     <div class="total">

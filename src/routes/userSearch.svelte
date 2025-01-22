@@ -36,9 +36,8 @@
         }
     });
 
-    $: {
+    function searchUsers(searchTerm: string) {    
         if (searchTerm) {
-            console.log(searchTerm);
             clearTimeout(searchTimeout); // Clear previous timeout
             searchTimeout = setTimeout(async () => {
                 try {
@@ -61,8 +60,6 @@
             filteredUsers = [];
         }
     }
-
-    
 
     function handleAddUser() {
         // Add validation here
@@ -118,7 +115,7 @@
         type="text"
         placeholder="Zoek gebruikers..."
         value={isSearching ? searchTerm : (`${$selectedUser?.name} ${$selectedUser?.lastname}` || '')}
-        on:input={(e) => searchTerm = e.target.value}
+        on:input={(e) => searchUsers(e.target.value)}
         on:focus={handleInputFocus}
         on:blur={handleInputBlur}
         class="search-input"
