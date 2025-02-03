@@ -144,11 +144,11 @@
           >
             <ShoppingCart class="h-4 w-4" />
             Projecten
-            <Badge
+            <!-- <Badge
               class="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
             >
               6
-            </Badge>
+            </Badge> -->
           </a>
           <a
             href="/item"
@@ -198,7 +198,7 @@
             <a
               href="/client"
               on:click={closeSheet}
-              class="text-muted-foreground hover:text-foreground mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2"
+              class={`text-muted-foreground hover:text-primary flex items-center gap-4 rounded-xl px-3 py-2 ${activeRoute === 'client' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
             >
               <Users class="h-5 w-5" />
               Klanten
@@ -206,20 +206,20 @@
             <a
               href="/project"
               on:click={closeSheet}
-              class="bg-muted text-foreground hover:text-foreground mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2"
+              class={`text-muted-foreground hover:text-primary flex items-center gap-4 rounded-xl px-3 py-2 ${activeRoute === 'project' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
             >
               <ShoppingCart class="h-5 w-5" />
               Projecten
-              <Badge
+              <!-- <Badge
                 class="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
               >
                 6
-              </Badge>
+              </Badge> -->
             </a>
             <a
               href="/item"
               on:click={closeSheet}
-              class="text-muted-foreground hover:text-foreground mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2"
+              class={`text-muted-foreground hover:text-primary flex items-center gap-4 rounded-xl px-3 py-2 ${activeRoute === 'item' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
             >
               <Package class="h-5 w-5" />
               Diensten
@@ -227,7 +227,7 @@
             <a
               href="/agenda"
               on:click={closeSheet}
-              class="text-muted-foreground hover:text-foreground mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2"
+              class={`text-muted-foreground hover:text-primary flex items-center gap-4 rounded-xl px-3 py-2 ${activeRoute === 'agenda' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
             >
               <Calendar class="h-5 w-5" />
               Agenda
@@ -235,7 +235,7 @@
             <a
               href="/work"
               on:click={closeSheet}
-              class="text-muted-foreground hover:text-foreground mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2"
+              class={`text-muted-foreground hover:text-primary flex items-center gap-4 rounded-xl px-3 py-2 ${activeRoute === 'work' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
             >
               <ChartLine class="h-5 w-5" />
               Werkbonnen

@@ -256,8 +256,7 @@
       </div>
     </div>
     <div class="w-1/2 m-4 ">
-      <ImageUploader category="vooraf" bind:uploadedImages={uploadedImages} on:upload={event => console.log('File uploaded:', event.detail.file)} />
-    </div>
+          </div>
   </div>
 
   <div class="w-full max-w-4xl mx-auto p-4 space-y-2 flex flex-col gap-4"> 
@@ -270,7 +269,8 @@
             Verwijder
           </button>
         </div>
-    {#each Object.entries(services) as [category, items]}
+        <ImageUploader category={project.name} bind:uploadedImages={uploadedImages} on:upload={event => console.log('File uploaded:', event.detail.file)} />
+        {#each Object.entries(services) as [category, items]}
       <div class="border rounded-lg bg-white">
         <button
           class="w-full p-4 flex items-center justify-between hover:bg-gray-50"
