@@ -89,7 +89,7 @@
             bouwjaar: parseInt(bouwjaar),
             email: email,
             telefoonnummer: parseInt(telefoonnummer),
-            chatwootid: chatwootid,
+            chatwootid: chatwootid || null,
             search: `${naam} ${achternaam} ${bedrijfsnaam} ${postcode} ${houseNumber} ${telefoonnummer}`
         };
 
@@ -115,7 +115,7 @@
 
 <h1>Nieuwe klant</h1>
 <form on:submit|preventDefault={fetchAddressDetails} class="shadow-md rounded px-8 pt-6 pb-8 mb-4">
-    <label for="naam" class="block text-sm font-medium text-gray-700">Naam:</label>
+    <label for="naam" class="block text-sm font-medium text-gray-700">Naam*:</label>
     <input type="text" id="naam" bind:value={naam} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
     
     <label for="achternaam" class="block text-sm font-medium text-gray-700">Achternaam:</label>
@@ -124,10 +124,10 @@
     <label for="bedrijfsnaam" class="block text-sm font-medium text-gray-700">Bedrijfsnaam:</label>
     <input type="text" id="bedrijfsnaam" bind:value={bedrijfsnaam} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
     
-    <label for="postcode" class="block text-sm font-medium text-gray-700">Postcode:</label>
+    <label for="postcode" class="block text-sm font-medium text-gray-700">Postcode*:</label>
     <input type="text" id="postcode" bind:value={postcode} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
     
-    <label for="huisnummer" class="block text-sm font-medium text-gray-700">Huisnummer:</label>
+    <label for="huisnummer" class="block text-sm font-medium text-gray-700">Huisnummer*:</label>
     <input type="text" id="huisnummer" bind:value={houseNumber} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
     
     <label for="adres" class="block text-sm font-medium text-gray-700">Straat:</label>

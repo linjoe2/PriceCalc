@@ -6,13 +6,13 @@
     import * as Table from "$lib/components/ui/table/index.js";
     import { Button } from "$lib/components/ui/button/index.js";
     import { Input } from "$lib/components/ui/input/index.js";
-    import ClientDialog from './ClientDialog.svelte';
+
 
     const databases = new Databases(client);
     let clients = [];
     let filterValue = '';
     let isDialogOpen = false;
-    let selectedClient = null;
+    // let selectedClient = null;
     let offset = 0;
     const limit = 10; // Set the number of items per page
 
@@ -26,7 +26,7 @@
     }
 
     async function fetchClients() {
-        const searchQuery = filterValue ? [Query.search('index', filterValue)] : [];
+        const searchQuery = filterValue ? [Query.search('search', filterValue)] : [];
         const result = await databases.listDocuments(
             'PriceCalc',
             '67362abc0039525e36b6',
@@ -47,7 +47,7 @@
         }
     }
 
-    // $: fetchClients(filterValue);
+    $: fetchClients(filterValue);
 
     onMount(fetchClients);
 </script>
@@ -78,7 +78,7 @@
             </Table.Header>
             <Table.Body>
                 {#each clients as client (client.$id)}
-                    <Table.Row on:click={() => openDialog(client)}>
+                    <Table.Row on:click={() => window.location.href = `/client/view/${client.$id}`}>
                         <Table.Cell>{client.name}</Table.Cell>
                         <Table.Cell>{client.lastname}</Table.Cell>
                         <Table.Cell>{client.adress}</Table.Cell>
@@ -97,11 +97,11 @@
     <Button on:click={nextPage}>Volgende</Button>
 </div>
 
-<ClientDialog
+<!-- <ClientDialog
     bind:isOpen={isDialogOpen}
     bind:selectedClient={selectedClient}
     on:close={closeDialog}
-/>
+/> -->
 
 <style>
     .table-container {

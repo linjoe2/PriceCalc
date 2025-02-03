@@ -4,7 +4,7 @@
     import { client } from "$lib/appwrite";
     import { Databases, Query } from "appwrite";
     import { selectedUser } from '../stores/userStore';
-    import ClientDialog from './client/ClientDialog.svelte'; // Adjust the path as necessary
+    // import ClientDialog from './client/ClientDialog.svelte'; // Adjust the path as necessary
 
     let searchTerm = '';
     let users = [];
@@ -126,7 +126,7 @@
             {#each filteredUsers as user}
                 <li 
                     class="dropdown-item"
-                    on:click={() => handleSelectUser(user)}
+                    on:click={() => window.location.href = `/client/view/${user.$id}`}
                 >
                     <span>{user.name} {user.lastname}</span>
                     <span>{user.adress} {user.huisnummer}, {user.postcode} {user.woonplaats}</span>
@@ -151,10 +151,6 @@
     </div>
 {/if}
 
-{#if isDialogOpen}
-    <ClientDialog selectedClient={$selectedUser} on:close={handleDialogClose} />
-     <!-- {$selectedUser} -->
-{/if}
 
 <style>
     .search-container {
