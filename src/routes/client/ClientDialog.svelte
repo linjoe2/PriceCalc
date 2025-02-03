@@ -5,7 +5,9 @@
     import Eye from "lucide-svelte/icons/eye";
     import { onMount } from 'svelte';
     import { client } from '$lib/appwrite';
+    import { selectedUser } from '../../stores/userStore';
     import { Databases, Query } from 'appwrite';
+    import { goto } from '$app/navigation';
     let clientData = [];
     export let clientId;
      // Fetch client data from Appwrite
@@ -24,6 +26,12 @@
             console.error('Error fetching client data:', error);
         }
     });
+
+    function startNewProject() {
+        $selectedUser = clientData;
+        goto('/project/edit/new');
+        
+    }
 </script>
 
 <div class="container mx-auto p-4">
@@ -67,7 +75,7 @@
         </div>
 
         <div class="flex flex-col gap-4 mt-6">
-            <a href="/project/edit/new" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-center">Start nieuw project</a>
+            <a on:click={() => startNewProject()} class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-center">Start nieuw project</a>
             <a href="/agenda" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-center">Agenda inplannen</a>
             <a href={`/client/edit/${clientData.$id}`} class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded text-center">Klant bewerken</a>
         </div>

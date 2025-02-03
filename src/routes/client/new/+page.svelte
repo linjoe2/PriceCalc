@@ -8,15 +8,15 @@
     let houseNumber = '';
     let addressDetails = {};
     let naam = '';
-    let achternaam = '';
-    let bedrijfsnaam = '';
-    let straat = '';
-    let woonplaats = '';
-    let email = '';
-    let telefoonnummer = '';
-    let oppervlakte = '';
-    let bouwjaar = '';
-    let chatwootid = '';
+    let achternaam;
+    let bedrijfsnaam;
+    let straat;
+    let woonplaats;
+    let email;
+    let telefoonnummer;
+    let oppervlakte;
+    let bouwjaar;
+    let chatwootid;
  
     const databases = new Databases(client);
 
@@ -102,7 +102,8 @@
                 user
             );
             console.log(result);
-            alert('Gebruiker succesvol toegevoegd aan de database.');
+            // alert('Gebruiker succesvol toegevoegd aan de database.');
+            window.location.href = `https://app.jhfbouw.nl/client/view/${result.$id}`;
         } catch (error) {
             console.error(error);
             alert('Er ging iets mis bij het toevoegen van de gebruiker aan de database.');

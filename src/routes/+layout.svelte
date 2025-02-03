@@ -177,7 +177,7 @@
   </div>
   <div class="flex flex-col">
     <header class="bg-muted/40 flex h-14 items-center gap-4 border-b px-4 lg:h-[60px] lg:px-6 z-30">
-      <Sheet.Root>
+      <Sheet.Root bind:open={$sheetOpen}>
         <Sheet.Trigger asChild let:builder>
           <Button
             variant="outline"
@@ -197,6 +197,7 @@
             </a>
             <a
               href="/client"
+              on:click={closeSheet}
               class="text-muted-foreground hover:text-foreground mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2"
             >
               <Users class="h-5 w-5" />
@@ -204,6 +205,7 @@
             </a>
             <a
               href="/project"
+              on:click={closeSheet}
               class="bg-muted text-foreground hover:text-foreground mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2"
             >
               <ShoppingCart class="h-5 w-5" />
@@ -216,6 +218,7 @@
             </a>
             <a
               href="/item"
+              on:click={closeSheet}
               class="text-muted-foreground hover:text-foreground mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2"
             >
               <Package class="h-5 w-5" />
@@ -223,6 +226,7 @@
             </a>
             <a
               href="/agenda"
+              on:click={closeSheet}
               class="text-muted-foreground hover:text-foreground mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2"
             >
               <Calendar class="h-5 w-5" />
@@ -230,6 +234,7 @@
             </a>
             <a
               href="/work"
+              on:click={closeSheet}
               class="text-muted-foreground hover:text-foreground mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2"
             >
               <ChartLine class="h-5 w-5" />
