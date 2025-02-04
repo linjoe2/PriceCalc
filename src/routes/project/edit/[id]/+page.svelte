@@ -180,7 +180,7 @@
 
         console.log('pdf', pdf);
 
-        // goto('/project/view/' + response.$id);
+        goto('/project/view/' + response.$id);
     } catch (error) {
         console.error('Error saving project:', error);
     }

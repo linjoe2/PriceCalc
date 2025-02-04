@@ -10,6 +10,9 @@ const __dirname = path.dirname(__filename);
 
 const helvetica = path.join(__dirname, 'fonts/Helvetica.ttf');
 const helveticaBold = path.join(__dirname, 'fonts/Helvetica-Bold.ttf');
+console.log(__dirname);
+console.log(helvetica);
+console.log(helveticaBold);
 
 export async function POST({ request }) {
 
@@ -26,7 +29,8 @@ export async function POST({ request }) {
         // Create a new PDF document
         const doc = new PDFDocument({
             size: 'A4',
-            margin: 50
+            margin: 50,
+            font: helvetica
         });
         const chunks: Buffer[] = [];
 
