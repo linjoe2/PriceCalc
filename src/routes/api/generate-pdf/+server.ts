@@ -8,8 +8,9 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const helvetica = path.join(__dirname, '../../../../static/fonts/Helvetica.ttf');
-const helveticaBold = path.join(__dirname, '../../../../static/fonts/Helvetica-Bold.ttf');
+const helvetica = path.join(__dirname, process.env.NODE_ENV === 'production' ? '../../../static/fonts/Helvetica.ttf' : '../../../../static/fonts/Helvetica.ttf');
+const helveticaBold = path.join(__dirname, process.env.NODE_ENV === 'production' ? '../../../static/fonts/Helvetica-Bold.ttf' : '../../../../static/fonts/Helvetica-Bold.ttf');
+
 console.log(__dirname);
 console.log(helvetica);
 console.log(helveticaBold);
