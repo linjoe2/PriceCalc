@@ -3,8 +3,15 @@ import PDFDocument from 'pdfkit';
 import { Storage, ID, Client } from 'node-appwrite';
 import { APPWRITE_API_KEY } from '$env/static/private';
 
-export async function POST({ request }) {
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
+const helvetica = path.join(__dirname, 'fonts/Helvetica.ttf');
+const helveticaBold = path.join(__dirname, 'fonts/Helvetica-Bold.ttf');
+
+export async function POST({ request }) {
 
     const client = new Client();
     client.setEndpoint('https://write.toekomst.org/v1');
@@ -43,7 +50,7 @@ export async function POST({ request }) {
         // }
 
         // Add styled content to PDF
-        doc.font('Helvetica-Bold')
+        doc.font(helveticaBold)
            .fontSize(32)
            .text('Projectofferte', { align: 'center' })
            .moveDown(0.5);
@@ -64,7 +71,7 @@ export async function POST({ request }) {
            .moveDown(0.5);
 
         // Add project details with styling
-        doc.font('Helvetica')
+        doc.font(helvetica)
            .fontSize(14);
         
         // Client information section
@@ -145,7 +152,7 @@ export async function POST({ request }) {
             projects.forEach(project => {
                 if (project.items && project.items.length > 0) {
                     // Add project name as header
-                    doc.font('Helvetica-Bold')
+                    doc.font(helveticaBold)
                        .text(project.name, { width: 495 })
                        .moveDown(0.5);
 
@@ -154,7 +161,7 @@ export async function POST({ request }) {
                         const itemPrice = parseFloat(item.price) * item.quantity;
                         const description = `${item.subcategory} - ${item.type}\nAantal: ${item.quantity} ${item.unit}`;
                         
-                        doc.font('Helvetica')
+                        doc.font(helvetica)
                            .text(description, { width: 495, continued: true })
                            .text(`€ ${itemPrice.toFixed(2)}`, { width: 50, align: 'right' })
                            .moveDown(0.5);
@@ -163,7 +170,7 @@ export async function POST({ request }) {
                 }
             });
         } else {
-            doc.font('Helvetica')
+            doc.font(helvetica)   
                .text('Geen projecten gespecificeerd', { width: 495, align: 'center' })
                .moveDown(0.5);
         }
@@ -184,7 +191,7 @@ export async function POST({ request }) {
         const totalPriceWithTax = totalPrice * 1.21; // 21% BTW
 
         // Add total with better formatting
-        doc.font('Helvetica-Bold')
+        doc.font(helveticaBold)
            .text('Subtotaal: ', { continued: true })
            .text(`€ ${totalPrice.toFixed(2)}`, { align: 'right' })
            .moveDown(0.5)
