@@ -1,10 +1,20 @@
 import { json } from '@sveltejs/kit';
 import PDFDocument from 'pdfkit';
+import { Storage, ID, Client } from 'node-appwrite';
+import { APPWRITE_API_KEY } from '$env/static/private';
 
 export async function POST({ request }) {
+
+
+    const client = new Client();
+    client.setEndpoint('https://write.toekomst.org/v1');
+    client.setProject('6735e5330020a49e88c4');
+    client.setKey(APPWRITE_API_KEY);
+    // client.setSelfSigned(true); // Use only on dev mode with a self-signed SSL cert
+    const storage = new Storage(client);
+    
     try {
         const projectData = await request.json();
-        console.log(projectData);
         
         // Create a new PDF document
         const doc = new PDFDocument({
@@ -40,11 +50,11 @@ export async function POST({ request }) {
 
         doc
             .fontSize(12)
-        .text(`Datum: ${new Date(projectData.projectData.createdAt).toLocaleDateString('nl-NL')}`)
+        .text(`Datum: ${new Date(projectData.createdAt).toLocaleDateString('nl-NL')}`)
            .moveDown(0.5);
 
         doc.fontSize(12)
-           .text(`Offerte nummer: ${projectData.projectData.id}`)
+           .text(`Offerte nummer: ${projectData.$id}`)
            .moveDown(0.5);
 
         // Add company logo placeholder line
@@ -65,7 +75,7 @@ export async function POST({ request }) {
            .fontSize(12)
            .moveDown(0.5);
         
-        const client = projectData.projectData.client;
+        const client = projectData.client;
         doc.text(`${client.businessname || ''}`, 50)
            .text(`${client.name} ${client.lastname}`)
            .text(`${client.adress} ${client.huisnummer}`)
@@ -106,6 +116,15 @@ export async function POST({ request }) {
         //    .fontSize(14)
         //    .text('Kostenoverzicht', { underline: true, align: 'center' })
         //    .moveDown(1);
+        
+        if(projectData.opmerkingen !== null ){
+        doc.moveDown(2)
+           .fontSize(14)
+           .text('Opmerkingen',50, doc.y)
+           .fontSize(12)
+           .text(`${projectData.opmerkingen}`)
+           .moveDown(1);
+        }
 
         // Draw table header
         doc.moveDown(1)
@@ -121,7 +140,7 @@ export async function POST({ request }) {
            .moveDown(1);
 
         // Add items if available
-        const projects = projectData.projectData.projects || [];
+        const projects = JSON.parse(projectData.projects) || [];
         if (projects.length > 0) {
             projects.forEach(project => {
                 if (project.items && project.items.length > 0) {
@@ -188,13 +207,46 @@ export async function POST({ request }) {
         // Wait for PDF generation to complete
         const pdfBuffer = await pdfComplete;
 
-        // Return the PDF as a response
-        return new Response(pdfBuffer, {
-            headers: {
-                'Content-Type': 'application/pdf',
-                'Content-Disposition': 'attachment; filename="generated.pdf"'
+        // Save to Appwrite storage
+        try {
+            const file = new File([pdfBuffer], `offerte-${projectData.$id}.pdf`, {
+                type: 'application/pdf'
+            });
+
+            // Check if a file with the same projectData ID already exists
+            try {
+                const existingFile = await storage.getFile(
+                    '67a166f6000319210c64',  // Your bucket ID
+                    projectData.$id
+                );
+
+                // If the file exists, delete it
+                if (existingFile) {
+                    await storage.deleteFile(
+                        '67a166f6000319210c64',  // Your bucket ID
+                        projectData.$id
+                    );
+                }
+            } catch (error) {
+                // If the error is not a "file not found" error, log it
+                if (error.code !== 404) {
+                    console.error('Error checking for existing file:', error);
+                }
             }
-        });
+
+            const result = await storage.createFile(
+                '67a166f6000319210c64',  // Your bucket ID
+                projectData.$id,
+                file
+            );
+
+
+            return json(result, { status: 200 });
+
+        } catch (storageError) {
+            console.error('Appwrite storage error:', storageError);
+            return json({ error: 'Failed to save PDF to storage' }, { status: 500 });
+        }
 
     } catch (error) {
         console.error('PDF generation error:', error);

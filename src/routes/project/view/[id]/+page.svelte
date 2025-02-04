@@ -3,6 +3,7 @@
   import { Databases } from "appwrite";
   import { client } from "$lib/appwrite";
   import { page } from '$app/stores';
+  import ShowPdf from "../../../../components/showPdf.svelte";
   import FetchImages from "./fetchImages.svelte";
   
   let projectId = $page.params.id;
@@ -51,49 +52,8 @@
     }
   }
 
-      async function showPDF() {
-       const response = await fetch('/api/generate-pdf', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              projectData,
-              totalPrice,
-              totalPriceWithTax
-            })
-        });
+  
 
-        if (response.ok) {
-            // Handle PDF download
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'generated.pdf';
-            a.click();
-            window.URL.revokeObjectURL(url);
-        } else {
-            console.error('Error generating PDF');
-        }
-      }
-
-      function sendEmail() {
-        const subject = "Offerte staat klaar";
-        const body = `Beste ${projectData.client.name} ${projectData.client.lastname},
-
-Hierbij stuur ik u de offerte voor het project.
-
-Om het project te ondertekenen en starten kunt u deze link volgen: ${projectData.link}
-
-
-`;
-
-        const encodedSubject = encodeURIComponent(subject);
-        const encodedBody = encodeURIComponent(body);
-        
-        window.location.href = `mailto:${projectData.client.email}?subject=${encodedSubject}&body=${encodedBody}`;
-      }
 </script>
 
   {#if projectData}
@@ -109,8 +69,7 @@ Om het project te ondertekenen en starten kunt u deze link volgen: ${projectData
       </select>
      
     </div>
-  <button class="show-pdf-button bg-red-500 text-white px-4 py-2 rounded" on:click={showPDF}>Toon PDF</button>
-  <button class="send-email-button bg-green-500 text-white px-4 py-2 rounded" on:click={sendEmail}>Verstuur Email</button>
+    <ShowPdf projectData={projectData} />
   <a href="/project/edit/{projectId}"><button class="bg-blue-500 text-white px-4 py-2 rounded">Bewerk</button></a>
 </div>
 <div class="flex justify-center flex-wrap">
@@ -162,6 +121,14 @@ Om het project te ondertekenen en starten kunt u deze link volgen: ${projectData
     </div>
   </div>
   <div class="new-div">
+    <div class="header">
+      <h2 class="text-2xl font-bold">Opmerkingen</h2>
+    </div>
+    {projectData.opmerkingen}
+    <div class="header">
+      <h2 class="text-2xl font-bold">Notities</h2>
+    </div>
+    {projectData.notities}
     <div class="header">
       <h2 class="text-2xl font-bold">Gerelateerde Foto's</h2>
     </div>

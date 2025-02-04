@@ -19,6 +19,8 @@
   let newProjectName: string = ''; // Variable to hold the new project name
   let totalPrice: number = 0;
   let totalItems: number = 0;
+  let opmerkingen: string = ''; // Add these variables
+  let notities: string = '';    // Add these variables
 
   $: console.log(projects)
   onMount(async () => {
@@ -46,6 +48,8 @@
       // selectedItems = result.items;
       $selectedUser = result.client;
       projects = JSON.parse(result.projects);
+      opmerkingen = result.opmerkingen || ''; // Load saved values
+      notities = result.notities || '';       // Load saved values
 
       // Push uploaded images to the array
       if (result.uploadedImages) {
@@ -137,6 +141,8 @@
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             uploadedImages: uploadedImages.map(image => (JSON.stringify({ id: image.id, category: image.category }))), // Only upload file ID and category
+            opmerkingen, // Add these fields
+            notities,    // Add these fields
             // Add any other relevant project data here
         };
 
@@ -160,7 +166,21 @@
             : await databases.updateDocument(databaseId, projectsCollectionId, projectId, { ...projectData, updatedAt: new Date().toISOString() });
         
         console.log('Project saved successfully:', response);
-        goto('/project/view/' + response.$id);
+
+
+        const pdf = await fetch('/api/generate-pdf', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(
+              response
+            )
+        });
+
+        console.log('pdf', pdf);
+
+        // goto('/project/view/' + response.$id);
     } catch (error) {
         console.error('Error saving project:', error);
     }
@@ -212,52 +232,70 @@
 
   </script>
   
-  <div class="flex justify-between">
-    <div class="w-1/2 border border-gray-300 rounded-md m-4 p-4">
-      <h2 class="text-lg font-medium">Klantgegevens</h2>
-      <div class="relative">
-        <a href="/client/edit/{$selectedUser?.$id}"><Pencil class="absolute top-0 right-0 cursor-pointer" /></a>
-        <div>
-          <label>Naam:</label>
-          <span>{$selectedUser?.name || 'N/A'}</span>
+    <div class="flex flex-col md:flex-row">
+      <div class="w-full md:w-1/2 border border-gray-300 rounded-md m-4 p-4">
+        <h2 class="text-lg font-medium">Klantgegevens</h2>
+        <div class="relative">
+          <a href="/client/edit/{$selectedUser?.$id}"><Pencil class="absolute top-0 right-0 cursor-pointer" /></a>
+          <div>
+            <label>Naam:</label>
+            <span>{$selectedUser?.name || 'N/A'}</span>
+          </div>
+          <div>
+            <label>Achternaam:</label>
+            <span>{$selectedUser?.lastname || 'N/A'}</span>
+          </div>
+          <div>
+            <label>Adres:</label>
+            <span>{$selectedUser?.adress || 'N/A'}</span>
+          </div>
+          <div>
+            <label>Huisnummer:</label>
+            <span>{$selectedUser?.huisnummer || 'N/A'}</span>
+          </div>
+          <div>
+            <label>Postcode:</label>
+            <span>{$selectedUser?.postcode || 'N/A'}</span>
+          </div>
+          <div>
+            <label>Stad:</label>
+            <span>{$selectedUser?.woonplaats || 'N/A'}</span>
+          </div>
+          <div>
+            <label>Bedrijfsnaam:</label>
+            <span>{$selectedUser?.businessname || 'N/A'}</span>
+          </div>
+          <div>
+            <label>Email:</label>
+            <span>{$selectedUser?.email || 'N/A'}</span>
+          </div>
+          <div>
+            <label>Telefoonnummer:</label>
+            <span>{$selectedUser?.telefoonnummer || 'N/A'}</span>
+          </div>
         </div>
-        <div>
-          <label>Achternaam:</label>
-          <span>{$selectedUser?.lastname || 'N/A'}</span>
+      </div>
+      <div class="w-full md:w-1/2 m-4">
+        <div class="border border-gray-300 rounded-md p-4">
+          <h2 class="text-lg font-medium">Opmerkingen</h2>
+          <textarea 
+              class="w-full border rounded-md p-2" 
+              rows="4" 
+              bind:value={opmerkingen} 
+              placeholder="Voer opmerkingen in..."
+          ></textarea>
         </div>
-        <div>
-          <label>Adres:</label>
-          <span>{$selectedUser?.adress || 'N/A'}</span>
-        </div>
-        <div>
-          <label>Huisnummer:</label>
-          <span>{$selectedUser?.huisnummer || 'N/A'}</span>
-        </div>
-        <div>
-          <label>Postcode:</label>
-          <span>{$selectedUser?.postcode || 'N/A'}</span>
-        </div>
-        <div>
-          <label>Stad:</label>
-          <span>{$selectedUser?.woonplaats || 'N/A'}</span>
-        </div>
-        <div>
-          <label>Bedrijfsnaam:</label>
-          <span>{$selectedUser?.businessname || 'N/A'}</span>
-        </div>
-        <div>
-          <label>Email:</label>
-          <span>{$selectedUser?.email || 'N/A'}</span>
-        </div>
-        <div>
-          <label>Telefoonnummer:</label>
-          <span>{$selectedUser?.telefoonnummer || 'N/A'}</span>
+        <div class="border border-gray-300 rounded-md p-4 mt-4">
+          <h2 class="text-lg font-medium">Notities (geheim)</h2>
+          <textarea 
+              class="w-full border rounded-md p-2" 
+              rows="4" 
+              bind:value={notities} 
+              placeholder="Voer notities in..."
+          ></textarea>
         </div>
       </div>
     </div>
-    <div class="w-1/2 m-4 ">
-          </div>
-  </div>
 
   <div class="w-full max-w-4xl mx-auto p-4 space-y-2 flex flex-col gap-4"> 
     <!-- <UserSearch /> -->

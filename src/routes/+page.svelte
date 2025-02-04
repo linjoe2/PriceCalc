@@ -27,9 +27,13 @@ onMount(async () => {
   console.log(latestClients);
 });
 </script>
-<h1 class="text-2xl font-bold mb-4">Eerst volgende agendapunten</h1>
+<h1 class="text-2xl font-bold mb-4">Eerst volgende agendapunt</h1>
 
-<h1 class="text-2xl font-bold mb-4">Laatst toegevoegde klanten</h1>
+<div class="flex justify-between items-center mb-4">
+  <h1 class="text-2xl font-bold">Laatst toegevoegde klanten</h1>
+
+</div>
+
 <div class="latest-clients">
   {#await getLatestClients() then latestClients}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -41,6 +45,9 @@ onMount(async () => {
           <p><strong>City:</strong> {client.woonplaats}</p>
         </div>
       {/each}
+      <a href="/client/new" class="card border rounded-lg p-4 shadow-md cursor-pointer flex items-center justify-center text-center">
+        <span class="text-xl font-bold">Nieuwe klant toevoegen</span>
+      </a>
     </div>
   {:catch error}
     <p class="text-red-500">Error loading latest clients: {error.message}</p>
