@@ -81,12 +81,12 @@
     
     <div class="mb-4">
         <label for="achternaam" class="block text-sm font-medium text-gray-700">Achternaam:</label>
-        <input type="text" id="achternaam" bind:value={clientData.lastname} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+        <input type="text" id="achternaam" bind:value={clientData.lastname} class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
     </div>
     
     <div class="mb-4">
         <label for="bedrijfsnaam" class="block text-sm font-medium text-gray-700">Bedrijfsnaam:</label>
-        <input type="text" id="bedrijfsnaam" bind:value={clientData.businessname} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+        <input type="text" id="bedrijfsnaam" bind:value={clientData.businessname} class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
     </div>
     
     <div class="mb-4">
@@ -101,12 +101,12 @@
     
     <div class="mb-4">
         <label for="straat" class="block text-sm font-medium text-gray-700">Straat:</label>
-        <input type="text" id="straat" bind:value={clientData.adress} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+        <input type="text" id="straat" bind:value={clientData.adress}  class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
     </div>
     
     <div class="mb-4">
         <label for="woonplaats" class="block text-sm font-medium text-gray-700">Woonplaats:</label>
-        <input type="text" id="woonplaats" bind:value={clientData.woonplaats} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+        <input type="text" id="woonplaats" bind:value={clientData.woonplaats} class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
     </div>
     
     <div class="mb-4">
