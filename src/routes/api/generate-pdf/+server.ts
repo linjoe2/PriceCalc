@@ -5,12 +5,13 @@ import { APPWRITE_API_KEY } from '$env/static/private';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
+import type trainTrack from 'lucide-svelte/icons/train-track';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const helvetica = path.join(__dirname, !import.meta.env.DEV ? '../../../static/fonts/Helvetica.ttf' : '../../../../static/fonts/Helvetica.ttf');
 const helveticaBold = path.join(__dirname, !import.meta.env.DEV ? '../../../static/fonts/Helvetica-Bold.ttf' : '../../../../static/fonts/Helvetica-Bold.ttf');
-
+const logo = path.join(__dirname, !import.meta.env.DEV ? '../../../static/jhfbouw-logo.png' : '../../../../static/jhfbouw-logo.png');
 console.log(__dirname);
 console.log(helvetica);
 console.log(helveticaBold);
@@ -43,21 +44,32 @@ export async function POST({ request }) {
             doc.on('end', () => resolve(Buffer.concat(chunks)));
         });
 
-        // // Fetch and add the logo
-        // try {
-        //     const logoResponse = await fetch('https://jhfbouw.nl/wp-content/uploads/2024/04/jhfbouw-logo.svg');
-        //     const logoBuffer = await logoResponse.arrayBuffer();
-        //     doc.image(Buffer.from(logoBuffer), 50, 50, { width: 200 })
-        //        .moveDown(2);
-        // } catch (error) {
-        //     console.error('Error loading logo:', error);
-        //     // Continue without logo if it fails to load
-        // }
+        // Add logo in top right corner
+        try {
+            doc.image(logo, 400, 50, {
+                fit: [100, 100],  // Adjust size as needed
+                align: 'right'
+            });
+        } catch (error) {
+            console.error('Error loading logo:', error);
+            // Continue without logo if it fails to load
+        }
+        doc.fontSize(14)
+        .fontSize(12)
+        .moveDown(0.5)
+        .text('JHF Bouw', 400, doc.y)
+        .text('Dukdalfweg 16')
+        .text('1041 BD Amsterdam')
+        .text('Email: info@jhfbouw.nl')
+        .text('Tel: 020-2136082')
+        .text('KvK: 86043862')
+        .moveDown(2);
+
 
         // Add styled content to PDF
         doc.font(helveticaBold)
            .fontSize(32)
-           .text('Projectofferte', { align: 'center' })
+           .text('Projectofferte', 50, 50)
            .moveDown(0.5);
 
         doc
@@ -71,7 +83,7 @@ export async function POST({ request }) {
 
         // Add company logo placeholder line
         doc.moveTo(50, doc.y)
-           .lineTo(545, doc.y)
+           .lineTo(380, doc.y)
            .stroke()
            .moveDown(0.5);
 
@@ -98,45 +110,20 @@ export async function POST({ request }) {
            .text(`Oppervlakte: ${client.oppervlakte} m²`)
            .moveDown(2);
 
-        // Right column - Company details
+
         doc.fontSize(14)
-           .text('Bedrijfsgegevens:', 300, startY)
+           .text('Akkoord voor de onderstaande offerte:',50, doc.y)
            .fontSize(12)
-           .moveDown(0.5)
-           .text('JHF Bouw')
-           .text('Dukdalfweg 16')
-           .text('1041 BD Amsterdam')
-           .text('Email: info@jhfbouw.nl')
-           .text('Tel: 020-2136082')
-           .text('KvK: 86043862')
+           .moveDown(4);
 
-           .moveDown(2);
-
-        // // Project details
-        // doc.fontSize(14)
-        //    .font('Helvetica-Bold')
-        //    .text('Projectspecificaties', { underline: true })
-        //    .moveDown();
-
-        // doc.fontSize(12)
-        //    .font('Helvetica')
-        //    .text('Status: ' + (projectData.status || 'In behandeling'))
-        //    .moveDown(2);
-
-        // Add pricing table with better formatting
-        // doc.font('Helvetica-Bold')
-        //    .fontSize(14)
-        //    .text('Kostenoverzicht', { underline: true, align: 'center' })
-        //    .moveDown(1);
-        
-        if(projectData.opmerkingen !== null ){
-        doc.moveDown(2)
-           .fontSize(14)
-           .text('Opmerkingen',50, doc.y)
-           .fontSize(12)
-           .text(`${projectData.opmerkingen}`)
-           .moveDown(1);
-        }
+        doc
+            .moveTo(50, doc.y)
+            .lineTo(200, doc.y)
+            .text('handtekening klant')
+            .stroke()
+            .moveDown(1)
+            .text("Datum:")
+            .moveDown(2);
 
         // Draw table header
         doc.moveDown(1)
@@ -164,12 +151,25 @@ export async function POST({ request }) {
                     // Add project items
                     project.items.forEach(item => {
                         const itemPrice = parseFloat(item.price) * item.quantity;
-                        const description = `${item.subcategory} - ${item.type}\nAantal: ${item.quantity} ${item.unit}`;
+                        const description = `${item.subcategory} - ${item.type} - ${item.quantity} ${item.unit}`;
                         
-                        doc.font(helvetica)
+                        doc.font(helveticaBold)
                            .text(description, { width: 495, continued: true })
                            .text(`€ ${itemPrice.toFixed(2)}`, { width: 50, align: 'right' })
                            .moveDown(0.5);
+
+                        // Check for tasks in project.tasks that match this item
+                        const itemTasks = projectData.tasks.filter(task => 
+                            task.subcategory === item.subcategory && 
+                            task.type === item.type &&
+                            task.category === item.category
+                        );
+
+                        itemTasks.forEach(task => {
+                            doc.font(helvetica)
+                               .text('• ' + task.description, { width: 450 })
+                               .moveDown(0.5);
+                        });
                     });
                     doc.moveDown(0.5);
                 }
@@ -207,7 +207,15 @@ export async function POST({ request }) {
            .text(`€ ${totalPriceWithTax.toFixed(2)}`, { align: 'right' })
            .moveDown(2);
 
-  
+         if(projectData.opmerkingen !== null ){
+        doc.fontSize(14)
+           .text('Opmerkingen',50, doc.y)
+           .fontSize(12)
+           .text(`${projectData.opmerkingen}`)
+           .moveDown(1);
+        }
+
+
 
         // Validity notice at the bottom
         doc.moveDown(2)

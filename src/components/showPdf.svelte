@@ -1,4 +1,3 @@
-
 <script>
     import { Storage } from 'appwrite';
     import { client } from '$lib/appwrite';
@@ -39,5 +38,5 @@ Om het project te ondertekenen en starten kunt u deze link volgen: ${pdfUrl}
       }
 </script>
 
-<button class="show-pdf-button bg-red-500 text-white px-4 py-2 rounded" on:click={showPDF}>Toon PDF</button>
-<button class="show-pdf-button bg-green-500 text-white px-4 py-2 rounded" on:click={sendPDF}>Verstuur PDF</button>
+<button class="show-pdf-button border-2 border-black text-black px-4 py-2 rounded" on:click={showPDF}>Toon PDF</button>
+<button class="show-pdf-button border-2 border-black text-black px-4 py-2 rounded" on:click={sendPDF}>Verstuur PDF</button>

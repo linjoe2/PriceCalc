@@ -27,11 +27,11 @@
     try {
         const response = await databases.listDocuments(databaseId, itemsCollectionId, [Query.limit(100),Query.offset(0)]);
         services = response.documents.reduce((acc, doc) => {
-            const { category, subcategory, type, price, unit, taken } = doc;
+            const { category, subcategory, type, price, unit, tasks } = doc;
             if (!acc[category]) {
                 acc[category] = [];
             }
-            acc[category].push({ subcategory, type, price, unit, taken });
+            acc[category].push({ subcategory, type, price, unit, tasks });
             return acc;
         }, {});
         console.log(response)
@@ -93,24 +93,37 @@
         } else if (item.unit === "m¹") {
           quantity = calculations[category].length || 0;
         } else {
-          quantity = calculations[category].length || 1; // For items with amount
+          quantity = calculations[category].length || 1;
         }
       }
       
       if (index === -1) {
+        // Parse tasks from the tasks field if it exists
+        let initialTasks = [];
+        if (item.tasks) {
+          try {
+            const tasksArray = typeof item.tasks === 'string' ? JSON.parse(item.tasks) : item.tasks;
+            initialTasks = tasksArray.map(task => ({
+              description: task,
+              completed: false
+            }));
+          } catch (error) {
+            console.error('Error parsing tasks:', error);
+            initialTasks = [];
+          }
+        }
+
         const newItem = {
           category,
           ...item,
           quantity: quantity,
-          tasks: []
+          tasks: initialTasks
         };
-        // selectedItems = [...selectedItems, newItem];
         project.items = [...(project.items || []), newItem];
       } else {
-        // selectedItems = selectedItems.filter((_, i) => i !== index);
         project.items = project.items.filter((_, i) => i !== index);
       }
-      projects = projects
+      projects = [...projects]; // Trigger reactivity
     }
   
     $: totalPrice = projects.reduce((projectSum, project) => {
@@ -130,31 +143,37 @@
 
     async function saveProject() {
     try {
+        // Flatten all items from all projects and include their tasks
+        const allItems = projects.flatMap(project => 
+            project.items.map(item => ({
+                ...item,
+                tasks: item.tasks || [] // Ensure tasks exists
+            }))
+        );
+
         const projectData = {
-            items: JSON.stringify(selectedItems.map(item => ({
-              ...item,
-              tasks: item.tasks.map(task => ({ id: task.id, completed: task.completed }))
-            }))),
+            items: JSON.stringify(allItems),
             projects: JSON.stringify(projects),
             totalPrice: totalPrice,
             client: $selectedUser.$id,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            uploadedImages: uploadedImages.map(image => (JSON.stringify({ id: image.id, category: image.category }))), // Only upload file ID and category
-            opmerkingen, // Add these fields
-            notities,    // Add these fields
-            // Add any other relevant project data here
+            uploadedImages: uploadedImages.map(image => (JSON.stringify({ id: image.id, category: image.category }))),
+            opmerkingen,
+            notities,
         };
 
-        // Process item.taken and add tasks to projectData
-        projectData.tasks = selectedItems.flatMap(item => {
-            return item.taken.split('*').map(task => ({
-                // id: `${item.category}-${item.subcategory}-${item.type}-${task.trim()}`,
+        // Generate tasks from all items across all projects
+        projectData.tasks = allItems.flatMap(item => {
+            if (!item.tasks) return [];
+            const tasksArray = typeof item.tasks === 'string' ? JSON.parse(item.tasks) : item.tasks;
+            return tasksArray.map(task => ({
                 category: item.category,
                 subcategory: item.subcategory,
                 type: item.type,
                 completed: false,
-                description: task.trim()
+                description: task.description,
+                projectName: item.projectName // Include project name with each item
             }));
         });
 
@@ -193,20 +212,21 @@
     type: string;
     completed: boolean;
     photo: string | null;
+    projectName: string;
   }
 
   let tasks: Task[] = [];
 
   // Function to create tasks from selected items
-  function createTasksFromInvoice() {
-    tasks = selectedItems.map(item => ({
-      id: `${item.category}-${item.subcategory}-${item.type}`,
-      subcategory: item.subcategory,
-      type: item.type,
-      completed: false,
-      photo: null
-    }));
-  }
+  // function createTasksFromInvoice() {
+  //   tasks = selectedItems.map(item => ({
+  //     id: `${item.category}-${item.subcategory}-${item.type}`,
+  //     subcategory: item.subcategory,
+  //     type: item.type,
+  //     completed: false,
+  //     photo: null
+  //   }));
+  // }
 
   // function toggleTaskCompletion(task: Task) {
   //   task.completed = !task.completed;
@@ -230,7 +250,23 @@
     projects = projects.filter(project => project.name !== projectName);
   }
 
-  </script>
+  function clickOutside(node: HTMLElement) {
+    const handleClick = (event: MouseEvent) => {
+      if (node && !node.contains(event.target as Node)) {
+        node.dispatchEvent(new CustomEvent('clickoutside'));
+      }
+    };
+
+    document.addEventListener('click', handleClick, true);
+
+    return {
+      destroy() {
+        document.removeEventListener('click', handleClick, true);
+      }
+    };
+  }
+
+</script>
   
     <div class="flex flex-col md:flex-row">
       <div class="w-full md:w-1/2 border border-gray-300 rounded-md m-4 p-4">
@@ -331,38 +367,92 @@
         {#if items.isOpen || items.some(item => project.items.some(selected => selected.category === category && selected.subcategory === item.subcategory && selected.type === item.type))}
           <div class="p-4 pt-0 space-y-4">
             {#each items as item}
-              <div 
-                class="flex justify-between p-2 border rounded-md cursor-pointer hover:bg-gray-50 {project.items.some(i => i.category === category && i.subcategory === item.subcategory && i.type === item.type) ? 'bg-blue-50 border-blue-200' : ''}"
-                on:click={() => item.price !== 'custom' && toggleItemSelection(category, item, project)}
-              >
-                <div>
-                  <span class="font-medium">{item.subcategory}</span>
-                  <span class="text-gray-600 ml-2">{item.type}</span>
-                </div>
-                <span>
-                  {#if item.price === "custom"}
-                    <input 
-                      type="number"
-                      bind:value={item.price}
-                      class="w-32 p-1 border rounded-md text-right"
-                      on:blur={() => item.isEditing = false}
-                    />
-                  {:else}
-                    {#if item.isEditing}
+              <div class="space-y-2">
+                <div 
+                  class="flex justify-between p-2 border rounded-md cursor-pointer hover:bg-gray-50 {project.items.some(i => i.category === category && i.subcategory === item.subcategory && i.type === item.type) ? 'bg-blue-50 border-blue-200' : ''}"
+                >
+                  <div
+                    class="flex-grow"
+                    on:click={() => item.price !== 'custom' && toggleItemSelection(category, item, project)}
+                  >
+                    <span class="font-medium">{item.subcategory}</span>
+                    <span class="text-gray-600 ml-2">{item.type}</span>
+                  </div>
+                  <span>
+                    {#if item.price === "custom"}
                       <input 
                         type="number"
                         bind:value={item.price}
                         class="w-32 p-1 border rounded-md text-right"
                         on:blur={() => item.isEditing = false}
-                        on:keydown={(event) => event.key === 'Enter' && (item.isEditing = false)}
+                        use:clickOutside={() => item.isEditing = false}
                       />
                     {:else}
-                      <div on:click={() => item.isEditing = true}>
-                        €{item.price}{#if item.unit !== "custom"}/{item.unit}{/if}
-                      </div>
+                      {#if item.isEditing}
+                        <input 
+                          type="number"
+                          bind:value={item.price}
+                          class="w-32 p-1 border rounded-md text-right"
+                          on:blur={() => item.isEditing = false}
+                          use:clickOutside={() => item.isEditing = false}
+                          on:keydown={(event) => event.key === 'Enter' && (item.isEditing = false)}
+                        />
+                      {:else}
+                        <div on:click|stopPropagation={() => item.isEditing = true}>
+                          €{item.price}{#if item.unit !== "custom"}/{item.unit}{/if}
+                        </div>
+                      {/if}
                     {/if}
-                  {/if}
-                </span>
+                  </span>
+                </div>
+
+                <!-- Add tasks section here -->
+                {#if project.items.some(i => i.category === category && i.subcategory === item.subcategory && i.type === item.type)}
+                  <div class="ml-4 p-2 bg-gray-50 rounded-md">
+                    <h4 class="font-medium text-sm mb-2">Taken:</h4>
+                    {#each project.items.find(i => i.category === category && i.subcategory === item.subcategory && i.type === item.type).tasks || [] as task, taskIndex}
+                      <div class="flex items-center gap-2 mb-2">
+                        
+                        <input
+                          type="text"
+                          bind:value={task.description}
+                          class="flex-1 p-1 text-sm border rounded"
+                        />
+                        <button
+                          class="text-red-500 hover:text-red-700 px-2"
+                          on:click={() => {
+                            const itemIndex = project.items.findIndex(i => 
+                              i.category === category && 
+                              i.subcategory === item.subcategory && 
+                              i.type === item.type
+                            );
+                            project.items[itemIndex].tasks.splice(taskIndex, 1);
+                            projects = [...projects];
+                          }}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    {/each}
+                    <button
+                      class="text-sm text-blue-500 hover:text-blue-700"
+                      on:click={() => {
+                        const itemIndex = project.items.findIndex(i => 
+                          i.category === category && 
+                          i.subcategory === item.subcategory && 
+                          i.type === item.type
+                        );
+                        if (!project.items[itemIndex].tasks) {
+                          project.items[itemIndex].tasks = [];
+                        }
+                        project.items[itemIndex].tasks.push({ description: '', completed: false });
+                        projects = [...projects];
+                      }}
+                    >
+                      + Nieuwe taak
+                    </button>
+                  </div>
+                {/if}
               </div>
             {/each}
   
@@ -377,7 +467,7 @@
                       <label class="block text-sm text-gray-600">Lengte (m)</label>
                       <input 
                         type="number" 
-                        value={calculations[category]?.length || 0}
+                        value={calculations[category]?.length || 1}
                         on:input={(event) => {
                           calculations[category] = calculations[category] || {};
                           calculations[category].length = parseFloat(event.target.value);
@@ -386,7 +476,7 @@
                             if (item.category === category) {
                               return {
                                 ...item,
-                                quantity: (calculations[category].length || 0) * (calculations[category].width || 0)
+                                quantity: (calculations[category].length || 1) * (calculations[category].width || 1)
                               };
                             }
                             return item;
@@ -399,7 +489,7 @@
                       <label class="block text-sm text-gray-600">Breedte (m)</label>
                       <input 
                         type="number" 
-                        value={calculations[category]?.width || 0}
+                        value={calculations[category]?.width || 1}
                         on:input={(event) => {
                           calculations[category] = calculations[category] || {};
                           calculations[category].width = parseFloat(event.target.value);
@@ -408,7 +498,7 @@
                             if (item.category === category) {
                               return {
                                 ...item,
-                                quantity: (calculations[category].length || 0) * (calculations[category].width || 0)
+                                quantity: (calculations[category].length || 1) * (calculations[category].width || 1)
                               };
                             }
                             return item;
@@ -423,7 +513,7 @@
                     <label class="block text-sm text-gray-600">Lengte (m)</label>
                     <input 
                       type="number" 
-                      value={calculations[category]?.length || 0}
+                      value={calculations[category]?.length || 1}
                       on:input={(event) => {
                         calculations[category] = calculations[category] || {};
                         calculations[category].length = parseFloat(event.target.value);
@@ -432,7 +522,7 @@
                           if (item.category === category) {
                             return {
                               ...item,
-                              quantity: calculations[category].length || 0
+                              quantity: calculations[category].length || 1
                             };
                           }
                           return item;
