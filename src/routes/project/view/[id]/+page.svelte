@@ -63,10 +63,6 @@
         name: `${project.name} (Copy)`
       }));
 
-      // Convert arrays back to strings before sending to database
-      newProjectData.items = JSON.stringify(newProjectData.items);
-      newProjectData.projects = JSON.stringify(newProjectData.projects);
-
       const response = await databases.createDocument(
         databaseId,
         projectsCollectionId,
@@ -165,6 +161,16 @@
           <p class="text-xl font-bold text-gray-900 mt-2">Totaal: €{totalPriceWithTax.toFixed(2)}</p>
         </div>
 
+        <!-- Terms -->
+        <div class="mt-8">
+          <h3 class="text-xl font-semibold text-gray-900">Voorwaarden</h3>
+          <ul class="mt-4 space-y-2 list-disc list-inside text-gray-600">
+            {#each JSON.parse(projectData.terms) as term}
+              <li>{term.text}</li>
+            {/each}
+          </ul>
+        </div>
+
         <!-- Tasks -->
         <div class="mt-8">
           <h3 class="text-xl font-semibold text-gray-900">Taken</h3>
@@ -192,6 +198,25 @@
         <div class="bg-white shadow rounded-lg p-6">
           <h2 class="text-xl font-semibold text-gray-900 mb-4">Gerelateerde Foto's</h2>
           <FetchImages bind:uploadedImages />
+        </div>
+
+        <!-- Payment Schedule Card -->
+        <div class="bg-white shadow rounded-lg p-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-4">Betalingsschema</h2>
+          <div class="space-y-4">
+            <div class="flex justify-between items-center py-2 border-b border-gray-100">
+              <span class="text-gray-600">Aanbetaling ({JSON.parse(projectData.paymentSchedule).initial}%)</span>
+              <span class="font-medium">€{(totalPriceWithTax * JSON.parse(projectData.paymentSchedule).initial / 100).toFixed(2)}</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b border-gray-100">
+              <span class="text-gray-600">Tijdens werkzaamheden ({JSON.parse(projectData.paymentSchedule).during}%)</span>
+                <span class="font-medium">€{(totalPriceWithTax * JSON.parse(projectData.paymentSchedule).during / 100).toFixed(2)}</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b border-gray-100">
+              <span class="text-gray-600">Bij oplevering ({JSON.parse(projectData.paymentSchedule).final}%)</span>
+              <span class="font-medium">€{(totalPriceWithTax * JSON.parse(projectData.paymentSchedule).final / 100).toFixed(2)}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

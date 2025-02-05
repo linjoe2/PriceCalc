@@ -8,6 +8,8 @@
   import { goto } from '$app/navigation';
   import ImageUploader from '../../../../components/ImageUploader.svelte'; // Adjust the path as necessary
   import { Pencil } from 'lucide-svelte';
+  import Terms from '../../../terms/+page.svelte';
+  import CreatePaymentSchedule from '../../../../components/createPaymentScedule.svelte';
   let projectId = $page.params.id;
   const databases = new Databases(client);
   const databaseId = 'PriceCalc'; // Your database ID
@@ -21,6 +23,9 @@
   let totalItems: number = 0;
   let opmerkingen: string = ''; // Add these variables
   let notities: string = '';    // Add these variables
+  let terms: any[] = [];
+  let paymentSchedule: any;
+  
 
   $: console.log(projects)
   onMount(async () => {
@@ -161,8 +166,10 @@
             uploadedImages: uploadedImages.map(image => (JSON.stringify({ id: image.id, category: image.category }))),
             opmerkingen,
             notities,
+            terms: JSON.stringify(terms.filter(term => term.checked)), // Only include checked terms
+            paymentSchedule: JSON.stringify(paymentSchedule)
         };
-
+        console.log(projectData);
         // Generate tasks from all items across all projects
         projectData.tasks = allItems.flatMap(item => {
             if (!item.tasks) return [];
@@ -213,6 +220,7 @@
     completed: boolean;
     photo: string | null;
     projectName: string;
+    paymentSchedule: any;
   }
 
   let tasks: Task[] = [];
@@ -570,6 +578,7 @@
     
     
     {/each}
+
   
     <input 
       type="text" 
@@ -582,6 +591,10 @@
     <button class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" on:click={addProject}>
       Voeg dak toe
     </button>
+
+    <Terms bind:terms={terms} bind:projects={projects} />
+
+    <CreatePaymentSchedule bind:totalPrice={totalPrice} bind:paymentSchedule={paymentSchedule} />
 
     {#if projects.length > 0 || uploadedImages.length > 0}
       <div class="fixed bottom-4 right-4 bg-white shadow-lg rounded-lg p-4 border">

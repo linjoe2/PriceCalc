@@ -12,6 +12,7 @@
     import Package2 from "lucide-svelte/icons/package-2";
     import Search from "lucide-svelte/icons/search";
     import Users from "lucide-svelte/icons/users";
+    import FileText from "lucide-svelte/icons/file-text";
     import { Badge } from "$lib/components/ui/badge/index.js";
     import { Button } from "$lib/components/ui/button/index.js";
     import * as Card from "$lib/components/ui/card/index.js";
@@ -171,6 +172,13 @@
             <ChartLine class="h-4 w-4" />
             Werkbonnen
           </a>
+          <a
+            href="/terms"
+            class={`text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${activeRoute === 'terms' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
+          >
+            <FileText class="h-4 w-4" />
+            Voorwaarden
+          </a>
         </nav>
       </div>
     </div>
@@ -239,6 +247,14 @@
             >
               <ChartLine class="h-5 w-5" />
               Werkbonnen
+            </a>
+            <a
+              href="/terms"
+              on:click={closeSheet}
+              class={`text-muted-foreground hover:text-primary flex items-center gap-4 rounded-xl px-3 py-2 ${activeRoute === 'terms' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
+            >
+              <FileText class="h-5 w-5" />
+              Voorwaarden
             </a>
           </nav>
           

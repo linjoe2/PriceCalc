@@ -195,17 +195,77 @@ export async function POST({ request }) {
 
         const totalPriceWithTax = totalPrice * 1.21; // 21% BTW
 
-        // Add total with better formatting
-        doc.font(helveticaBold)
-           .text('Subtotaal: ', { continued: true })
-           .text(`€ ${totalPrice.toFixed(2)}`, { align: 'right' })
-           .moveDown(0.5)
-           .text('BTW (21%): ', { continued: true })
-           .text(`€ ${(totalPriceWithTax - totalPrice).toFixed(2)}`, { align: 'right' })
-           .moveDown(0.5)
-           .text('Totaalbedrag (incl. BTW): ', { continued: true })
-           .text(`€ ${totalPriceWithTax.toFixed(2)}`, { align: 'right' })
+        if(projectData.terms !== null ){
+            const terms = JSON.parse(projectData.terms);
+            doc.fontSize(14)
+               .font(helveticaBold)
+               .text('Voorwaarden', 50, doc.y)
+               .moveDown(0.5)
+               .font(helvetica)
+               .fontSize(12)
+               .text(` • ${terms.map(term => term.text).join('\n\n • ' )}`)
+               .moveDown(1);
+        }
+
+        // Add payment schedule
+        doc.fontSize(14)
+           .font(helveticaBold)
+           .text('Betalingscondities', 50, doc.y)
+           .moveDown(1);
+
+        // Define consistent column positions
+        const col1 = 50;    // Description
+        const col2 = 200;   // Excl. BTW
+        const col3 = 275;   // 9% BTW
+        const col4 = 350;   // 21% BTW
+        const col5 = 425;   // Incl. BTW
+        const colWidth = 75;
+
+        // Headers
+        let y = doc.y;
+        doc.fontSize(11)
+           .font(helveticaBold)
+           .text('', col1, y, { width: 150 })
+           .text('Excl. BTW', col2, y, { width: colWidth, align: 'left' })
+           .text('9% BTW', col3, y, { width: colWidth, align: 'left' })
+           .text('21% BTW', col4, y, { width: colWidth, align: 'left' })
+           .text('Incl. BTW', col5, y, { width: colWidth, align: 'left' })
+           .moveDown(0.5);
+
+        // Payment rows
+        doc.font(helvetica);
+        const payments = [
+            { term: '50% bij opdracht', percentage: 0.5 },
+            { term: '45% tijdens werkzaamheden', percentage: 0.45 },
+            { term: '5% bij oplevering', percentage: 0.05 }
+        ];
+
+        payments.forEach(payment => {
+            const baseAmount = totalPrice * payment.percentage;
+            const btw21 = baseAmount * 0.21;
+            const totalRowAmount = baseAmount + btw21;
+
+             y = doc.y;
+            doc.text(payment.term, col1, y, { width: 190 })
+               .text(`€ ${baseAmount.toFixed(2)}`, col2, y, { width: colWidth, align: 'left' })
+               .text(`€ 0,00`, col3, y, { width: colWidth, align: 'left' })
+               .text(`€ ${btw21.toFixed(2)}`, col4, y, { width: colWidth, align: 'left' })
+               .text(`€ ${totalRowAmount.toFixed(2)}`, col5, y, { width: colWidth, align: 'left' })
+               .moveDown(0.5);
+        });
+
+        // Total row
+        y = doc.y;
+        doc.moveDown(0.5)
+           .font(helveticaBold)
+           .text('Totaal:', col1, y, { width: 190 })
+           .text(`€ ${totalPrice.toFixed(2)}`, col2, y, { width: colWidth, align: 'left' })
+           .text(`€ 0,00`, col3, y, { width: colWidth, align: 'left' })
+           .text(`€ ${(totalPrice * 0.21).toFixed(2)}`, col4, y, { width: colWidth, align: 'left' })
+           .text(`€ ${totalPriceWithTax.toFixed(2)}`, col5, y, { width: colWidth, align: 'left' })
            .moveDown(2);
+
+
 
          if(projectData.opmerkingen !== null ){
         doc.fontSize(14)
@@ -214,7 +274,6 @@ export async function POST({ request }) {
            .text(`${projectData.opmerkingen}`)
            .moveDown(1);
         }
-
 
 
         // Validity notice at the bottom
