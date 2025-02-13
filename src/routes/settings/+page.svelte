@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { client } from "$lib/appwrite";
   import { Databases } from "appwrite";
   import { onMount } from "svelte";
@@ -59,7 +59,7 @@
                 break;
             }
           }
-        } catch (error) {
+        } catch (error: any) {
           if (error.code !== 404) {
             console.error(`Error fetching ${settingName}:`, error);
           }
@@ -98,7 +98,7 @@
             setting.name,
             setting
           );
-        } catch (error) {
+        } catch (error: any) {
           // If the document does not exist, create a new one
           if (error.code === 404) {
             await databases.createDocument(

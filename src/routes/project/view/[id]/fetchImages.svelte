@@ -3,50 +3,51 @@
   import { Storage } from "appwrite";
   import { client } from "$lib/appwrite"; // Adjust the import path as necessary
   import * as Dialog from "$lib/components/ui/dialog";
-
-  export let imageIds: string[] = [];
+  import type { UploadedImage } from '$lib/types';
+  // export let imageIds: string[] = [];
   export let bucketId: string = '67621eca0022af8c411f';
 
-  export let uploadedImages: { id: string, url: string }[] = [];
-  export let selectedImage: { id: string, url: string } | null = null;
+  export let uploadedImages: UploadedImage[] = [];
+  export let selectedImage: UploadedImage | null = null;
 
   let isDialogOpen = false; // Add a state variable to control dialog open state
 
-  function openDialog(image) {
+  function openDialog(image: UploadedImage) {
     selectedImage = image;
     isDialogOpen = true; // Set dialog open state to true
     console.log(selectedImage, isDialogOpen);
   }
 
-  // Group images by category
-  let groupedImages = {};
+  // Update the type for groupedImages
+  let groupedImages: Record<string, UploadedImage[]> = {};
 
   onMount(async () => {
     const storage = new Storage(client);
     console.log(uploadedImages);
     
-    // Check if imageIds is not empty before fetching
     if (uploadedImages.length > 0) {
-      // Update existing uploadedImages with URLs based on IDs
-      uploadedImages = await Promise.all(uploadedImages.map(async (image) => {
+      const fetchedImages = await Promise.all(uploadedImages.map(async (image) => {
         try {
-          image = JSON.parse(image);
-          const file = await storage.getFilePreview(bucketId, image.id);
-          console.log(file);
-          return { category: image.category, url: file }; // Assuming file.href gives the URL
+          const parsedImage = typeof image === 'string' ? JSON.parse(image) : image;
+          const file = await storage.getFilePreview(bucketId, parsedImage.id);
+          return { 
+            category: parsedImage.category, 
+            url: file.toString(),
+            id: parsedImage.id 
+          } as UploadedImage;
         } catch (error) {
-          console.error(`Error fetching image with ID ${image.id}:`, error);
-          return null; // Handle error as needed
+          console.error(`Error fetching image:`, error);
+          return null;
         }
       }));
-      uploadedImages = uploadedImages.filter(image => image !== null); // Filter out null results
+      uploadedImages = fetchedImages.filter((image): image is UploadedImage => image !== null);
       console.log(uploadedImages);
     } else {
       console.warn('No image IDs provided to load images.');
     }
 
     // Group images by category after fetching
-    groupedImages = uploadedImages.reduce((acc, image) => {
+    groupedImages = uploadedImages.reduce((acc: Record<string, UploadedImage[]>, image: UploadedImage) => {
       if (!acc[image.category]) {
         acc[image.category] = [];
       }
@@ -63,7 +64,14 @@
         <h3>{category}</h3>
         <div class="images-row">
           {#each images as image}
-            <img src={image.url} alt="Uploaded Image" class="uploaded-image" on:click={() => openDialog(image)} />
+          <div
+            role="button"
+            tabindex="0"
+            on:click|preventDefault={() => openDialog(image)}
+            on:keydown={(e) => e.key === 'Enter' && openDialog(image)}
+          >
+            <img src={image.url} alt={image.category} class="uploaded-image" />
+          </div>
           {/each}
         </div>
       </div>
@@ -78,10 +86,10 @@
     <Dialog.Content>
       <Dialog.Header>
         <Dialog.Title>{selectedImage.category}</Dialog.Title>
-        <img src={selectedImage.url} alt="Selected Image" class="dialog-image" />
+        <img src={selectedImage.url} alt={selectedImage.category} class="dialog-image" />
         <button 
           class="mt-2 px-4 py-2 bg-blue-500 text-white rounded"
-          on:click={() => window.open(selectedImage.url, '_blank')}
+          on:click={() => window.open(selectedImage?.url, '_blank')}
         >
           Open in Tab
         </button>

@@ -8,35 +8,49 @@
   import { goto } from '$app/navigation';
   import ImageUploader from '../../../../components/ImageUploader.svelte'; // Adjust the path as necessary
   import { Pencil } from 'lucide-svelte';
-  import Terms from '../../../terms/+page.svelte';
+  import TermsComponent from '../../../terms/+page.svelte';
   import CreatePaymentSchedule from '../../../../components/createPaymentScedule.svelte';
+  import type { Client, Task, Project, PaymentSchedule, UploadedImage, Terms, Service, Calculation, Item} from '$lib/types';
+  
   let projectId = $page.params.id;
   const databases = new Databases(client);
   const databaseId = 'PriceCalc'; // Your database ID
   const itemsCollectionId = '6735eb1000013509eaf3'; // Your collection ID
   const projectsCollectionId = '67362a9400133ceb48ac'; // Your collection ID
-  let services = {};
-  let uploadedImages: any[] = []; // Declare uploadedImages as an array
-  let projects: any[] = [];
+  let services: Record<string, Service[]> = {};
+  let uploadedImages: UploadedImage[] = [];
+  let projects: Project[] = [];
   let newProjectName: string = ''; // Variable to hold the new project name
   let totalPrice: number = 0;
   let totalItems: number = 0;
   let opmerkingen: string = ''; // Add these variables
   let notities: string = '';    // Add these variables
-  let terms: any[] = [];
-  let paymentSchedule: any;
+  let terms: Terms[] = [];
+  let paymentSchedule: PaymentSchedule;
+  let openCategories: Record<string, boolean> = {};  // Add this near other let declarations
   
 
   $: console.log(projects)
   onMount(async () => {
     try {
         const response = await databases.listDocuments(databaseId, itemsCollectionId, [Query.limit(100),Query.offset(0)]);
-        services = response.documents.reduce((acc, doc) => {
+        services = response.documents.reduce((acc: Record<string, Service[]>, doc) => {
             const { category, subcategory, type, price, unit, tasks } = doc;
             if (!acc[category]) {
                 acc[category] = [];
             }
-            acc[category].push({ subcategory, type, price, unit, tasks });
+            acc[category].push({ 
+                id: doc.$id,
+                name: type,
+                description: '',
+                category,
+                isEditing: false,
+                subcategory, 
+                type, 
+                price, 
+                unit, 
+                tasks 
+            });
             return acc;
         }, {});
         console.log(response)
@@ -58,7 +72,7 @@
 
       // Push uploaded images to the array
       if (result.uploadedImages) {
-        uploadedImages = result.uploadedImages.map(image => JSON.parse(image));
+        uploadedImages = result.uploadedImages.map((image: any) => JSON.parse(image));
       }
     }
   });
@@ -82,9 +96,9 @@
     let selectedItems: SelectedItem[] = [];
   
     // Add these variables for calculations
-    let calculations: Record<string, { length?: number; width?: number }> = {};
+    let calculations: Record<string, Calculation> = {};
   
-    function toggleItemSelection(category: string, item: any, project: any) {
+    function toggleItemSelection(category: string, item: Service, project: Project) {
       console.log(project);
       const index = project.items.findIndex(
         i => i.category === category && i.subcategory === item.subcategory && i.type === item.type
@@ -108,7 +122,7 @@
         if (item.tasks) {
           try {
             const tasksArray = typeof item.tasks === 'string' ? JSON.parse(item.tasks) : item.tasks;
-            initialTasks = tasksArray.map(task => ({
+            initialTasks = tasksArray.map((task: Task) => ({
               description: task,
               completed: false
             }));
@@ -118,7 +132,7 @@
           }
         }
 
-        const newItem = {
+        const newItem: Item = {
           category,
           ...item,
           quantity: quantity,
@@ -156,7 +170,7 @@
             }))
         );
 
-        const projectData = {
+        const projectData: Partial<Project> = {
             items: JSON.stringify(allItems),
             projects: JSON.stringify(projects),
             totalPrice: totalPrice,
@@ -213,16 +227,6 @@
   }
 
   // Define a task structure
-  interface Task {
-    id: string;
-    subcategory: string;
-    type: string;
-    completed: boolean;
-    photo: string | null;
-    projectName: string;
-    paymentSchedule: any;
-  }
-
   let tasks: Task[] = [];
 
   // Function to create tasks from selected items
@@ -258,10 +262,10 @@
     projects = projects.filter(project => project.name !== projectName);
   }
 
-  function clickOutside(node: HTMLElement) {
+  function clickOutside(node: HTMLElement, callback: () => void) {
     const handleClick = (event: MouseEvent) => {
       if (node && !node.contains(event.target as Node)) {
-        node.dispatchEvent(new CustomEvent('clickoutside'));
+        callback();
       }
     };
 
@@ -282,40 +286,40 @@
         <div class="relative">
           <a href="/client/edit/{$selectedUser?.$id}"><Pencil class="absolute top-0 right-0 cursor-pointer" /></a>
           <div>
-            <label>Naam:</label>
-            <span>{$selectedUser?.name || 'N/A'}</span>
+            <label for="name">Naam:</label>
+            <span id="name">{$selectedUser?.name || 'N/A'}</span>
           </div>
           <div>
-            <label>Achternaam:</label>
-            <span>{$selectedUser?.lastname || 'N/A'}</span>
+            <label for="lastname">Achternaam:</label>
+            <span id="lastname">{$selectedUser?.lastname || 'N/A'}</span>
           </div>
           <div>
-            <label>Adres:</label>
-            <span>{$selectedUser?.adress || 'N/A'}</span>
+            <label for="adress">Adres:</label>
+            <span id="adress">{$selectedUser?.adress || 'N/A'}</span>
           </div>
           <div>
-            <label>Huisnummer:</label>
-            <span>{$selectedUser?.huisnummer || 'N/A'}</span>
+            <label for="huisnummer">Huisnummer:</label>
+            <span id="huisnummer">{$selectedUser?.huisnummer || 'N/A'}</span>
           </div>
           <div>
-            <label>Postcode:</label>
-            <span>{$selectedUser?.postcode || 'N/A'}</span>
+            <label for="postcode">Postcode:</label>
+            <span id="postcode">{$selectedUser?.postcode || 'N/A'}</span>
           </div>
           <div>
-            <label>Stad:</label>
-            <span>{$selectedUser?.woonplaats || 'N/A'}</span>
+            <label for="woonplaats">Stad:</label>
+            <span id="woonplaats">{$selectedUser?.woonplaats || 'N/A'}</span>
           </div>
           <div>
-            <label>Bedrijfsnaam:</label>
-            <span>{$selectedUser?.businessname || 'N/A'}</span>
+            <label for="businessname">Bedrijfsnaam:</label>
+            <span id="businessname">{$selectedUser?.businessname || 'N/A'}</span>
           </div>
           <div>
-            <label>Email:</label>
-            <span>{$selectedUser?.email || 'N/A'}</span>
+            <label for="email">Email:</label>
+            <span id="email">{$selectedUser?.email || 'N/A'}</span>
           </div>
           <div>
-            <label>Telefoonnummer:</label>
-            <span>{$selectedUser?.telefoonnummer || 'N/A'}</span>
+            <label for="telefoonnummer">Telefoonnummer:</label>
+            <span id="telefoonnummer">{$selectedUser?.telefoonnummer || 'N/A'}</span>
           </div>
         </div>
       </div>
@@ -356,14 +360,14 @@
       <div class="border rounded-lg bg-white">
         <button
           class="w-full p-4 flex items-center justify-between hover:bg-gray-50"
-          on:click={() => items.isOpen = !items.isOpen}
+          on:click={() => openCategories[category] = !openCategories[category]}
         >
           <div class="flex items-center gap-3">
             <span class="font-medium">{category}</span>
           </div>
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 transform transition-transform {items.isOpen ? 'rotate-180' : ''}"
+            class="h-5 w-5 transform transition-transform {openCategories[category] ? 'rotate-180' : ''}"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -372,12 +376,12 @@
           </svg>
         </button>
         
-        {#if items.isOpen || items.some(item => project.items.some(selected => selected.category === category && selected.subcategory === item.subcategory && selected.type === item.type))}
+        {#if openCategories[category] || items.some((item: Item) => project.items.some((selected: Item) => selected.category === category && selected.subcategory === item.subcategory && selected.type === item.type))}
           <div class="p-4 pt-0 space-y-4">
             {#each items as item}
               <div class="space-y-2">
                 <div 
-                  class="flex justify-between p-2 border rounded-md cursor-pointer hover:bg-gray-50 {project.items.some(i => i.category === category && i.subcategory === item.subcategory && i.type === item.type) ? 'bg-blue-50 border-blue-200' : ''}"
+                  class="flex justify-between p-2 border rounded-md cursor-pointer hover:bg-gray-50 {project.items.some((i: Item) => i.category === category && i.subcategory === item.subcategory && i.type === item.type) ? 'bg-blue-50 border-blue-200' : ''}"
                 >
                   <div
                     class="flex-grow"
@@ -415,10 +419,10 @@
                 </div>
 
                 <!-- Add tasks section here -->
-                {#if project.items.some(i => i.category === category && i.subcategory === item.subcategory && i.type === item.type)}
+                {#if project.items.some((i: Item) => i.category === category && i.subcategory === item.subcategory && i.type === item.type)}
                   <div class="ml-4 p-2 bg-gray-50 rounded-md">
                     <h4 class="font-medium text-sm mb-2">Taken:</h4>
-                    {#each project.items.find(i => i.category === category && i.subcategory === item.subcategory && i.type === item.type).tasks || [] as task, taskIndex}
+                    {#each project.items.find((i: Item) => i.category === category && i.subcategory === item.subcategory && i.type === item.type).tasks || [] as task, taskIndex}
                       <div class="flex items-center gap-2 mb-2">
                         
                         <input
@@ -429,7 +433,7 @@
                         <button
                           class="text-red-500 hover:text-red-700 px-2"
                           on:click={() => {
-                            const itemIndex = project.items.findIndex(i => 
+                            const itemIndex = project.items.findIndex((i: Item) => 
                               i.category === category && 
                               i.subcategory === item.subcategory && 
                               i.type === item.type
@@ -445,7 +449,7 @@
                     <button
                       class="text-sm text-blue-500 hover:text-blue-700"
                       on:click={() => {
-                        const itemIndex = project.items.findIndex(i => 
+                        const itemIndex = project.items.findIndex((i: Item) => 
                           i.category === category && 
                           i.subcategory === item.subcategory && 
                           i.type === item.type
@@ -472,15 +476,16 @@
                 {#if items[0].unit === "m²"}
                   <div class="grid grid-cols-2 gap-4">
                     <div>
-                      <label class="block text-sm text-gray-600">Lengte (m)</label>
+                      <label for="length-input" class="block text-sm text-gray-600">Lengte (m)</label>
                       <input 
+                        id="length-input"
                         type="number" 
                         value={calculations[category]?.length || 1}
                         on:input={(event) => {
                           calculations[category] = calculations[category] || {};
-                          calculations[category].length = parseFloat(event.target.value);
+                          calculations[category].length = parseFloat((event.target as HTMLInputElement).value);
                           // Update quantities for selected items in this category
-                          project.items = project.items.map(item => {
+                          project.items = project.items.map((item: Item) => {
                             if (item.category === category) {
                               return {
                                 ...item,
@@ -494,15 +499,16 @@
                       />
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600">Breedte (m)</label>
+                      <label for="width-input" class="block text-sm text-gray-600">Breedte (m)</label>
                       <input 
+                        id="width-input"
                         type="number" 
                         value={calculations[category]?.width || 1}
                         on:input={(event) => {
                           calculations[category] = calculations[category] || {};
-                          calculations[category].width = parseFloat(event.target.value);
+                          calculations[category].width = parseFloat((event.target as HTMLInputElement).value);
                           // Update quantities for selected items in this category
-                          project.items = project.items.map(item => {
+                          project.items = project.items.map((item: any) => {
                             if (item.category === category) {
                               return {
                                 ...item,
@@ -518,15 +524,16 @@
                   </div>
                 {:else}
                   <div>
-                    <label class="block text-sm text-gray-600">Lengte (m)</label>
+                    <label for="length-input" class="block text-sm text-gray-600">Lengte (m)</label>
                     <input 
+                      id="length-input"
                       type="number" 
                       value={calculations[category]?.length || 1}
                       on:input={(event) => {
                         calculations[category] = calculations[category] || {};
-                        calculations[category].length = parseFloat(event.target.value);
+                        calculations[category].length = parseFloat((event.target as HTMLInputElement).value);
                         // Update quantities for selected items in this category
-                        project.items = project.items.map(item => {
+                        project.items = project.items.map((item: any) => {
                           if (item.category === category) {
                             return {
                               ...item,
@@ -545,16 +552,17 @@
               <div class="space-y-3">
                 <h3 class="font-medium">Aantal:</h3>
                 <div>
-                  <label class="block text-sm text-gray-600">Aantal stuks</label>
+                  <label for="quantity-input" class="block text-sm text-gray-600">Aantal stuks</label>
                   <input 
+                    id="quantity-input"
                     type="number" 
                     value={calculations[category]?.length || 1}
                     min="1"
                     on:input={(event) => {
                       calculations[category] = calculations[category] || {};
-                      calculations[category].length = parseFloat(event.target.value);
+                      calculations[category].length = parseFloat((event.target as HTMLInputElement).value);
                       // Update quantities for selected items in this category
-                      project.items = project.items.map(item => {
+                      project.items = project.items.map((item: any) => {
                         if (item.category === category) {
                           return {
                             ...item,
@@ -592,13 +600,19 @@
       Voeg dak toe
     </button>
 
-    <Terms bind:terms={terms} bind:projects={projects} />
+    <TermsComponent bind:terms={terms} bind:projects={projects} />
 
     <CreatePaymentSchedule bind:totalPrice={totalPrice} bind:paymentSchedule={paymentSchedule} />
 
     {#if projects.length > 0 || uploadedImages.length > 0}
-      <div class="fixed bottom-4 right-4 bg-white shadow-lg rounded-lg p-4 border">
-        <div on:click={() => showInvoice = !showInvoice}>
+      <div 
+        class="fixed bottom-4 right-4 bg-white shadow-lg rounded-lg p-4 border"
+        role="button"
+        tabindex="0"
+        on:click={() => showInvoice = !showInvoice}
+        on:keydown={e => e.key === 'Enter' && (showInvoice = !showInvoice)}
+      >
+        <div>
           <div class="text-lg font-medium">Totaal: €{totalPrice.toFixed(2)}</div>
           <div class="text-sm text-gray-600">{totalItems} item{totalItems === 1 ? '' : 's'} geselecteerd</div>
         </div>

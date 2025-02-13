@@ -29,7 +29,7 @@ onMount(() => {
 
 <script>
   import { onMount } from "svelte";
-  import { selectedUser } from "../../stores/userStore.js";
+  import { selectedUser } from "../../stores/userStore.ts";
   import { goto } from "$app/navigation";
 
   let userDetails = null;

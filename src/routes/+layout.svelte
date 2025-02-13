@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import { account } from '$lib/appwrite';
     import "../app.css";
     import CircleUser from "lucide-svelte/icons/circle-user";
@@ -12,7 +12,6 @@
     import Package2 from "lucide-svelte/icons/package-2";
     import Search from "lucide-svelte/icons/search";
     import Users from "lucide-svelte/icons/users";
-    import FileText from "lucide-svelte/icons/file-text";
     import { Badge } from "$lib/components/ui/badge/index.js";
     import { Button } from "$lib/components/ui/button/index.js";
     import * as Card from "$lib/components/ui/card/index.js";
@@ -26,9 +25,16 @@
     import UserSearch from './userSearch.svelte'
     import { derived } from 'svelte/store';
     import { chatwootContact } from "../stores/userStore";
+    import FileText from "lucide-svelte/icons/file-text";
 
     $: pathSegments = $page.url.pathname.split('/').filter(Boolean);
-    let loggedInUser = {name: '', labels: []};
+    interface LoggedInUser {
+        name: string;
+        labels: string[];
+        [key: string]: any; // For any additional properties from Appwrite
+    }
+
+    let loggedInUser: LoggedInUser = {name: '', labels: []};
     let activeRoute = ''
     // Add sheet open state store
     const sheetOpen = writable(false);
@@ -48,9 +54,9 @@
        } catch (error) {
                await account.createOAuth2Session(
                 OAuthProvider.Oidc,   // provider
-                import.meta.env.VITE_URL + '/project', // redirect here on success
+                import.meta.env.VITE_URL, // redirect here on success
                import.meta.env.VITE_URL + '/fail', // redirect here on failure
-               //['openid', 'profile', 'email'] // scopes (optional)
+               ['openid', 'profile', 'email', 'account'] // scopes (optional)
               );
      } finally {
       console.log('test')
@@ -70,7 +76,7 @@
     
        async function logout() {
            await account.deleteSession('current');
-           loggedInUser = {name: ''};
+           loggedInUser = {name: '', labels: []};
            window.location.replace('/')
            alert('test')
        }
@@ -89,7 +95,7 @@
 
     //chatwoot recieve client data
  
-   function handleMessage(event) {
+   function handleMessage(event: MessageEvent) {
         console.log('chatwoot.event', event);
         const eventData = JSON.parse(event.data);
         console.log('chatwoot.eventData', eventData);
@@ -130,7 +136,7 @@
           {/if}
         </div>
       </div>
-      <div class="flex-1">
+      <div class="flex-1 flex flex-col">
         <nav class="grid items-start px-2 text-sm font-medium lg:px-4">
           <a
             href="/client"
@@ -152,13 +158,6 @@
             </Badge> -->
           </a>
           <a
-            href="/item"
-            class={`bg-muted text-primary hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${activeRoute === 'item' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
-          >
-            <Package class="h-4 w-4" />
-            Diensten
-          </a>
-          <a
             href="/agenda"
             class={`text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${activeRoute === 'agenda' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
           >
@@ -172,6 +171,17 @@
             <ChartLine class="h-4 w-4" />
             Werkbonnen
           </a>
+        </nav>
+        
+        <!-- Add bottom links for desktop menu -->
+        <div class="mt-auto border-t px-2 pt-2 lg:px-4">
+          <a
+            href="/item"
+            class={`text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${activeRoute === 'item' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
+          >
+            <Package class="h-4 w-4" />
+            Diensten
+          </a>
           <a
             href="/terms"
             class={`text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${activeRoute === 'terms' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
@@ -179,7 +189,7 @@
             <FileText class="h-4 w-4" />
             Voorwaarden
           </a>
-        </nav>
+        </div>
       </div>
     </div>
   </div>
@@ -218,19 +228,6 @@
             >
               <ShoppingCart class="h-5 w-5" />
               Projecten
-              <!-- <Badge
-                class="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
-              >
-                6
-              </Badge> -->
-            </a>
-            <a
-              href="/item"
-              on:click={closeSheet}
-              class={`text-muted-foreground hover:text-primary flex items-center gap-4 rounded-xl px-3 py-2 ${activeRoute === 'item' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
-            >
-              <Package class="h-5 w-5" />
-              Diensten
             </a>
             <a
               href="/agenda"
@@ -248,6 +245,18 @@
               <ChartLine class="h-5 w-5" />
               Werkbonnen
             </a>
+          </nav>
+          
+          <!-- Add this new div for bottom links -->
+          <div class="mt-auto border-t pt-2">
+            <a
+              href="/item"
+              on:click={closeSheet}
+              class={`text-muted-foreground hover:text-primary flex items-center gap-4 rounded-xl px-3 py-2 ${activeRoute === 'item' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
+            >
+              <Package class="h-5 w-5" />
+              Diensten
+            </a>
             <a
               href="/terms"
               on:click={closeSheet}
@@ -256,8 +265,7 @@
               <FileText class="h-5 w-5" />
               Voorwaarden
             </a>
-          </nav>
-          
+          </div>
         </Sheet.Content>
       </Sheet.Root>
       <div class="w-full flex-1">

@@ -38,12 +38,12 @@ onMount(async () => {
   {#await getLatestClients() then latestClients}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {#each latestClients as client}
-        <div class="card border rounded-lg p-4 shadow-md cursor-pointer" on:click={() => window.location.href = `/client/view/${client.$id}`}>
+        <a href="/client/view/{client.$id}" class="card block border rounded-lg p-4 shadow-md hover:shadow-lg">
           <h2 class="text-xl font-bold mb-2">{client.name} {client.lastname}</h2>
           <p><strong>Address:</strong> {client.adress} {client.huisnummer}</p>
           <p><strong>Postal Code:</strong> {client.postcode}</p>
           <p><strong>City:</strong> {client.woonplaats}</p>
-        </div>
+        </a>
       {/each}
       <a href="/client/new" class="card border rounded-lg p-4 shadow-md cursor-pointer flex items-center justify-center text-center">
         <span class="text-xl font-bold">Nieuwe klant toevoegen</span>

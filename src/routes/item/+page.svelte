@@ -1,8 +1,9 @@
-<script>
+<script lang="ts">
 import { onMount } from 'svelte';
 import { Databases, ID, Query } from "appwrite";
 import { client } from "$lib/appwrite";
 import CreateTasks from '../../components/createTasks.svelte';
+import type { Service } from '$lib/types';
 
 const databases = new Databases(client);
 const databaseId = 'PriceCalc'; // Your database ID
@@ -15,7 +16,7 @@ let selectedCategory = ''; // Initialize selectedCategory
 
 // New reactive variable for the edit dialog
 let isEditDialogOpen = false; // Manage dialog visibility
-let serviceToEdit = null; // Store the service being edited
+let serviceToEdit: Service | null = null; // Store the service being edited
 
 // New reactive variable to track visibility of taken for each service
 let tasksVisibility = {};
@@ -47,7 +48,7 @@ let newService = {
     tasks: ''
 };
 
-function addService(category) {
+function addService(category: string) {
     if (newService.subcategory && newService.type && newService.price && newService.unit) {
         services[category].push({ ...newService });
         resetNewService();
@@ -65,12 +66,12 @@ function resetNewService() {
 }
 
 // Function to update an existing service
-function updateService(category, index, updatedService) {
+function updateService(category: string, index: number, updatedService: Service) {
     services[category][index] = updatedService;
 }
 
 // Function to delete a service
-async function deleteService(category, index) {
+async function deleteService(category: string, index: number) {
     console.log(category, index);
    try {
         const response = await databases.deleteDocument(databaseId, collectionId, services[category][index].$id);
@@ -84,7 +85,7 @@ async function deleteService(category, index) {
   }
 
 // Function to open the edit dialog
-function editService(category, index, service) {
+function editService(category: string, index: number, service: Service) {
     serviceToEdit = { ...service, category, index }; // Store the service details
     isEditDialogOpen = true; // Open the dialog
 }
@@ -203,7 +204,7 @@ function toggletasksVisibility(category, index) {
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
-                <span>Add New Service</span>
+                <span>Dienst toevoegen</span>
             </button>
         </div>
     </div>

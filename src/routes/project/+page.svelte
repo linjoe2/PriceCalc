@@ -5,27 +5,29 @@
   import Plus from "lucide-svelte/icons/plus";
   import Pencil from "lucide-svelte/icons/pencil";
   import Trash from "lucide-svelte/icons/trash";
-  import { readable } from "svelte/store";
-  import { Button } from "$lib/components/ui/button/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import * as Table from "$lib/components/ui/table";
   import { chatwootContact } from '../../stores/userStore';
-
+  import type { Project } from '$lib/types';
 
   const databases = new Databases(client);
   const databaseId = 'PriceCalc';
   const collectionId = '67362a9400133ceb48ac';
 
-  let services = [];
+  let projects: Project[] = [];
   let filterValue = '';
   let offset = 0;
   const limit = 100;
 
-  async function fetchServices(contact) {
+  async function fetchProjects(contact?: any) {
     console.log(contact)
     try {
       const response = await databases.listDocuments(databaseId, collectionId, [Query.limit(limit), Query.offset(offset), Query.orderDesc("createdAt")]);
-      services = response.documents;
+      projects = response.documents.map((doc: any) => ({
+        ...doc,
+        isEditing: false,
+        isOpen: false
+      }));
       
       console.log(response);
     } catch (error) {
@@ -33,26 +35,27 @@
     }
   }
 
-  $: fetchServices($chatwootContact)
+  $: fetchProjects($chatwootContact)
 
-  onMount(fetchServices);
+  onMount(fetchProjects);
 
   function nextPage() {
     offset += limit;
-    fetchServices();
+    fetchProjects();
   }
 
   function previousPage() {
     if (offset >= limit) {
       offset -= limit;
-      fetchServices();
+      fetchProjects();
     }
   }
 
-  async function deleteProject(id: string) {
+  async function deleteProject(id: string | undefined) {
+    if (!id) return;
     await databases.deleteDocument(databaseId, collectionId, id);
-    services = services.filter(service => service.$id !== id);
-    console.log(services);
+    projects = projects.filter((project: Project) => project.$id !== id);
+    console.log(projects);
   }
 </script>
 
@@ -82,21 +85,21 @@
         </Table.Row>
       </Table.Header>
       <Table.Body>
-        {#each services as service}
+        {#each projects as project}
           <Table.Row>
             <Table.Cell>
-              <a href="/project/view/{service.$id}">
-                {service.client.name} {service.client.lastname}
+              <a href="/project/view/{project.$id}">
+                {project.client.name} {project.client.lastname}
               </a>
             </Table.Cell>
-            <Table.Cell><a href="/project/view/{service.$id}">{new Date(service.updatedAt).toLocaleDateString('nl-NL', { year: 'numeric', month: 'long', day: 'numeric' })}</a></Table.Cell>
-            <Table.Cell><a href="/project/view/{service.$id}">{JSON.parse(service.items).length} items</a></Table.Cell>
-            <Table.Cell>{service.fase}</Table.Cell>
+            <Table.Cell><a href="/project/view/{project.$id}">{new Date(project.$updatedAt).toLocaleDateString('nl-NL', { year: 'numeric', month: 'long', day: 'numeric' })}</a></Table.Cell>
+            <Table.Cell><a href="/project/view/{project.$id}">{JSON.parse(project.items).length} items</a></Table.Cell>
+            <Table.Cell>{project.fase}</Table.Cell>
             <Table.Cell>
-              <a href="/project/edit/{service.$id}" class="mr-2">
+              <a href="/project/edit/{project.$id}" class="mr-2">
                 <button><Pencil class="h-4 w-4" /></button>
               </a>
-              <button on:click={() => deleteProject(service.$id)} class="ml-2">
+              <button on:click={() => deleteProject(project.$id)} class="ml-2">
                 <Trash class="h-4 w-4" />
               </button>
             </Table.Cell>

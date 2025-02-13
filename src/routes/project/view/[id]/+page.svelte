@@ -1,15 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { Databases } from "appwrite";
+  import { Databases, ID } from "appwrite";
   import { client } from "$lib/appwrite";
   import { page } from '$app/stores';
   import ShowPdf from "../../../../components/showPdf.svelte";
   import FetchImages from "./fetchImages.svelte";
-  
-  let projectId = $page.params.id;
-  let projectData = null;
-  let uploadedImages: string[] = [];
+  import type { Project, UploadedImage } from '$lib/types';
 
+  let projectId = $page.params.id;
+  let projectData: Project | null = null;
+  let uploadedImages: UploadedImage[] = [];
 
   $: console.log(projectData)
 
@@ -19,10 +19,24 @@
 
   onMount(async () => {
     try {
-      projectData = await databases.getDocument(databaseId, projectsCollectionId, projectId);
-      projectData.items = JSON.parse(projectData.items);
-      projectData.projects = JSON.parse(projectData.projects);
-      uploadedImages = projectData.uploadedImages;
+      const response = await databases.getDocument(databaseId, projectsCollectionId, projectId);
+      projectData = {
+        ...response,
+        items: JSON.parse(response.items),
+        projects: JSON.parse(response.projects),
+        terms: JSON.parse(response.terms),
+        paymentSchedule: JSON.parse(response.paymentSchedule),
+        name: response.name,
+        client: response.client,
+        fase: response.fase,
+        tasks: response.tasks,
+        opmerkingen: response.opmerkingen,
+        notities: response.notities,
+        uploadedImages: response.uploadedImages || []
+      };
+      if (projectData) {
+        uploadedImages = projectData.uploadedImages;
+      }
       console.log(uploadedImages);
       console.log(projectData);
     } catch (error) {
@@ -30,7 +44,7 @@
     }
   });
 
-  $: totalPrice = projectData ? projectData.items.reduce((sum, item) => {
+  $: totalPrice = projectData ? projectData.items.reduce((sum: number, item: any) => {
     const price = typeof item.price === 'string' ? parseFloat(item.price) : item.price;
     return sum + (price * item.quantity);
   }, 0) : 0;
@@ -58,7 +72,7 @@
       delete newProjectData.$updatedAt;
       
       // Add "(Copy)" to the project names
-      newProjectData.projects = newProjectData.projects.map(project => ({
+      newProjectData.projects = newProjectData.projects?.map(project => ({
         ...project,
         name: `${project.name} (Copy)`
       }));
@@ -66,6 +80,7 @@
       const response = await databases.createDocument(
         databaseId,
         projectsCollectionId,
+        ID.unique(),
         newProjectData
       );
 
@@ -86,7 +101,7 @@
       <select 
         bind:value={projectData.fase} 
         class="block w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        on:change="{(e) => updateProjectStatus(e.target.value)}"
+        on:change="{(e) => updateProjectStatus((e.target as HTMLSelectElement).value)}"
       >
         <option value="start">start</option>
         <option value="accepted">acceptatie</option>
@@ -165,7 +180,7 @@
         <div class="mt-8">
           <h3 class="text-xl font-semibold text-gray-900">Voorwaarden</h3>
           <ul class="mt-4 space-y-2 list-disc list-inside text-gray-600">
-            {#each JSON.parse(projectData.terms) as term}
+            {#each projectData.terms as term}
               <li>{term.text}</li>
             {/each}
           </ul>
@@ -205,16 +220,16 @@
           <h2 class="text-xl font-semibold text-gray-900 mb-4">Betalingsschema</h2>
           <div class="space-y-4">
             <div class="flex justify-between items-center py-2 border-b border-gray-100">
-              <span class="text-gray-600">Aanbetaling ({JSON.parse(projectData.paymentSchedule).initial}%)</span>
-              <span class="font-medium">€{(totalPriceWithTax * JSON.parse(projectData.paymentSchedule).initial / 100).toFixed(2)}</span>
+              <span class="text-gray-600">Aanbetaling ({projectData.paymentSchedule.initial}%)</span>
+              <span class="font-medium">€{(totalPriceWithTax * projectData.paymentSchedule.initial / 100).toFixed(2)}</span>
             </div>
             <div class="flex justify-between items-center py-2 border-b border-gray-100">
-              <span class="text-gray-600">Tijdens werkzaamheden ({JSON.parse(projectData.paymentSchedule).during}%)</span>
-                <span class="font-medium">€{(totalPriceWithTax * JSON.parse(projectData.paymentSchedule).during / 100).toFixed(2)}</span>
+              <span class="text-gray-600">Tijdens werkzaamheden ({projectData.paymentSchedule.during}%)</span>
+              <span class="font-medium">€{(totalPriceWithTax * projectData.paymentSchedule.during / 100).toFixed(2)}</span>
             </div>
             <div class="flex justify-between items-center py-2 border-b border-gray-100">
-              <span class="text-gray-600">Bij oplevering ({JSON.parse(projectData.paymentSchedule).final}%)</span>
-              <span class="font-medium">€{(totalPriceWithTax * JSON.parse(projectData.paymentSchedule).final / 100).toFixed(2)}</span>
+              <span class="text-gray-600">Bij oplevering ({projectData.paymentSchedule.final}%)</span>
+              <span class="font-medium">€{(totalPriceWithTax * projectData.paymentSchedule.final / 100).toFixed(2)}</span>
             </div>
           </div>
         </div>

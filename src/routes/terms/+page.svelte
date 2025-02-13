@@ -1,16 +1,16 @@
-<script>
+<script lang="ts">
     import { Databases } from 'appwrite';
     import { client } from '$lib/appwrite';
     import { onMount } from 'svelte';
-
-    export let terms = [];
-    export let projects = [];
+    import type { Term, Project } from '$lib/types';
+    export let terms: Term[] = [];
+    export let projects: Project[] = [];
     let newTerm = {
         text: '',
         checked: false
     };
     let isEditing = false;
-    let editingTerm = null;
+    let editingTerm: Term;
 
     const databaseId = 'PriceCalc'; // Replace with your actual database ID
     const collectionId = '67a280b30007409faa24'; // Replace with your actual collection ID
@@ -74,7 +74,7 @@
         }
     }
 
-    async function toggleChecked(term) {
+    async function toggleChecked(term: Term) {
         if(projects.length > 0) return;
         try {
             await databases.updateDocument(
@@ -89,7 +89,7 @@
         }
     }
 
-    async function deleteTerm(id) {
+    async function deleteTerm(id: string) {
         if (confirm('Are you sure you want to delete this term?')) {
             try {
                 await databases.deleteDocument(databaseId, collectionId, id);
@@ -100,7 +100,7 @@
         }
     }
 
-    function startEditing(term) {
+    function startEditing(term: Term) {
         isEditing = true;
         editingTerm = { ...term };
     }
@@ -134,7 +134,7 @@
                         <button
                             on:click={() => {
                                 isEditing = false;
-                                editingTerm = null;
+                                editingTerm = undefined;
                             }}
                             class="text-gray-600 hover:text-gray-700"
                         >
