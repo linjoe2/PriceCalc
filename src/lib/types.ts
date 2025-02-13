@@ -104,3 +104,15 @@ export interface Item {
     unit: string;
     tasks: Task[];
 }
+
+export interface ChatwootContact {
+    id: string;
+    name: string;
+    email: string;
+    phone_number: string;
+    custom_attributes: {
+        postcode: string;
+        huisnummer: string;
+        phone: string;
+    };
+}

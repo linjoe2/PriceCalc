@@ -6,6 +6,7 @@
     import { page } from '$app/stores';
     import Eye from "lucide-svelte/icons/eye";
     import Pencil from "lucide-svelte/icons/pencil";
+    import SavingAnimation from "../../../../components/savingAnimation.svelte";
 
     let clientId = '';
     let clientData = {
@@ -24,7 +25,8 @@
         search: ''
         
     };
-
+    let addressDetails;
+    let isSaving = false;
     $: clientData.search = `${clientData.name} ${clientData.lastname} ${clientData.businessname} ${clientData.postcode} ${clientData.huisnummer} ${clientData.telefoonnummer}`
 
     onMount(async () => {
@@ -54,6 +56,7 @@
     });
 
     async function updateClient() {
+        isSaving = true;
         const databases = new Databases(client);
         try {
             const filteredClientData = Object.keys(clientData).reduce((acc, key) => {
@@ -69,8 +72,39 @@
         } catch (error) {
             console.error(error);
             alert('Er ging iets mis bij het bijwerken van de gegevens.');
+        } finally {
+            isSaving = false;
         }
     }
+
+    async function fetchAddressDetails(postcode: string, houseNumber: string) {
+        postcode = postcode.replace(/\s/g, '');
+        if (postcode && houseNumber) {
+            const response = await fetch('/api/address', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ postcode: postcode.replace(/\s/g, '').toUpperCase(), houseNumber })
+            });
+
+            if (response.ok) {
+                addressDetails = await response.json();
+                console.log(addressDetails)
+                clientData.adress = addressDetails.straat
+                clientData.woonplaats = addressDetails.woonplaats
+                clientData.oppervlakte = addressDetails.oppervlakte
+                clientData.bouwjaar = addressDetails.bouwjaar
+            } else {
+                console.error('Failed to fetch address details');
+            }
+        }
+
+
+    }
+
+    // $: fetchAddressDetails(clientData.postcode, clientData.huisnummer)
+
 </script>
 <h1 class="text-2xl font-bold text-gray-800 mb-4">Klant Gegevens Bewerken</h1>
 <form on:submit|preventDefault={updateClient} class="shadow-md rounded px-8 pt-6 pb-8 mb-4 bg-white">
@@ -133,3 +167,4 @@
 </form>
 
 
+<SavingAnimation isVisible={isSaving} />

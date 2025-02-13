@@ -11,7 +11,8 @@
   import TermsComponent from '../../../terms/+page.svelte';
   import CreatePaymentSchedule from '../../../../components/createPaymentScedule.svelte';
   import type { Client, Task, Project, PaymentSchedule, UploadedImage, Terms, Service, Calculation, Item} from '$lib/types';
-  
+  import SavingAnimation from "../../../../components/savingAnimation.svelte";
+  let isSaving = false;
   let projectId = $page.params.id;
   const databases = new Databases(client);
   const databaseId = 'PriceCalc'; // Your database ID
@@ -161,6 +162,7 @@
     $: console.log(projects);
 
     async function saveProject() {
+        isSaving = true;
     try {
         // Flatten all items from all projects and include their tasks
         const allItems = projects.flatMap(project => 
@@ -223,6 +225,8 @@
         goto('/project/view/' + response.$id);
     } catch (error) {
         console.error('Error saving project:', error);
+    } finally {
+        isSaving = false;
     }
   }
 
@@ -649,3 +653,4 @@
     <div class="text-lg font-medium text-white">Selecteer eerst een klant</div>
   </div>
 {/if}
+<SavingAnimation isVisible={isSaving} />

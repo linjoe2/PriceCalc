@@ -1,27 +1,31 @@
-<script>
+<script lang="ts">
     import { Databases, ID, Query } from "appwrite";
     import { client } from "$lib/appwrite";
 	import { on } from "svelte/events";
     import { onMount } from "svelte";
     import { chatwootContact } from "../../../stores/userStore";
+    import type { ChatwootContact } from '$lib/types';
+    import SavingAnimation from "../../../components/savingAnimation.svelte";
+    let isSaving = false;
     let postcode = '';
     let houseNumber = '';
     let addressDetails = {};
     let naam = '';
-    let achternaam;
-    let bedrijfsnaam;
-    let straat;
-    let woonplaats;
-    let email;
-    let telefoonnummer;
-    let oppervlakte;
-    let bouwjaar;
-    let chatwootid;
+    let achternaam: string | null = null;
+    let bedrijfsnaam: string | null = null;
+    let straat: string | null = null;
+    let woonplaats: string | null = null;
+    let email: string | null = null;
+    let telefoonnummer: string | null = null;
+    let oppervlakte: number | null = null;
+    let bouwjaar: number | null = null;
+    let chatwootid: string | null = null;
  
     const databases = new Databases(client);
 
  
-    async function fetchAddressDetails(postcode, houseNumber) {
+    async function fetchAddressDetails(postcode: string, houseNumber: string) {
+        postcode = postcode.replace(/\s/g, '');
         if (postcode && houseNumber) {
             const response = await fetch('/api/address', {
                 method: 'POST',
@@ -43,13 +47,15 @@
             }
         }
 
-        onMount(() => {
-            window.parent.postMessage('chatwoot-dashboard-app:fetch-info', '*')
 
-        })
     }
 
-    async function updateContacts(chatwootContact){
+    onMount(() => {
+        window.parent.postMessage('chatwoot-dashboard-app:fetch-info', '*')
+
+    })
+
+    async function updateContacts(chatwootContact: ChatwootContact){
         if(!!chatwootContact){
             // check if chatwoot contact exists id database
             const result = await databases.listDocuments('PriceCalc', '67362abc0039525e36b6', [Query.equal('chatwootid', chatwootContact.id)]);
@@ -75,7 +81,7 @@
 
 
     async function saveToAppwriteDB() {
-
+        isSaving = true;
 
         const user = {
             name: naam,
@@ -107,6 +113,8 @@
         } catch (error) {
             console.error(error);
             alert('Er ging iets mis bij het toevoegen van de gebruiker aan de database.');
+        } finally {
+            isSaving = false;
         }
     }
 
@@ -115,7 +123,7 @@
 
 
 <h1>Nieuwe klant</h1>
-<form on:submit|preventDefault={fetchAddressDetails} class="shadow-md rounded px-8 pt-6 pb-8 mb-4">
+<form class="shadow-md rounded px-8 pt-6 pb-8 mb-4">
     <label for="naam" class="block text-sm font-medium text-gray-700">Naam*:</label>
     <input type="text" id="naam" bind:value={naam} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
     
@@ -154,3 +162,4 @@
     
     <button type="submit" class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" on:click={saveToAppwriteDB}>Gegevens opslaan</button>
 </form>
+<SavingAnimation isVisible={isSaving} />
