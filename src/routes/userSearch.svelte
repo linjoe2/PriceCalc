@@ -192,10 +192,6 @@
         background: #f5f5f5;
     }
 
-    .email {
-        color: #666;
-        font-size: 0.9em;
-    }
 
     .no-results {
         text-align: center;
@@ -219,20 +215,5 @@
         padding: 20px;
         border-radius: 4px;
         min-width: 300px;
-    }
-
-    .dialog-input {
-        width: 100%;
-        margin: 8px 0;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-    }
-
-    .dialog-buttons {
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-        margin-top: 16px;
     }
 </style>

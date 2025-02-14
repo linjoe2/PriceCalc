@@ -22,7 +22,7 @@
     import {onMount} from "svelte";
     import { writable } from 'svelte/store';
     import { page } from '$app/stores';
-    import UserSearch from './userSearch.svelte'
+    // import UserSearch from './userSearch.svelte'
     import { derived } from 'svelte/store';
     import { chatwootContact } from "../stores/userStore";
     import FileText from "lucide-svelte/icons/file-text";
@@ -269,7 +269,7 @@
         </Sheet.Content>
       </Sheet.Root>
       <div class="w-full flex-1">
-        <UserSearch />
+        <!-- <UserSearch /> -->
       </div>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger asChild let:builder>

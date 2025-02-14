@@ -6,50 +6,50 @@
     import * as Table from "$lib/components/ui/table/index.js";
     import { Button } from "$lib/components/ui/button/index.js";
     import { Input } from "$lib/components/ui/input/index.js";
-
+    import type { Client } from "$lib/types";
 
     const databases = new Databases(client);
-    let clients = [];
-    let filterValue = '';
+    let clients: Client[] = [];
+    let filterValue: string | null = null;
     let isDialogOpen = false;
     // let selectedClient = null;
+    let Mounted = false;
     let offset = 0;
     const limit = 10; // Set the number of items per page
 
-    function openDialog(client) {
-        selectedClient = client;
-        isDialogOpen = true;
-    }
 
-    function closeDialog() {
-        isDialogOpen = false;
-    }
-
-    async function fetchClients() {
+    async function fetchClients(filterValue: string | null) {
+        if (Mounted == false) {
+            return;
+        }
         const searchQuery = filterValue ? [Query.search('search', filterValue)] : [];
         const result = await databases.listDocuments(
             'PriceCalc',
             '67362abc0039525e36b6',
             [...searchQuery, Query.limit(limit), Query.offset(offset), Query.orderAsc("lastname")]
         );
-        clients = result.documents;
+        clients = result.documents as unknown as Client[];
     }
 
     function nextPage() {
         offset += limit;
-        fetchClients();
+        fetchClients(filterValue);
     }
 
     function previousPage() {
         if (offset >= limit) {
             offset -= limit;
-            fetchClients();
+            fetchClients(filterValue);
         }
     }
 
-    $: fetchClients(filterValue);
 
-    onMount(fetchClients);
+    onMount(async () => {
+        Mounted = true;
+        fetchClients(filterValue);
+    });
+
+    $: fetchClients(filterValue);
 </script>
 
 <div class="w-full table-container">
@@ -60,9 +60,14 @@
             type="text"
             bind:value={filterValue}
         />
-        <a href="/client/new">
-            <Button class="ml-auto" variant="primary">+ klant</Button>
-        </a>
+        <div class="flex items-center gap-4">
+            <a href="/client/sub">
+                <Button class="ml-auto mr-4 border border-black" variant="primary">+ onderaannemer</Button>
+            </a>
+            <a href="/client/new">
+                <Button class="ml-auto mr-4 border border-black" variant="primary">+ klant</Button>
+            </a>
+        </div>
     </div>
     <div class="rounded-md border">
         <Table.Root>

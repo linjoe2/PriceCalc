@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import Plus from "lucide-svelte/icons/plus";
     import Pencil from "lucide-svelte/icons/pencil";
     import Trash from "lucide-svelte/icons/trash";
@@ -8,7 +8,18 @@
     import { selectedUser } from '../../stores/userStore';
     import { Databases, Query } from 'appwrite';
     import { goto } from '$app/navigation';
-    let clientData = [];
+    import type { Client } from "$lib/types";
+    let clientData: Client = {
+        name: '',
+        lastname: '',
+        businessname: '',
+        adress: '',
+        huisnummer: '',
+        postcode: '',
+        woonplaats: '',
+        email: '',
+        telefoonnummer: ''
+    };
     export let clientId;
      // Fetch client data from Appwrite
       onMount(async () => {
@@ -19,7 +30,7 @@
                 '67362abc0039525e36b6', // collectionId
                 clientId // documentId
             );
-            clientData = response;
+            clientData = response as unknown as Client;
             console.log('id', clientId);
             console.log('response', clientData);
         } catch (error) {
@@ -34,38 +45,53 @@
     }
 </script>
 
-<div class="container mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-4">{clientData.name} {clientData.lastname}</h1>
-    
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <p>Bedrijf: {clientData.businessname}</p>
-        <p>Address: {clientData.adress} {clientData.huisnummer}, {clientData.postcode}, {clientData.woonplaats}</p>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex justify-between">
+        <h1 class="text-3xl font-bold mb-6 text-gray-900">{clientData.name} {clientData.lastname}</h1>
+        <h1 class="text-3xl font-bold mb-6 text-gray-300">{clientData.subcontractors?.businessname}</h1>
+    </div>
+    <div class="bg-white rounded-lg shadow-lg p-6 md:p-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <h2 class="font-semibold text-gray-700 mb-2">Persoonlijke gegevens</h2>
+                <p class="text-gray-600">{clientData.businessname}</p>
+                <p class="text-gray-600">{clientData.email}</p>
+                <p class="text-gray-600">{clientData.telefoonnummer}</p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <h2 class="font-semibold text-gray-700 mb-2">Adresgegevens</h2>
+                <p class="text-gray-600">{clientData.adress} {clientData.huisnummer}</p>
+                <p class="text-gray-600">{clientData.postcode}, {clientData.woonplaats}</p>
+            </div>
+        </div>
         
-        <div class="mt-6">
-            <table class="min-w-full">
-                <thead>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-2">Laatste update</th>
-                        <th class="px-4 py-2">Aantal items</th>
-                        <th class="px-4 py-2">Status</th>
-                        <th class="px-4 py-2">Acties</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Laatste update</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aantal items</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acties</th>
                     </tr>
                 </thead>
-                <tbody>
-                    {#each clientData.projects as project}
-                        <tr class="border-b">
-                            <td class="px-4 py-2 cursor-pointer" on:click={() => window.location.href = `/project/view/${project.$id}`}>
-                                {new Date(project.updatedAt).toLocaleDateString('nl-NL')}
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {#each clientData?.projects ?? [] as project}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-4 py-4 whitespace-nowrap cursor-pointer" on:click={() => window.location.href = `/project/view/${project.$id}`}>
+                                {project.$updatedAt ? new Date(project.$updatedAt).toLocaleDateString('nl-NL') : '-'}
                             </td>
-                            <td class="px-4 py-2 cursor-pointer" on:click={() => window.location.href = `/project/view/${project.$id}`}>
+                            <td class="px-4 py-4 whitespace-nowrap cursor-pointer" on:click={() => window.location.href = `/project/view/${project.$id}`}>
                                 {JSON.parse(project.items).length} items
                             </td>
-                            <td class="px-4 py-2 cursor-pointer" on:click={() => window.location.href = `/project/view/${project.$id}`}>
-                                {project.fase}
+                            <td class="px-4 py-4 whitespace-nowrap cursor-pointer" on:click={() => window.location.href = `/project/view/${project.$id}`}>
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    {project.fase}
+                                </span>
                             </td>
-                            <td class="px-4 py-2">
-                                <a href={`/project/edit/${project.$id}`} class="font-bold py-2 px-4 rounded">
-                                    <Pencil class="inline mr-1" />
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                <a href={`/project/edit/${project.$id}`} class="text-gray-600 hover:text-gray-900 transition-colors">
+                                    <Pencil class="inline w-5 h-5" />
                                 </a>
                             </td>
                         </tr>
@@ -74,10 +100,30 @@
             </table>
         </div>
 
-        <div class="flex flex-col gap-4 mt-6">
-            <a on:click={() => startNewProject()} class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-center">Start nieuw project</a>
-            <a href="/agenda" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-center">Agenda inplannen</a>
-            <a href={`/client/edit/${clientData.$id}`} class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded text-center">Klant bewerken</a>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+            <button
+                on:click={() => startNewProject()}
+                class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+            >
+                <Plus class="w-5 h-5 mr-2" />
+                Start nieuw project
+            </button>
+            
+            <a
+                href="/agenda"
+                class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+            >
+                <Eye class="w-5 h-5 mr-2" />
+                Agenda inplannen
+            </a>
+            
+            <a
+                href={`/client/edit/${clientData.$id}`}
+                class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors"
+            >
+                <Pencil class="w-5 h-5 mr-2" />
+                Klant bewerken
+            </a>
         </div>
     </div>
 </div>

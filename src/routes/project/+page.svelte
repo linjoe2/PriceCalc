@@ -92,7 +92,7 @@
                 {project.client.name} {project.client.lastname}
               </a>
             </Table.Cell>
-            <Table.Cell><a href="/project/view/{project.$id}">{new Date(project.$updatedAt).toLocaleDateString('nl-NL', { year: 'numeric', month: 'long', day: 'numeric' })}</a></Table.Cell>
+            <Table.Cell><a href="/project/view/{project.$id}">{new Date(project.$updatedAt ?? Date.now()).toLocaleDateString('nl-NL', { year: 'numeric', month: 'long', day: 'numeric' })}</a></Table.Cell>
             <Table.Cell><a href="/project/view/{project.$id}">{JSON.parse(project.items).length} items</a></Table.Cell>
             <Table.Cell>{project.fase}</Table.Cell>
             <Table.Cell>
@@ -116,9 +116,6 @@
 </div>
 
 <style>
-  tr {
-    margin-bottom: 20px;
-  }
   .table-container {
     max-width: 90vw;
   }

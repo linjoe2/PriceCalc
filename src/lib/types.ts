@@ -17,12 +17,16 @@ export interface Client {
     woonplaats: string;
     email: string;
     telefoonnummer: string;
+    subcontractors?: Subcontractor;
+    projects?: Project[];
+    oppervlakte?: number;
+    bouwjaar?: number;
 }
 
 export interface Project {
     $id?: string;
-    $createdAt?: string;
-    $updatedAt?: string;
+    $createdAt?: Date;
+    $updatedAt?: Date;
     name: string;
     client: Client;
     items: any;
@@ -115,4 +119,13 @@ export interface ChatwootContact {
         huisnummer: string;
         phone: string;
     };
+}
+
+export interface Subcontractor {
+    name: string;
+    email: string;
+    phone: string | null;
+    businessname: string;
+    $id?: string;
+    website: string;
 }
