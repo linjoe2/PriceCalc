@@ -9,12 +9,12 @@ import type trainTrack from 'lucide-svelte/icons/train-track';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const helvetica = path.join(__dirname, !import.meta.env.DEV ? '../../../static/fonts/Helvetica.ttf' : '../../../../static/fonts/Helvetica.ttf');
-const helveticaBold = path.join(__dirname, !import.meta.env.DEV ? '../../../static/fonts/Helvetica-Bold.ttf' : '../../../../static/fonts/Helvetica-Bold.ttf');
+const TimesNewRoman = path.join(__dirname, !import.meta.env.DEV ? '../../../static/fonts/Times-New-Roman.ttf' : '../../../../static/fonts/Times-New-Roman.ttf');
+const TimesNewRomanBold = path.join(__dirname, !import.meta.env.DEV ? '../../../static/fonts/Times-New-Roman-Bold.ttf' : '../../../../static/fonts/Times-New-Roman-Bold.ttf');
 const logo = path.join(__dirname, !import.meta.env.DEV ? '../../../static/jhfbouw-logo.png' : '../../../../static/jhfbouw-logo.png');
 console.log(__dirname);
-console.log(helvetica);
-console.log(helveticaBold);
+console.log(TimesNewRoman);
+console.log(TimesNewRomanBold);
 
 export async function POST({ request }) {
 
@@ -32,7 +32,7 @@ export async function POST({ request }) {
         const doc = new PDFDocument({
             size: 'A4',
             margin: 50,
-            font: helvetica
+            font: TimesNewRoman
         });
         const chunks: Buffer[] = [];
 
@@ -67,7 +67,7 @@ export async function POST({ request }) {
 
 
         // Add styled content to PDF
-        doc.font(helveticaBold)
+        doc.font(TimesNewRomanBold)
            .fontSize(32)
            .text('Projectofferte', 50, 50)
            .moveDown(0.5);
@@ -88,7 +88,7 @@ export async function POST({ request }) {
            .moveDown(0.5);
 
         // Add project details with styling
-        doc.font(helvetica)
+        doc.font(TimesNewRoman)
            .fontSize(14);
         
         // Client information section
@@ -144,7 +144,7 @@ export async function POST({ request }) {
             projects.forEach(project => {
                 if (project.items && project.items.length > 0) {
                     // Add project name as header
-                    doc.font(helveticaBold)
+                    doc.font(TimesNewRomanBold)
                        .text(project.name, { width: 495 })
                        .moveDown(0.5);
 
@@ -153,7 +153,7 @@ export async function POST({ request }) {
                         const itemPrice = parseFloat(item.price) * item.quantity;
                         const description = `${item.subcategory} - ${item.type} - ${item.quantity} ${item.unit}`;
                         
-                        doc.font(helveticaBold)
+                        doc.font(TimesNewRomanBold)
                            .text(description, { width: 495, continued: true })
                            .text(`€ ${itemPrice.toFixed(2)}`, { width: 50, align: 'right' })
                            .moveDown(0.5);
@@ -166,8 +166,8 @@ export async function POST({ request }) {
                         );
 
                         itemTasks.forEach(task => {
-                            doc.font(helvetica)
-                               .text('• ' + task.description, { width: 450 })
+                            doc.font(TimesNewRoman)
+                               .text('* ' + task.description, { width: 450 })
                                .moveDown(0.5);
                         });
                     });
@@ -175,7 +175,7 @@ export async function POST({ request }) {
                 }
             });
         } else {
-            doc.font(helvetica)   
+            doc.font(TimesNewRoman)   
                .text('Geen projecten gespecificeerd', { width: 495, align: 'center' })
                .moveDown(0.5);
         }
@@ -198,18 +198,18 @@ export async function POST({ request }) {
         if(projectData.terms !== null ){
             const terms = JSON.parse(projectData.terms);
             doc.fontSize(14)
-               .font(helveticaBold)
+               .font(TimesNewRomanBold)
                .text('Voorwaarden', 50, doc.y)
                .moveDown(0.5)
-               .font(helvetica)
+               .font(TimesNewRoman)
                .fontSize(12)
-               .text(` • ${terms.map(term => term.text).join('\n\n • ' )}`)
+               .text(` * ${terms.map(term => term.text).join('\n * ' )}`)
                .moveDown(1);
         }
 
         // Add payment schedule
         doc.fontSize(14)
-           .font(helveticaBold)
+           .font(TimesNewRomanBold)
            .text('Betalingscondities', 50, doc.y)
            .moveDown(1);
 
@@ -224,7 +224,7 @@ export async function POST({ request }) {
         // Headers
         let y = doc.y;
         doc.fontSize(11)
-           .font(helveticaBold)
+           .font(TimesNewRomanBold)
            .text('', col1, y, { width: 150 })
            .text('Excl. BTW', col2, y, { width: colWidth, align: 'left' })
            .text('9% BTW', col3, y, { width: colWidth, align: 'left' })
@@ -233,7 +233,7 @@ export async function POST({ request }) {
            .moveDown(0.5);
 
         // Payment rows
-        doc.font(helvetica);
+        doc.font(TimesNewRoman);
         const payments = [
             { term: '50% bij opdracht', percentage: 0.5 },
             { term: '45% tijdens werkzaamheden', percentage: 0.45 },
@@ -257,7 +257,7 @@ export async function POST({ request }) {
         // Total row
         y = doc.y;
         doc.moveDown(0.5)
-           .font(helveticaBold)
+           .font(TimesNewRomanBold)
            .text('Totaal:', col1, y, { width: 190 })
            .text(`€ ${totalPrice.toFixed(2)}`, col2, y, { width: colWidth, align: 'left' })
            .text(`€ 0,00`, col3, y, { width: colWidth, align: 'left' })

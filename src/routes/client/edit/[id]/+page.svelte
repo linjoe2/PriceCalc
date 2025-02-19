@@ -8,6 +8,10 @@
     import Pencil from "lucide-svelte/icons/pencil";
     import SavingAnimation from "../../../../components/savingAnimation.svelte";
     import type { Subcontractor, Client } from "$lib/types";
+    import ErrorMessage from "../../../../components/errorMessage.svelte";
+    import SearchAdress from "../../../../components/searchAdress.svelte";
+    let message: string | undefined;
+    let error: string | undefined;
     let clientId = '';
     let clientData: Client = {
         name: '',
@@ -18,12 +22,13 @@
         huisnummer: '',
         woonplaats: '',
         email: '',
-        telefoonnummer: 0,
+        telefoonnummer: '',
         oppervlakte: 0,
         bouwjaar: 0,
         chatwootid: '',
         search: '',
     };
+    let address: any;
     let postcode = '';
     let huisnummer = '';
     let addressDetails;
@@ -40,8 +45,9 @@
         try {
             const subcontractorsResult = await databases.listDocuments('PriceCalc', '67af40c10023be6ed3e6');
             subcontractors = subcontractorsResult.documents as unknown as Subcontractor[];
-        } catch (error) {
-            console.error('Failed to fetch subcontractors:', error);
+        } catch (err) {
+            console.error('Failed to fetch subcontractors:', err);
+            error = 'Er ging iets fout bij het ophalen van de onderaannemers.';
         }
 
         // Check if clientId is an email address
@@ -53,8 +59,10 @@
             ]);
             if (result.documents.length > 0) {
                 clientData = result.documents[0] as unknown as Client;
+                error = undefined;
             } else {
                 console.error('No document found for the provided email address.');
+                error = 'Er ging iets fout bij het ophalen van de klant.';
             }
         } else {
             // Query by client ID
@@ -62,68 +70,47 @@
             clientData = result as unknown as Client;
             postcode = result.postcode;
             huisnummer = result.huisnummer;
+            error = undefined;
         }
         console.log(clientData);
-        delete clientData.subcontractor;
     });
 
     async function updateClient() {
         isSaving = true;
         const databases = new Databases(client);
         try {
-            const filteredClientData = Object.keys(clientData).reduce((acc, key) => {
-                if (!key.startsWith('$')) {
-                    acc[key] = clientData[key];
-                }
-                return acc;
-            }, {});
-            console.log(filteredClientData);
+            // clientData.postcode = clientData.postcode.replace(/\s+/g, '');
+            const filteredClientData = Object.fromEntries(
+                Object.entries(clientData).filter(([key]) => !key.startsWith('$'))
+            ) as Partial<Client>;
+            
             await databases.updateDocument('PriceCalc', '67362abc0039525e36b6', clientId, filteredClientData);
-            alert('Client gegevens succesvol bijgewerkt.');
             goto('/client');
-        } catch (error) {
-            console.error(error);
-            alert('Er ging iets mis bij het bijwerken van de gegevens.');
+            error = undefined;
+        } catch (err) {
+            console.log(err)
+            error = 'Er ging iets mis bij het bijwerken van de gegevens.' + err;
         } finally {
             isSaving = false;
         }
     }
 
-    async function fetchAddressDetails(postcode: string, houseNumber: string) {
-        postcode = postcode.replace(/\s/g, '');
-        if (postcode && houseNumber) {
-            postcode = postcode.replace(/\s/g, '').toUpperCase()
-            const response = await fetch('/api/address', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ postcode, houseNumber })
-            });
-
-            if (response.ok) {
-                addressDetails = await response.json();
-                console.log(addressDetails)
-                clientData.postcode = postcode
-                clientData.huisnummer = huisnummer
-                clientData.adress = addressDetails.straat
-                clientData.woonplaats = addressDetails.woonplaats
-                clientData.oppervlakte = addressDetails.oppervlakte
-                clientData.bouwjaar = addressDetails.bouwjaar
-            } else {
-                console.error('Failed to fetch address details');
-                clientData.postcode = postcode
-                clientData.huisnummer = huisnummer
-            }
-        }
+    async function updateAddress(address: any) {
+        console.log(address)
+        clientData.adress = address.road;
+        clientData.postcode = address.postcode;
+        clientData.huisnummer = address.house_number;
+        clientData.woonplaats = address.city || address.town || address.village || address.municipality;
     }
 
-    $: fetchAddressDetails(postcode, huisnummer)
+    $: updateAddress(address)
+
+  
 </script>
 <h1 class="text-2xl font-bold text-gray-800 mb-4">Klant Gegevens Bewerken</h1>
 <form on:submit|preventDefault={updateClient} class="shadow-md rounded px-8 pt-6 pb-8 mb-4 bg-white">
     <div class="mb-4">
-        <label for="naam" class="block text-sm font-medium text-gray-700">Naam:</label>
+        <label for="naam" class="block text-sm font-medium text-gray-700">Voornaam:</label>
         <input type="text" id="naam" bind:value={clientData.name} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
     </div>
     
@@ -138,13 +125,29 @@
     </div>
     
     <div class="mb-4">
+        <label for="subcontractor" class="block text-sm font-medium text-gray-700">Hoofdaannemer:</label>
+        <select 
+            id="subcontractor" 
+            bind:value={clientData.subcontractors} 
+            class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        >
+            <option value={null}>Geen hoofdaannemer</option>
+            {#each subcontractors as contractor}
+                <option value={contractor.$id}>{contractor.businessname}</option>
+            {/each}
+        </select>
+    </div>
+    
+    <SearchAdress bind:address={address} />
+
+    <div class="mb-4">
         <label for="postcode" class="block text-sm font-medium text-gray-700">Postcode:</label>
-        <input type="text" id="postcode" bind:value={postcode} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+        <input type="text" id="postcode" bind:value={clientData.postcode} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
     </div>
     
     <div class="mb-4">
         <label for="huisnummer" class="block text-sm font-medium text-gray-700">Huisnummer:</label>
-        <input type="text" id="huisnummer" bind:value={huisnummer} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+        <input type="text" id="huisnummer" bind:value={clientData.huisnummer} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
     </div>
     
     <div class="mb-4">
@@ -177,20 +180,7 @@
         <input type="number" id="telefoonnummer" bind:value={clientData.telefoonnummer}  class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
     </div>
     
-    <div class="mb-4">
-        <label for="subcontractor" class="block text-sm font-medium text-gray-700">Onderaannemer:</label>
-        <select 
-            id="subcontractor" 
-            bind:value={clientData.subcontractors} 
-            class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-        >
-            <option value={null}>Selecteer een onderaannemer</option>
-            {#each subcontractors as contractor}
-                <option value={contractor.$id}>{contractor.businessname}</option>
-            {/each}
-        </select>
-    </div>
-    
+    <ErrorMessage message={message} bind:error={error} />
     <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Gegevens bijwerken</button>
 </form>
 

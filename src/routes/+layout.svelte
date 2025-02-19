@@ -129,7 +129,7 @@
                 <div class="py-1">
                   <a href="/client/new" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Klant</a>
                   <a href="/project/edit/new" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Project</a>
-                  <a href="/agenda" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Afspraak</a>
+                  <!-- <a href="/agenda" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Afspraak</a> -->
                 </div>
               </div>
             </div>
@@ -157,13 +157,13 @@
               6
             </Badge> -->
           </a>
-          <a
+          <!-- <a
             href="/agenda"
             class={`text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${activeRoute === 'agenda' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
           >
             <Calendar class="h-4 w-4" />
             Agenda
-          </a>
+          </a> -->
           <a
             href="/work"
             class={`text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${activeRoute === '/work' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
@@ -229,14 +229,14 @@
               <ShoppingCart class="h-5 w-5" />
               Projecten
             </a>
-            <a
+            <!-- <a
               href="/agenda"
               on:click={closeSheet}
               class={`text-muted-foreground hover:text-primary flex items-center gap-4 rounded-xl px-3 py-2 ${activeRoute === 'agenda' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
             >
               <Calendar class="h-5 w-5" />
               Agenda
-            </a>
+            </a> -->
             <a
               href="/work"
               on:click={closeSheet}
@@ -298,4 +298,3 @@
    </main>
   </div>
 </div>
- 

@@ -95,7 +95,7 @@
 </script>
 
 <div class="container mx-auto p-4 max-w-2xl">
-    <h1 class="text-2xl font-bold mb-6">Onderaannemer aanmaken/bewerken</h1>
+    <h1 class="text-2xl font-bold mb-6">Hoofdaannemer aanmaken/bewerken</h1>
     
     {#if message}
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
@@ -111,14 +111,14 @@
 
     <form on:submit|preventDefault={createSubcontractor} class="space-y-4">
         <div>
-            <label for="subcontractor-select" class="block mb-2">Selecteer Onderaannemer</label>
+            <label for="subcontractor-select" class="block mb-2">Selecteer Hoofdaannemer</label>
             <select
                 id="subcontractor-select"
                 bind:value={selectedSubcontractor}
                 on:change={handleSubcontractorSelect}
                 class="w-full p-2 border rounded mb-4"
             >
-                <option value="new">Nieuwe Onderaannemer</option>
+                <option value="new">Nieuwe Hoofdaannemer</option>
                 {#each existingSubcontractors as sub}
                     <option value={sub.$id}>{sub.businessname}</option>
                 {/each}
@@ -187,7 +187,7 @@
             class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
         >
             
-            Onderaannemer aanmaken
+            Hoofdaannemer aanmaken
         </button>
     </form>
 </div>

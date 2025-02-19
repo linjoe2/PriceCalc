@@ -11,6 +11,7 @@
   const dispatch = createEventDispatcher();
   
   export let category: string;
+  export let isUploading: boolean = false;
   export let uploadedImages: { file: File; preview: string; id: string; category: string }[] = [];
   let selectedImage: string | null = null;
   let isDialogOpen = false;
@@ -45,7 +46,9 @@
 
     if (!files) return;
 
-    Array.from(files).forEach(async file => {
+    isUploading = true;  // Set to true when starting uploads
+    
+    const uploadPromises = Array.from(files).map(async file => {
       if (file.type.startsWith('image/')) {
         // Upload the image to Appwrite and get the file ID
         const fileId = await uploadImageToAppwrite(file);
@@ -53,22 +56,31 @@
         // Only add to the array if the upload was successful
         if (fileId) {
           const reader = new FileReader();
-          reader.onload = (e) => {
-            uploadedImages = [...uploadedImages, {
-              file,
-              preview: e.target?.result as string,
-              id: fileId, // Use the fileId from the upload
-              category: category
-            }];
-            dispatch('upload', { file });
-          };
-          reader.readAsDataURL(file);
+          return new Promise((resolve) => {
+            reader.onload = (e) => {
+              uploadedImages = [...uploadedImages, {
+                file,
+                preview: e.target?.result as string,
+                id: fileId,
+                category: category
+              }];
+              dispatch('upload', { file });
+              resolve(null);
+            };
+            reader.readAsDataURL(file);
+          });
         }
       }
+    });
+
+    // Wait for all uploads to complete
+    Promise.all(uploadPromises).finally(() => {
+      isUploading = false;  // Set to false when all uploads are done
     });
   }
 
   async function uploadImageToAppwrite(file: File) {
+    isUploading = true;
     try {
       const response = await storage.createFile('67621eca0022af8c411f', 'unique()', file);
       console.log('Image uploaded successfully:', response);
@@ -76,6 +88,8 @@
     } catch (error) {
       console.error('Error uploading image:', error);
       return ''; // Return an empty string if there's an error
+    } finally {
+      isUploading = false;
     }
   }
 

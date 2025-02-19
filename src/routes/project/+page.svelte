@@ -69,7 +69,7 @@
     type="text"
     bind:value={filterValue}
   />
-     <a href="/project/edit/new"><button><Plus class="h-4 w-4" /></button></a>
+     <!-- <a href="/project/edit/new"><button><Plus class="h-4 w-4" /></button></a> -->
 
 </div>
 

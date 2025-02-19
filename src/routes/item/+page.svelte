@@ -4,12 +4,14 @@ import { Databases, ID, Query } from "appwrite";
 import { client } from "$lib/appwrite";
 import CreateTasks from '../../components/createTasks.svelte';
 import type { Service } from '$lib/types';
+import ErrorMessage from '../../components/errorMessage.svelte';
 
 const databases = new Databases(client);
 const databaseId = 'PriceCalc'; // Your database ID
 const collectionId = '6735eb1000013509eaf3'; // Your collection ID
 
 let services = {};
+let error: string | undefined;
 
 // New reactive variable for selected category
 let selectedCategory = ''; // Initialize selectedCategory
@@ -22,6 +24,10 @@ let serviceToEdit: Service | null = null; // Store the service being edited
 let tasksVisibility = {};
 
 onMount(async () => {
+    fetchServices();
+});
+
+async function fetchServices() {
     try {
         const response = await databases.listDocuments(databaseId, collectionId, [Query.limit(100),Query.offset(0)]);
         console.log(response)
@@ -37,7 +43,7 @@ onMount(async () => {
     } catch (error) {
         console.error('Error fetching services:', error);
     }
-});
+}
 
 // New variables for the editor
 let newService = {
@@ -87,6 +93,7 @@ async function deleteService(category: string, index: number) {
 // Function to open the edit dialog
 function editService(category: string, index: number, service: Service) {
     serviceToEdit = { ...service, category, index }; // Store the service details
+    serviceToEdit.tasks = JSON.parse(serviceToEdit.tasks || '[]');
     isEditDialogOpen = true; // Open the dialog
 }
 
@@ -97,6 +104,7 @@ async function saveEditedService() {
             updateService(serviceToEdit.category, serviceToEdit.index, serviceToEdit);
             isEditDialogOpen = false; // Close the dialog
             resetNewService(); // Reset new service fields if needed
+            serviceToEdit.tasks = JSON.stringify(serviceToEdit.tasks);
             try {
                 const response = await databases.updateDocument(databaseId, collectionId, serviceToEdit.$id, {
                     subcategory: serviceToEdit.subcategory,
@@ -122,9 +130,10 @@ async function saveEditedService() {
                     price: parseInt(serviceToEdit.price),
                     unit: serviceToEdit.unit,
                     category: serviceToEdit.category, // Optionally include the category
-                    tasks: serviceToEdit.tasks // Include taken
+                    tasks: JSON.stringify(serviceToEdit.tasks) // Include taken
                 });
                 console.log('Service created successfully:', response);
+                fetchServices();
             } catch (error) {
                 console.error('Error creating service:', error);
             }
@@ -145,6 +154,7 @@ function toggletasksVisibility(category, index) {
 }
 
 </script>
+<ErrorMessage error={error} />
 <!-- Replace the existing table layout with a card-based layout -->
 {#each Object.entries(services) as [category, serviceList]}
     <div class="p-4">
@@ -233,7 +243,7 @@ function toggletasksVisibility(category, index) {
                         <option value="stuk">stuk</option>
                         <option value="uur">uur</option>
                     </select>
-                    <CreateTasks tasks={JSON.parse(serviceToEdit.tasks || '[]')} />
+                    <CreateTasks bind:tasks={serviceToEdit.tasks} />
                     
                     <div class="flex gap-2 justify-end mt-6">
                         <button on:click={() => isEditDialogOpen = false} 

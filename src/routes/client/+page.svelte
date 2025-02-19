@@ -62,7 +62,7 @@
         />
         <div class="flex items-center gap-4">
             <a href="/client/sub">
-                <Button class="ml-auto mr-4 border border-black" variant="primary">+ onderaannemer</Button>
+                <Button class="ml-auto mr-4 border border-black" variant="primary">+ hoofdaannemer</Button>
             </a>
             <a href="/client/new">
                 <Button class="ml-auto mr-4 border border-black" variant="primary">+ klant</Button>

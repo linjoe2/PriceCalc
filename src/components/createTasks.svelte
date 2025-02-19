@@ -8,7 +8,7 @@
 
     function addTask() {
         if (newTaskTitle.trim()) {
-            tasks = [...tasks, { task: newTaskTitle, completed: false }];
+            tasks = [...tasks, newTaskTitle];
             newTaskTitle = '';
         }
     }

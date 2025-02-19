@@ -29,6 +29,8 @@
   let terms: Terms[] = [];
   let paymentSchedule: PaymentSchedule;
   let openCategories: Record<string, boolean> = {};  // Add this near other let declarations
+  let isUploading = false; // Add this near other let declarations at the top
+  let calculations: Record<string, Calculation> = {};
   
 
   $: console.log(projects)
@@ -39,6 +41,11 @@
             const { category, subcategory, type, price, unit, tasks } = doc;
             if (!acc[category]) {
                 acc[category] = [];
+                // Initialize calculations for this category
+                calculations[category] = {
+                    length: 1,
+                    width: 1
+                };
             }
             acc[category].push({ 
                 id: doc.$id,
@@ -71,6 +78,18 @@
       opmerkingen = result.opmerkingen || ''; // Load saved values
       notities = result.notities || '';       // Load saved values
 
+      // Load saved calculations or initialize with defaults
+      if (result.calculations) {
+        const savedCalculations = JSON.parse(result.calculations);
+        // Merge saved calculations with defaults
+        Object.keys(services).forEach(category => {
+            calculations[category] = {
+                length: (savedCalculations[category]?.length ?? 1),
+                width: (savedCalculations[category]?.width ?? 1)
+            };
+        });
+      }
+
       // Push uploaded images to the array
       if (result.uploadedImages) {
         uploadedImages = result.uploadedImages.map((image: any) => JSON.parse(image));
@@ -95,9 +114,6 @@
     }
   
     let selectedItems: SelectedItem[] = [];
-  
-    // Add these variables for calculations
-    let calculations: Record<string, Calculation> = {};
   
     function toggleItemSelection(category: string, item: Service, project: Project) {
       console.log(project);
@@ -162,13 +178,18 @@
     $: console.log(projects);
 
     async function saveProject() {
+        if (isUploading) {
+            alert('Please wait for images to finish uploading before saving');
+            return;
+        }
         isSaving = true;
     try {
         // Flatten all items from all projects and include their tasks
         const allItems = projects.flatMap(project => 
             project.items.map(item => ({
                 ...item,
-                tasks: item.tasks || [] // Ensure tasks exists
+                tasks: item.tasks || [], // Ensure tasks exists
+                calculations: calculations[item.category] || {} // Add calculations for this category
             }))
         );
 
@@ -182,8 +203,9 @@
             uploadedImages: uploadedImages.map(image => (JSON.stringify({ id: image.id, category: image.category }))),
             opmerkingen,
             notities,
-            terms: JSON.stringify(terms.filter(term => term.checked)), // Only include checked terms
-            paymentSchedule: JSON.stringify(paymentSchedule)
+            terms: JSON.stringify(terms.filter(term => term.checked)),
+            paymentSchedule: JSON.stringify(paymentSchedule),
+            calculations: JSON.stringify(calculations) // Add calculations to project data
         };
         console.log(projectData);
         // Generate tasks from all items across all projects
@@ -329,15 +351,6 @@
       </div>
       <div class="w-full md:w-1/2 m-4">
         <div class="border border-gray-300 rounded-md p-4">
-          <h2 class="text-lg font-medium">Opmerkingen</h2>
-          <textarea 
-              class="w-full border rounded-md p-2" 
-              rows="4" 
-              bind:value={opmerkingen} 
-              placeholder="Voer opmerkingen in..."
-          ></textarea>
-        </div>
-        <div class="border border-gray-300 rounded-md p-4 mt-4">
           <h2 class="text-lg font-medium">Notities (geheim)</h2>
           <textarea 
               class="w-full border rounded-md p-2" 
@@ -359,7 +372,12 @@
             Verwijder
           </button>
         </div>
-        <ImageUploader category={project.name} bind:uploadedImages={uploadedImages} on:upload={event => console.log('File uploaded:', event.detail.file)} />
+        <ImageUploader 
+            category={project.name} 
+            bind:uploadedImages={uploadedImages} 
+            bind:isUploading={isUploading}
+            on:upload={event => console.log('File uploaded:', event.detail.file)} 
+        />
         {#each Object.entries(services) as [category, items]}
       <div class="border rounded-lg bg-white">
         <button
@@ -484,7 +502,8 @@
                       <input 
                         id="length-input"
                         type="number" 
-                        value={calculations[category]?.length || 1}
+                        min="1"
+                        bind:value={calculations[category].length}
                         on:input={(event) => {
                           calculations[category] = calculations[category] || {};
                           calculations[category].length = parseFloat((event.target as HTMLInputElement).value);
@@ -507,7 +526,8 @@
                       <input 
                         id="width-input"
                         type="number" 
-                        value={calculations[category]?.width || 1}
+                        min="1"
+                        bind:value={calculations[category].width}
                         on:input={(event) => {
                           calculations[category] = calculations[category] || {};
                           calculations[category].width = parseFloat((event.target as HTMLInputElement).value);
@@ -532,7 +552,8 @@
                     <input 
                       id="length-input"
                       type="number" 
-                      value={calculations[category]?.length || 1}
+                      min="1"
+                      bind:value={calculations[category].length}
                       on:input={(event) => {
                         calculations[category] = calculations[category] || {};
                         calculations[category].length = parseFloat((event.target as HTMLInputElement).value);
@@ -560,7 +581,7 @@
                   <input 
                     id="quantity-input"
                     type="number" 
-                    value={calculations[category]?.length || 1}
+                    bind:value={calculations[category].length}
                     min="1"
                     on:input={(event) => {
                       calculations[category] = calculations[category] || {};

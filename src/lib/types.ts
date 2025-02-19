@@ -21,6 +21,8 @@ export interface Client {
     projects?: Project[];
     oppervlakte?: number;
     bouwjaar?: number;
+    search?: string;
+    chatwootid?: string;
 }
 
 export interface Project {
