@@ -33,7 +33,6 @@
   let calculations: Record<string, Calculation> = {};
   
 
-  $: console.log(projects)
   onMount(async () => {
     try {
         const response = await databases.listDocuments(databaseId, itemsCollectionId, [Query.limit(100),Query.offset(0)]);
@@ -77,7 +76,18 @@
       projects = JSON.parse(result.projects);
       opmerkingen = result.opmerkingen || ''; // Load saved values
       notities = result.notities || '';       // Load saved values
-
+      //result.items[].price = result.items[].price;
+      console.log(result.items);
+      // each item in result.items
+      result.items.forEach(item => {
+        item.price = item.price;
+        console.log(item.category);
+        services[item.category].forEach(service => {
+          if (service.type === item.type) {
+            service.price = item.price;
+          }
+        });
+      });
       // Load saved calculations or initialize with defaults
       if (result.calculations) {
         const savedCalculations = JSON.parse(result.calculations);
@@ -152,6 +162,7 @@
         const newItem: Item = {
           category,
           ...item,
+          price: typeof item.price === 'string' && item.price !== 'custom' ? parseFloat(item.price) : item.price,
           quantity: quantity,
           tasks: initialTasks
         };
@@ -426,10 +437,22 @@
                         <input 
                           type="number"
                           bind:value={item.price}
-                          class="w-32 p-1 border rounded-md text-right"
-                          on:blur={() => item.isEditing = false}
-                          use:clickOutside={() => item.isEditing = false}
-                          on:keydown={(event) => event.key === 'Enter' && (item.isEditing = false)}
+                          on:input={(event) => {
+                            let price = (event.target as HTMLInputElement).value;
+                            project.items = project.items.map((item: Item) => {
+                              if (item.category === category) {
+                                console.log(price);
+                                return {
+                                ...item,
+                                price: price
+                              };
+                            }
+                            return item;
+                          });
+                        }}
+                        on:blur={() => item.isEditing = false}
+                        use:clickOutside={() => item.isEditing = false}
+                        on:keydown={(event) => event.key === 'Enter' && (item.isEditing = false)}
                         />
                       {:else}
                         <div on:click|stopPropagation={() => item.isEditing = true}>
