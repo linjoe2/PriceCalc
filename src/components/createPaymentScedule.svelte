@@ -33,49 +33,7 @@
 </script>
 
 <div class="payment-schedule">
-    <table>
-        <thead>
-            <tr>
-                <th>Betalingscondities *</th>
-                <th>Excl. BTW</th>
-                <th>9% BTW</th>
-                <th>21% BTW</th>
-                <th>Incl. BTW</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Bij opdracht ({paymentSchedule.initial}%)</td>
-                <td>€ {(totalPrice * paymentSchedule.initial / 100).toFixed(2)}</td>
-                <td>€ 0,00</td>
-                <td>€ {(totalPrice * paymentSchedule.initial / 100 * btw21).toFixed(2)}</td>
-                <td>€ {(totalPrice * paymentSchedule.initial / 100 * (1 + btw21)).toFixed(2)}</td>
-            </tr>
-            <tr>
-                <td>Tijdens werkzaamheden ({paymentSchedule.during}%)</td>
-                <td>€ {(totalPrice * paymentSchedule.during / 100).toFixed(2)}</td>
-                <td>€ 0,00</td>
-                <td>€ {(totalPrice * paymentSchedule.during / 100 * btw21).toFixed(2)}</td>
-                <td>€ {(totalPrice * paymentSchedule.during / 100 * (1 + btw21)).toFixed(2)}</td>
-            </tr>
-            <tr>
-                <td>Bij oplevering ({paymentSchedule.final}%)</td>
-                <td>€ {(totalPrice * paymentSchedule.final / 100).toFixed(2)}</td>
-                <td>€ 0,00</td>
-                <td>€ {(totalPrice * paymentSchedule.final / 100 * btw21).toFixed(2)}</td>
-                <td>€ {(totalPrice * paymentSchedule.final / 100 * (1 + btw21)).toFixed(2)}</td>
-            </tr>
-            <tr class="total">
-                <td>Totaal:</td>
-                <td>€ {totalPrice.toFixed(2)}</td>
-                <td>€ 0,00</td>
-                <td>€ {(totalPrice * btw21).toFixed(2)}</td>
-                <td>€ {(totalPrice * (1 + btw21)).toFixed(2)}</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <div class="sliders">
+   <div class="sliders">
         <label>
             Bij opdracht: {paymentSchedule.initial}%
             <input 
@@ -107,11 +65,55 @@
             />
         </label>
     </div>
+    <div class="table-wrapper">
+        <table>
+            <thead class="desktop-only">
+                <tr>
+                    <th>Betalingscondities *</th>
+                    <th>Excl. BTW</th>
+                    <th>21% BTW</th>
+                    <th>Incl. BTW</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td data-label="Betalingscondities">Bij opdracht ({paymentSchedule.initial}%)</td>
+                    <td data-label="Excl. BTW">€ {(totalPrice * paymentSchedule.initial / 100).toFixed(2)}</td>
+                    <td data-label="21% BTW">€ {(totalPrice * paymentSchedule.initial / 100 * btw21).toFixed(2)}</td>
+                    <td data-label="Incl. BTW">€ {(totalPrice * paymentSchedule.initial / 100 * (1 + btw21)).toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <td data-label="Betalingscondities">Tijdens werkzaamheden ({paymentSchedule.during}%)</td>
+                    <td data-label="Excl. BTW">€ {(totalPrice * paymentSchedule.during / 100).toFixed(2)}</td>
+                    <td data-label="21% BTW">€ {(totalPrice * paymentSchedule.during / 100 * btw21).toFixed(2)}</td>
+                    <td data-label="Incl. BTW">€ {(totalPrice * paymentSchedule.during / 100 * (1 + btw21)).toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <td data-label="Betalingscondities">Bij oplevering ({paymentSchedule.final}%)</td>
+                    <td data-label="Excl. BTW">€ {(totalPrice * paymentSchedule.final / 100).toFixed(2)}</td>
+                    <td data-label="21% BTW">€ {(totalPrice * paymentSchedule.final / 100 * btw21).toFixed(2)}</td>
+                    <td data-label="Incl. BTW">€ {(totalPrice * paymentSchedule.final / 100 * (1 + btw21)).toFixed(2)}</td>
+                </tr>
+                <tr class="total">
+                    <td data-label="Betalingscondities">Totaal:</td>
+                    <td data-label="Excl. BTW">€ {totalPrice.toFixed(2)}</td>
+                    <td data-label="21% BTW">€ {(totalPrice * btw21).toFixed(2)}</td>
+                    <td data-label="Incl. BTW">€ {(totalPrice * (1 + btw21)).toFixed(2)}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+ 
 </div>
 
 <style>
     .payment-schedule {
         margin: 2rem 0;
+    }
+    
+    .table-wrapper {
+        width: 100%;
     }
     
     table {
@@ -152,5 +154,46 @@
         width: 100%;
         max-width: 300px;
         margin-top: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .desktop-only {
+            display: none;
+        }
+
+        table, tbody, tr, td {
+            display: block;
+            width: 100%;
+        }
+
+        tr {
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+        }
+
+        td {
+            text-align: right;
+            padding-left: 50%;
+            position: relative;
+            border: none;
+            border-bottom: 1px solid #ddd;
+        }
+
+        td:last-child {
+            border-bottom: none;
+        }
+
+        td::before {
+            content: attr(data-label);
+            position: absolute;
+            left: 0.75rem;
+            width: 45%;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .total td {
+            background-color: #f9f9f9;
+        }
     }
 </style>

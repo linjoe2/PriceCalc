@@ -109,13 +109,13 @@
                 <span class="whitespace-nowrap">Start nieuw project</span>
             </button>
             
-            <a
+            <!-- <a
                 href="/agenda"
                 class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
             >
                 <Eye class="w-5 h-5 mr-2" />
                 <span class="whitespace-nowrap">Agenda inplannen</span>
-            </a>
+            </a> -->
             
             <a
                 href={`/client/edit/${clientData.$id}`}

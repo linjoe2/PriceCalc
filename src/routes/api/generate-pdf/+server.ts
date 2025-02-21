@@ -98,13 +98,42 @@ export async function POST({ request }) {
            .fontSize(12)
         
         const client = projectData.client;
-        doc.text(`${client.businessname || ''}`, 60)
+        // if subcontractor
+        if(client.subcontractors !== null){
+            projectData.client.businessname = client.subcontractors.businessname;
+            doc.text(`${client.subcontractors.businessname}`, 60)
+            doc.text(`${client.subcontractors.address}`, 60)
+            doc.text(`Email: ${client.subcontractors.email}`, 60)
+            doc.text(`Tel: ${client.subcontractors.phone || 'N/B'}`, 60)
+            doc.font(TimesNewRomanBold)
+            doc.text("betreft:")
+            doc.font(TimesNewRoman)
+            doc.text(`${client.name} ${client.lastname}`)
+            doc.text(`${client.adress} ${client.huisnummer}, ${client.postcode} ${client.woonplaats}`)
+            doc.moveDown(1);
+        }else if(client.businessname === '' || client.businessname === null){
+            doc
            .text(`T.a.v. ${client.name} ${client.lastname}`)
            .text(`${client.adress} ${client.huisnummer}`)
            .text(`${client.postcode} ${client.woonplaats}`)
            .text(`Email: ${client.email}`)
            .text(`Tel: ${client.telefoonnummer || 'N/B'}`)
            .moveDown(1);
+        } else {
+          doc.text(`${client.businessname}`, 60)
+           .text(`T.a.v. ${client.name} ${client.lastname}`)
+           .text(`${client.adress} ${client.huisnummer}`)
+           .text(`${client.postcode} ${client.woonplaats}`)
+           .text(`Email: ${client.email}`)
+           .text(`Tel: ${client.telefoonnummer || 'N/B'}`)
+           .moveDown(1);
+
+       }
+
+        // if BV
+
+
+        // if Particulier
 
         doc
             .fontSize(12)
@@ -300,7 +329,7 @@ export async function POST({ request }) {
            .text('Totaal:', col1, y, { width: 190 })
            .text(`€ ${totalPrice.toFixed(2)}`, col2, y, { width: colWidth, align: 'left' })
         //    .text(`€ 0,00`, col3, y, { width: colWidth, align: 'left' })
-           if(projectData.client.businessname === '' || projectData.client.businessname === null){
+        if(projectData.client.businessname === '' || projectData.client.businessname === null){
            doc.text(`€ ${(totalPrice * 0.21).toFixed(2)}`, col4, y, { width: colWidth, align: 'left' })
            }else{
            doc.text(`€ 0,00`, col4, y, { width: colWidth, align: 'left' })
@@ -353,7 +382,7 @@ for( let i = range.start; i <  (range.start + range.count); i++) {
 
         // Save to Appwrite storage
         try {
-            const file = new File([pdfBuffer], `offerte-${projectData.$id}.pdf`, {
+            const file = new File([pdfBuffer], `offerte-${projectData.projectNumber || projectData.$id}.pdf`, {
                 type: 'application/pdf'
             });
 

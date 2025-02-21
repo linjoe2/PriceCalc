@@ -341,7 +341,7 @@
 </script>
   
     <div class="flex flex-col md:flex-row">
-      <div class="w-full md:w-1/2 border border-gray-300 rounded-md m-4 p-4">
+    <div class="md:w-1/2 border border-gray-300 rounded-md m-4 p-4">
         <h2 class="text-lg font-medium">Klantgegevens</h2>
         <div class="relative">
           <a href="/client/edit/{$selectedUser?.$id}"><Pencil class="absolute top-0 right-0 cursor-pointer" /></a>
@@ -383,7 +383,7 @@
           </div>
         </div>
       </div>
-      <div class="w-full md:w-1/2 m-4">
+      <div class="md:w-1/2 m-4">
         <div class="border border-gray-300 rounded-md p-4">
           <h2 class="text-lg font-medium">Notities (geheim)</h2>
           <textarea 
@@ -396,7 +396,7 @@
       </div>
     </div>
 
-  <div class="w-full max-w-4xl mx-auto p-4 space-y-2 flex flex-col gap-4"> 
+  <div class="max-w-4xl mx-auto p-4 space-y-2 flex flex-col gap-4"> 
     <!-- <UserSearch /> -->
      {#each projects as project}
       <div class="border rounded-lg p-2 bg-gray-100">
@@ -701,9 +701,9 @@
             <button class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" on:click={saveProject}>
               Opslaan
             </button>
-            <button class="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" on:click={saveProject}>
+            <!-- <button class="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" on:click={saveProject}>
               Opslaan & Inplannen
-            </button>
+            </button> -->
           </div>
         {/if}
       </div>
