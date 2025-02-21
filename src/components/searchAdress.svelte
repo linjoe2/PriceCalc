@@ -63,8 +63,7 @@
 <style>
     .search-container {
         width: 100%;
-        max-width: 600px;
-        margin: 0 auto;
+        margin: 25px auto;
     }
 
     .search-input {

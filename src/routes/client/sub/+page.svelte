@@ -41,6 +41,7 @@
                 phone: null,
                 website: '',
                 businessname: '',
+                address: '',
             };
         } else {
             const found = existingSubcontractors.find(s => s.$id === selected);
@@ -52,6 +53,7 @@
                     phone: found.phone,
                     website: found.website,
                     businessname: found.businessname,
+                    address: found.address,
                 };
             }
         }
@@ -79,7 +81,7 @@
                 );
             }
             
-            message = 'Subcontractor created successfully!';
+            message = 'Hoofdaannemer opgeslagen!';
             // Reset form
             subcontractor = {
                 name: '',
@@ -87,7 +89,9 @@
                 phone: null,
                 website: '',
                 businessname: '',
+                address: '',
             };
+            fetchSubcontractors();
         } catch (e) {
             error = (e as Error).message;
         }
@@ -182,12 +186,23 @@
             />
         </div>
 
+        <div>
+            <label for="address" class="block mb-2">Adres</label>
+            <input
+                type="text"
+                id="address"
+                bind:value={subcontractor.address}
+                required
+                class="w-full p-2 border rounded"
+            />
+        </div>
+
         <button
             type="submit"
             class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
         >
             
-            Hoofdaannemer aanmaken
+            Opslaan
         </button>
     </form>
 </div>

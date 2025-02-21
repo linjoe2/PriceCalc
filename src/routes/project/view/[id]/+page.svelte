@@ -62,21 +62,63 @@
     }
   }
 
+  function incrementVersion(variableName) {
+    const versionPattern = /(.*?)(?:_V(\d+))?$/; // Matches variable with optional version
+    const match = variableName.match(versionPattern);
+    
+    if (match) {
+        let baseName = match[1];
+        let version = match[2] ? parseInt(match[2], 10) + 1 : 2; // Increment version if exists, else start at v2
+        return `${baseName}_V${version}`;
+    }
+    
+    return variableName;
+}
+
   async function duplicateProject() {
     try {
       // Create a new project with the same data
-      console.log(projectData);
-      const newProjectData = { ...projectData };
-      delete newProjectData.$id;  // Remove the original ID
-      delete newProjectData.$createdAt;
-      delete newProjectData.$updatedAt;
-      
-      // Add "(Copy)" to the project names
-      newProjectData.projects = newProjectData.projects?.map(project => ({
-        ...project,
-        name: `${project.name} (Copy)`
-      }));
 
+      // if projectNumber ends with _V2, add _V3, if _v3 make it v4 etc
+    
+      let newProjectNumber = incrementVersion(projectData.projectNumber);
+
+      console.log(projectData);
+      const newProjectData = { 
+        ...projectData,
+        projectNumber: newProjectNumber
+      };
+      // //delete all that starts with $
+      for (const key in newProjectData) {
+        if (key.startsWith('$')) {
+          delete newProjectData[key];
+        }
+      }
+      // delete newProjectData.client;
+      newProjectData.client = projectData.client.$id;
+      // delete newProjectData.projects;
+      newProjectData.projects = JSON.stringify(projectData.projects);
+      newProjectData.items = JSON.stringify(projectData.items);
+      // delete newProjectData.terms;
+      newProjectData.terms = JSON.stringify(projectData.terms);
+      // delete newProjectData.paymentSchedule;
+      newProjectData.paymentSchedule = JSON.stringify(projectData.paymentSchedule);
+      delete newProjectData.name;
+      // delete newProjectData.fase;
+      // delete newProjectData.tasks;
+      // newProjectData.tasks = JSON.stringify(projectData.tasks);
+      //map over tasks and making an array of id's
+      newProjectData.tasks = projectData.tasks.map((task: any) => task.$id);
+      // delete newProjectData.opmerkingen;
+      // delete newProjectData.notities;
+      // delete newProjectData.uploadedImages;
+      // Add "(Copy)" to the project names
+      // newProjectData.projects = newProjectData.projects?.map(project => ({
+      //   ...project,
+      //   projectNumber: `${project.projectNumber}_V2`
+      // }));
+      console.log(newProjectData);
+      
       const response = await databases.createDocument(
         databaseId,
         projectsCollectionId,
@@ -131,7 +173,7 @@
       <div class="flex-1 bg-white shadow rounded-lg p-6">
         <div class="border-b border-gray-200 pb-4">
           <h1 class="text-3xl font-bold text-gray-900">Offerte</h1>
-          <p class="text-sm text-gray-500 mt-1">Project ID: {projectId}</p>
+          <p class="text-sm text-gray-500 mt-1">Offerte nummer: {projectData.projectNumber}</p>
         </div>
 
         <!-- Client Information -->

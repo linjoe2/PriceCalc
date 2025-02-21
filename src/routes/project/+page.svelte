@@ -79,7 +79,7 @@
         <Table.Row>
           <Table.Cell>Klant</Table.Cell>
           <Table.Cell>Datum</Table.Cell>
-          <Table.Cell>Artikelen</Table.Cell>
+          <Table.Cell>Offertenaam</Table.Cell>
           <Table.Cell>fase</Table.Cell>
           <Table.Cell>Actions</Table.Cell>
         </Table.Row>
@@ -93,7 +93,7 @@
               </a>
             </Table.Cell>
             <Table.Cell><a href="/project/view/{project.$id}">{new Date(project.$updatedAt ?? Date.now()).toLocaleDateString('nl-NL', { year: 'numeric', month: 'long', day: 'numeric' })}</a></Table.Cell>
-            <Table.Cell><a href="/project/view/{project.$id}">{JSON.parse(project.items).length} items</a></Table.Cell>
+            <Table.Cell><a href="/project/view/{project.$id}">{project.projectNumber}</a></Table.Cell>
             <Table.Cell>{project.fase}</Table.Cell>
             <Table.Cell>
               <a href="/project/edit/{project.$id}" class="mr-2">

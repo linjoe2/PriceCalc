@@ -1,4 +1,4 @@
-import { json } from '@sveltejs/kit';
+import { json, text } from '@sveltejs/kit';
 import PDFDocument from 'pdfkit';
 import { Storage, ID, Client } from 'node-appwrite';
 import { APPWRITE_API_KEY } from '$env/static/private';
@@ -32,7 +32,8 @@ export async function POST({ request }) {
         const doc = new PDFDocument({
             size: 'A4',
             margin: 50,
-            font: TimesNewRoman
+            font: TimesNewRoman,
+            bufferPages: true
         });
         const chunks: Buffer[] = [];
 
@@ -46,8 +47,8 @@ export async function POST({ request }) {
 
         // Add logo in top right corner
         try {
-            doc.image(logo, 400, 50, {
-                fit: [100, 100],  // Adjust size as needed
+            doc.image(logo, 325, 50, {
+                fit: [200, 200],  // Adjust size as needed
                 align: 'right'
             });
         } catch (error) {
@@ -55,38 +56,33 @@ export async function POST({ request }) {
             // Continue without logo if it fails to load
         }
         doc.fontSize(14)
-        .fontSize(12)
+        .font(TimesNewRomanBold)
         .moveDown(0.5)
-        .text('JHF Bouw', 400, doc.y)
-        .text('Dukdalfweg 16')
-        .text('1041 BD Amsterdam')
-        .text('Email: info@jhfbouw.nl')
-        .text('Tel: 020-2136082')
-        .text('KvK: 86043862')
+        .text('JHF Bouw B.V.', 400, doc.y, { align: 'right'})
+        .text('Dukdalfweg 16', 400, doc.y, { align: 'right'})
+        .text('1041 BD Amsterdam', 400, doc.y, { align: 'right'})
+        .moveDown(0.5)
+        .text('Tel: 020-2136082', 400, doc.y, { align: 'right'})
+        .text('info@jhfbouw.nl', 400, doc.y, { align: 'right'})
         .moveDown(2);
+        
 
+
+        // draw bounding rectangle
+        // doc.rect(100, 0, 410, 50).stroke();
+        // doc.rect(100, 100, 200, 50).stroke();
+
+        
+        //
 
         // Add styled content to PDF
         doc.font(TimesNewRomanBold)
            .fontSize(32)
-           .text('Projectofferte', 50, 50)
+           .text('Offerte', 60, 50)
            .moveDown(0.5);
 
-        doc
-            .fontSize(12)
-        .text(`Datum: ${new Date(projectData.createdAt).toLocaleDateString('nl-NL')}`)
-           .moveDown(0.5);
-
-        doc.fontSize(12)
-           .text(`Offerte nummer: ${projectData.$id}`)
-           .moveDown(0.5);
 
         // Add company logo placeholder line
-        doc.moveTo(50, doc.y)
-           .lineTo(380, doc.y)
-           .stroke()
-           .moveDown(0.5);
-
         // Add project details with styling
         doc.font(TimesNewRoman)
            .fontSize(14);
@@ -95,49 +91,54 @@ export async function POST({ request }) {
         const startY = doc.y;
         
         // Left column - Client details
-        doc.text('Klantgegevens:', 50, startY)
+        doc
+        .font(TimesNewRomanBold)
+        .text('Adres:', 60, startY)
+        .font(TimesNewRoman)
            .fontSize(12)
-           .moveDown(0.5);
         
         const client = projectData.client;
-        doc.text(`${client.businessname || ''}`, 50)
-           .text(`${client.name} ${client.lastname}`)
+        doc.text(`${client.businessname || ''}`, 60)
+           .text(`T.a.v. ${client.name} ${client.lastname}`)
            .text(`${client.adress} ${client.huisnummer}`)
            .text(`${client.postcode} ${client.woonplaats}`)
            .text(`Email: ${client.email}`)
            .text(`Tel: ${client.telefoonnummer || 'N/B'}`)
-           .text(`Bouwjaar pand: ${client.bouwjaar}`)
-           .text(`Oppervlakte: ${client.oppervlakte} m²`)
-           .moveDown(2);
-
-
-        doc.fontSize(14)
-           .text('Akkoord voor de onderstaande offerte:',50, doc.y)
-           .fontSize(12)
-           .moveDown(4);
-
-        doc
-            .moveTo(50, doc.y)
-            .lineTo(200, doc.y)
-            .text('handtekening klant')
-            .stroke()
-            .moveDown(1)
-            .text("Datum:")
-            .moveDown(2);
-
-        // Draw table header
-        doc.moveDown(1)
-            .fontSize(12)
-           .text('Omschrijving', 50, doc.y, { width: 495, continued: true })
-           .text('Bedrag', { width: 50, align: 'right' })
-           .moveDown(0.5);
-
-        // Draw separator line
-        doc.moveTo(50, doc.y)
-           .lineTo(545, doc.y)
-           .stroke()
            .moveDown(1);
 
+        doc
+            .fontSize(12)
+            .font(TimesNewRomanBold)
+            .text(`Offertedatum:`)
+            .font(TimesNewRoman)
+            .text(`${new Date(projectData.createdAt).toLocaleDateString('nl-NL')}`)
+           .moveDown(0.5);
+
+
+        doc.fontSize(12)
+           .font(TimesNewRomanBold)
+           .text(`Offertenummer:`)
+           .font(TimesNewRoman)
+           .text(`${projectData.projectNumber}`)
+           .moveDown(1.5);
+
+        //boxes top
+        doc.rect(50, 50, 250, 250).stroke();
+         
+        doc.rect(300, 50, 250, 250).stroke();
+        
+        // Draw table header
+        // doc.fontSize(12)
+        //    .text('Omschrijving', 50, doc.y, { width: 495, continued: true })
+        //    .text('Bedrag', { width: 50, align: 'right' })
+        //    .moveDown(0.5);
+
+        // // Draw separator line
+        // doc.moveTo(50, doc.y)
+        //    .lineTo(545, doc.y)
+        //    .stroke()
+        //    .moveDown(1);
+        doc.y = 310;
         // Add items if available
         const projects = JSON.parse(projectData.projects) || [];
         if (projects.length > 0) {
@@ -154,11 +155,8 @@ export async function POST({ request }) {
                         const description = `${item.subcategory} - ${item.type} - ${item.quantity} ${item.unit}`;
                         
                         doc.font(TimesNewRomanBold)
-                           .text(description, { width: 495, continued: true })
-                           .text(`€ ${itemPrice.toFixed(2)}`, { width: 50, align: 'right' })
-                           .moveDown(0.5);
-
-                        // Check for tasks in project.tasks that match this item
+                           .text(description)
+                          // Check for tasks in project.tasks that match this item
                         const itemTasks = projectData.tasks.filter(task => 
                             task.subcategory === item.subcategory && 
                             task.type === item.type &&
@@ -168,10 +166,16 @@ export async function POST({ request }) {
                         itemTasks.forEach(task => {
                             doc.font(TimesNewRoman)
                                .text('* ' + task.description, { width: 450 })
-                               .moveDown(0.5);
                         });
+ doc
+ .font(TimesNewRomanBold)
+ .text(`Subtotaal materiaal en arbeid: € ${itemPrice.toFixed(2)}`, { align: 'right' })
+ .font(TimesNewRoman)
+ .moveDown(0.5);
                     });
                     doc.moveDown(0.5);
+                   
+
                 }
             });
         } else {
@@ -180,26 +184,48 @@ export async function POST({ request }) {
                .moveDown(0.5);
         }
 
-        // Draw total separator line
-        doc.moveTo(50, doc.y)
-           .lineTo(545, doc.y)
-           .stroke()
-           .moveDown(1);
-
-        // Calculate total price from all projects
+ 
+         // Calculate total price from all projects
         const totalPrice = projects.reduce((total, project) => {
             return total + project.items.reduce((projectTotal, item) => {
                 return projectTotal + (parseFloat(item.price) * item.quantity);
             }, 0);
         }, 0);
 
-        const totalPriceWithTax = totalPrice * 1.21; // 21% BTW
+
+            
+        let totalPriceWithTax = totalPrice * 1.21; // 21% BTW
+
+
+        // Draw total separator line
+            doc.moveTo(50, doc.y)
+            .lineTo(545, doc.y)
+            .stroke()
+            .moveDown(0.5);
+
+            doc.text(`Totaal excl. BTW:(*) € ${totalPrice.toFixed(2)}`, 50, doc.y, { align: 'right'})
+            console.log(projectData.client.businessname);
+            if(projectData.client.businessname === '' || projectData.client.businessname === null){
+            doc.text(`BTW: € ${(totalPrice * 0.21).toFixed(2)}`, 50, doc.y, { align: 'right'})
+            }else{
+            doc.text(`BTW Verlegd: € 0,00`, 50, doc.y, { align: 'right'})
+            totalPriceWithTax = totalPrice
+            }
+            doc.moveTo(350, doc.y)
+            .lineTo(545, doc.y)
+            .stroke(2)
+            doc.text(`Totaal incl. BTW:(*) € ${totalPriceWithTax.toFixed(2)}`, 50, doc.y, { align: 'right'})
+            doc.moveDown(0.5);
+            doc.moveTo(50, doc.y)
+            .lineTo(545, doc.y)
+            .stroke()
+            .moveDown(1);
 
         if(projectData.terms !== null ){
             const terms = JSON.parse(projectData.terms);
             doc.fontSize(14)
                .font(TimesNewRomanBold)
-               .text('Voorwaarden', 50, doc.y)
+               .text('Voorwaarden *:', 50, doc.y)
                .moveDown(0.5)
                .font(TimesNewRoman)
                .fontSize(12)
@@ -207,12 +233,16 @@ export async function POST({ request }) {
                .moveDown(1);
         }
 
-        // Add payment schedule
-        doc.fontSize(14)
-           .font(TimesNewRomanBold)
-           .text('Betalingscondities', 50, doc.y)
-           .moveDown(1);
 
+        //if doc.y > 500, add a new page
+        console.log('y',doc.y);
+        if(doc.y > 600){
+            doc.addPage();
+            console.log('new page');
+            doc.moveTo(50, 50);
+        }
+ 
+        // Add payment schedule
         // Define consistent column positions
         const col1 = 50;    // Description
         const col2 = 200;   // Excl. BTW
@@ -225,14 +255,20 @@ export async function POST({ request }) {
         let y = doc.y;
         doc.fontSize(11)
            .font(TimesNewRomanBold)
-           .text('', col1, y, { width: 150 })
-           .text('Excl. BTW', col2, y, { width: colWidth, align: 'left' })
-           .text('9% BTW', col3, y, { width: colWidth, align: 'left' })
-           .text('21% BTW', col4, y, { width: colWidth, align: 'left' })
-           .text('Incl. BTW', col5, y, { width: colWidth, align: 'left' })
+           .fontSize(12)
+           .text('Betalingscondities *:', col1, y, { width: 150 })
+           .fontSize(11)
+           doc.text('Excl. BTW', col2, y, { width: colWidth, align: 'left' })
+           if(projectData.client.businessname === '' || projectData.client.businessname === null){
+           doc.text('21% BTW', col4, y, { width: colWidth, align: 'left' })
+           }else{
+           doc.text('BTW Verlegd', col4, y, { width: colWidth, align: 'left' })
+           }
+           doc.text('Incl. BTW', col5, y, { width: colWidth, align: 'left' })
            .moveDown(0.5);
 
-        // Payment rows
+
+       // Payment rows
         doc.font(TimesNewRoman);
         const payments = [
             { term: '50% bij opdracht', percentage: 0.5 },
@@ -248,9 +284,12 @@ export async function POST({ request }) {
              y = doc.y;
             doc.text(payment.term, col1, y, { width: 190 })
                .text(`€ ${baseAmount.toFixed(2)}`, col2, y, { width: colWidth, align: 'left' })
-               .text(`€ 0,00`, col3, y, { width: colWidth, align: 'left' })
-               .text(`€ ${btw21.toFixed(2)}`, col4, y, { width: colWidth, align: 'left' })
-               .text(`€ ${totalRowAmount.toFixed(2)}`, col5, y, { width: colWidth, align: 'left' })
+               if(projectData.client.businessname === '' || projectData.client.businessname === null){
+               doc.text(`€ ${btw21.toFixed(2)}`, col4, y, { width: colWidth, align: 'left' })
+               }else{
+               doc.text(`€ 0,00`, col4, y, { width: colWidth, align: 'left' })
+               }
+               doc.text(`€ ${totalRowAmount.toFixed(2)}`, col5, y, { width: colWidth, align: 'left' })
                .moveDown(0.5);
         });
 
@@ -260,25 +299,51 @@ export async function POST({ request }) {
            .font(TimesNewRomanBold)
            .text('Totaal:', col1, y, { width: 190 })
            .text(`€ ${totalPrice.toFixed(2)}`, col2, y, { width: colWidth, align: 'left' })
-           .text(`€ 0,00`, col3, y, { width: colWidth, align: 'left' })
-           .text(`€ ${(totalPrice * 0.21).toFixed(2)}`, col4, y, { width: colWidth, align: 'left' })
-           .text(`€ ${totalPriceWithTax.toFixed(2)}`, col5, y, { width: colWidth, align: 'left' })
+        //    .text(`€ 0,00`, col3, y, { width: colWidth, align: 'left' })
+           if(projectData.client.businessname === '' || projectData.client.businessname === null){
+           doc.text(`€ ${(totalPrice * 0.21).toFixed(2)}`, col4, y, { width: colWidth, align: 'left' })
+           }else{
+           doc.text(`€ 0,00`, col4, y, { width: colWidth, align: 'left' })
+           }
+
+           doc.text(`€ ${totalPriceWithTax.toFixed(2)}`, col5, y, { width: colWidth, align: 'left' })
            .moveDown(2);
+// move back to left column
 
-
-
-         if(projectData.opmerkingen !== null ){
-        doc.fontSize(14)
-           .text('Opmerkingen',50, doc.y)
-           .fontSize(12)
-           .text(`${projectData.opmerkingen}`)
-           .moveDown(1);
-        }
-
-
+        doc.moveTo(50, 100);
+        doc.font(TimesNewRoman)
+        doc.text('Mocht u nog vragen hebben over deze offerte dan kunt u altijd bellen of mailen.', 50, doc.y )
+        .moveDown(1);
+        doc.text("Met vriendelijke groet,")
+        .moveDown(1);
+        doc.text("John Fenenga | Eigenaar")
+        doc.text("JHF Bouw B.V.")
+        doc.text("06-14805120")
+        doc.text("info@jhfbouw.com")
+        .moveDown(1);
         // Validity notice at the bottom
-        doc.moveDown(2)
-           .text('Deze offerte is 30 dagen geldig vanaf de afgiftedatum.', { align: 'center' });
+
+const range = doc.bufferedPageRange();
+
+for( let i = range.start; i <  (range.start + range.count); i++) {
+
+  doc.switchToPage(i);
+  doc.fontSize(10)
+  .font(TimesNewRomanBold)
+  .text(`ING: NL12INGB0006160953 | KvK nr: 86043862 | BTW nr: NL863842999B01`, 
+            125, 
+            doc.page.height - 30, 
+            { height : 25, width : 400});
+
+  doc.text(`Offerte ${projectData.projectNumber}`, 
+            250, 
+            30, 
+            { height : 25, width : 100});
+
+
+}
+
+
 
         // Finalize the PDF
         doc.end();

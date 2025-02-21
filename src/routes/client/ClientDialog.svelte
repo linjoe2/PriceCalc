@@ -70,7 +70,7 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Laatste update</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aantal items</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Offertenaam</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acties</th>
                     </tr>
@@ -82,7 +82,7 @@
                                 {project.$updatedAt ? new Date(project.$updatedAt).toLocaleDateString('nl-NL') : '-'}
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap cursor-pointer" on:click={() => window.location.href = `/project/view/${project.$id}`}>
-                                {JSON.parse(project.items).length} items
+                                {project.projectNumber}
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap cursor-pointer" on:click={() => window.location.href = `/project/view/${project.$id}`}>
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">

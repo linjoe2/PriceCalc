@@ -130,4 +130,5 @@ export interface Subcontractor {
     businessname: string;
     $id?: string;
     website: string;
+    address: string;
 }

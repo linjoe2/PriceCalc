@@ -93,7 +93,8 @@
 
     async function saveToAppwriteDB() {
         isSaving = true;
-
+        //postcode trim spaces and remove spaces
+        postcode = postcode.replace(/\s+/g, '');
         const user = {
             name: naam,
             lastname: achternaam,
@@ -170,16 +171,7 @@
     
     <label for="stad" class="block text-sm font-medium text-gray-700">Woonplaats:</label>
     <input type="text" id="stad" bind:value={woonplaats} class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
-    <div class="flex justify-left">
-        <div>
-            <label for="oppervlakte" class="block text-sm font-medium text-gray-700">Oppervlakte:</label>
-            <input type="text" id="oppervlakte" bind:value={oppervlakte} class="mt-1 block w-1/2 pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
-        </div>
-        <div>
-            <label for="bouwjaar" class="block text-sm font-medium text-gray-700">Bouwjaar:</label>
-            <input type="text" id="bouwjaar" bind:value={bouwjaar} class="mt-1 block w-1/2 pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
-        </div>
-    </div>
+  
     <label for="email" class="block text-sm font-medium text-gray-700">Email:</label>
     <input type="email" id="email" bind:value={email} class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
     

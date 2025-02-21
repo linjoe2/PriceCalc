@@ -79,10 +79,11 @@
         isSaving = true;
         const databases = new Databases(client);
         try {
-            // clientData.postcode = clientData.postcode.replace(/\s+/g, '');
+            clientData.postcode = clientData.postcode.replace(/\s+/g, '');
             const filteredClientData = Object.fromEntries(
                 Object.entries(clientData).filter(([key]) => !key.startsWith('$'))
             ) as Partial<Client>;
+
             
             await databases.updateDocument('PriceCalc', '67362abc0039525e36b6', clientId, filteredClientData);
             goto('/client');
@@ -160,15 +161,7 @@
         <input type="text" id="woonplaats" bind:value={clientData.woonplaats} class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
     </div>
     
-    <div class="mb-4">
-        <label for="oppervlakte" class="block text-sm font-medium text-gray-700">Oppervlakte:</label>
-        <input type="number" id="oppervlakte" bind:value={clientData.oppervlakte}  class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
-    </div>
-    
-    <div class="mb-4">
-        <label for="bouwjaar" class="block text-sm font-medium text-gray-700">Bouwjaar:</label>
-        <input type="number" id="bouwjaar" bind:value={clientData.bouwjaar}  class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
-    </div>
+
     
     <div class="mb-4">
         <label for="email" class="block text-sm font-medium text-gray-700">Email:</label>

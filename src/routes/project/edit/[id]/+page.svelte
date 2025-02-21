@@ -31,6 +31,7 @@
   let openCategories: Record<string, boolean> = {};  // Add this near other let declarations
   let isUploading = false; // Add this near other let declarations at the top
   let calculations: Record<string, Calculation> = {};
+  let projectNumber: string = '';
   
 
   onMount(async () => {
@@ -61,49 +62,70 @@
             return acc;
         }, {});
         console.log(response)
-    } catch (error) {
-        console.error('Error fetching services:', error);
-    }
-    
-    if (projectId === "new") {
-      console.log("New project creation initiated.");
-    } else {
-      const databases = new Databases(client);
-      const result = await databases.getDocument(databaseId, projectsCollectionId, projectId);
-      result.items = JSON.parse(result.items);
-      // selectedItems = result.items;
-      $selectedUser = result.client;
-      projects = JSON.parse(result.projects);
-      opmerkingen = result.opmerkingen || ''; // Load saved values
-      notities = result.notities || '';       // Load saved values
-      //result.items[].price = result.items[].price;
-      console.log(result.items);
-      // each item in result.items
-      result.items.forEach(item => {
-        item.price = item.price;
-        console.log(item.category);
-        services[item.category].forEach(service => {
-          if (service.type === item.type) {
-            service.price = item.price;
-          }
-        });
-      });
-      // Load saved calculations or initialize with defaults
-      if (result.calculations) {
-        const savedCalculations = JSON.parse(result.calculations);
-        // Merge saved calculations with defaults
-        Object.keys(services).forEach(category => {
-            calculations[category] = {
-                length: (savedCalculations[category]?.length ?? 1),
-                width: (savedCalculations[category]?.width ?? 1)
-            };
-        });
-      }
 
-      // Push uploaded images to the array
-      if (result.uploadedImages) {
-        uploadedImages = result.uploadedImages.map((image: any) => JSON.parse(image));
-      }
+        if (projectId === "new") {
+            console.log("New project creation initiated.");
+            // Fetch all projects to determine the next project number
+            const projectsResponse = await databases.listDocuments(
+                databaseId, 
+                projectsCollectionId,
+                [Query.orderDesc('projectNumber'), Query.limit(1)]
+            );
+            
+            const currentYear = new Date().getFullYear();
+            let counter = 1;
+            
+            if (projectsResponse.documents.length > 0) {
+                const lastProject = projectsResponse.documents[0];
+                const lastProjectNumber = lastProject.projectNumber || '';
+                if (lastProjectNumber.startsWith(currentYear.toString())) {
+                    counter = parseInt(lastProjectNumber.slice(4)) + 1;
+                }
+            }
+            
+            // Format: YYYY001, YYYY002, etc.
+            projectNumber = `${currentYear}${counter.toString().padStart(3, '0')}`;
+        } else {
+            const result = await databases.getDocument(databaseId, projectsCollectionId, projectId);
+            result.items = JSON.parse(result.items);
+            // selectedItems = result.items;
+            $selectedUser = result.client;
+            projects = JSON.parse(result.projects);
+            opmerkingen = result.opmerkingen || ''; // Load saved values
+            notities = result.notities || '';       // Load saved values
+            //result.items[].price = result.items[].price;
+            console.log(result.items);
+            // each item in result.items
+            result.items.forEach(item => {
+              item.price = item.price;
+              console.log(item.category);
+              services[item.category].forEach(service => {
+                if (service.type === item.type) {
+                  service.price = item.price;
+                }
+              });
+            });
+            // Load saved calculations or initialize with defaults
+            if (result.calculations) {
+              const savedCalculations = JSON.parse(result.calculations);
+              // Merge saved calculations with defaults
+              Object.keys(services).forEach(category => {
+                  calculations[category] = {
+                      length: (savedCalculations[category]?.length ?? 1),
+                      width: (savedCalculations[category]?.width ?? 1)
+                  };
+              });
+            }
+
+            // Push uploaded images to the array
+            if (result.uploadedImages) {
+              uploadedImages = result.uploadedImages.map((image: any) => JSON.parse(image));
+            }
+
+            projectNumber = result.projectNumber || '';
+        }
+    } catch (error) {
+        console.error('Error:', error);
     }
   });
 
@@ -205,6 +227,7 @@
         );
 
         const projectData: Partial<Project> = {
+            projectNumber,
             items: JSON.stringify(allItems),
             projects: JSON.stringify(projects),
             totalPrice: totalPrice,
@@ -686,7 +709,8 @@
       </div>
     {/if}
   </div>
-  
+
+
 
   <style>
     /* Add your styles here */
