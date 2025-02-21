@@ -139,10 +139,10 @@
 <div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
   <div class="max-w-7xl mx-auto">
     <!-- Top Bar -->
-    <div class="bg-white shadow rounded-lg p-4 mb-6 flex justify-between items-center">
+    <div class="bg-white shadow rounded-lg p-4 mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
       <select 
         bind:value={projectData.fase} 
-        class="block w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+        class="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         on:change="{(e) => updateProjectStatus((e.target as HTMLSelectElement).value)}"
       >
         <option value="start">start</option>
@@ -153,15 +153,18 @@
         <option value="completed">afgerond</option>
       </select>
       
-      <div class="flex space-x-4">
+      <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
         <ShowPdf projectData={projectData} />
         <button
           on:click={duplicateProject}
-          class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+          class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
         >
           Dupliceer
         </button>
-        <a href="/project/edit/{projectId}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        <a 
+          href="/project/edit/{projectId}" 
+          class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
           Bewerk
         </a>
       </div>
@@ -170,7 +173,7 @@
     <!-- Main Content -->
     <div class="flex flex-col lg:flex-row gap-6">
       <!-- Left Column - Invoice -->
-      <div class="flex-1 bg-white shadow rounded-lg p-6">
+      <div class="w-full lg:flex-1 bg-white shadow rounded-lg p-4 sm:p-6">
         <div class="border-b border-gray-200 pb-4">
           <h1 class="text-3xl font-bold text-gray-900">Offerte</h1>
           <p class="text-sm text-gray-500 mt-1">Offerte nummer: {projectData.projectNumber}</p>
@@ -192,14 +195,14 @@
         </div>
 
         <!-- Projects and Items -->
-        <div class="mt-8">
+        <div class="mt-8 overflow-x-auto">
           {#each projectData.projects as project}
             <div class="mb-6">
               <h2 class="text-lg font-semibold text-gray-900">{project.name}</h2>
               <div class="mt-3 space-y-2">
                 {#each project.items as item}
-                  <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                    <span class="text-gray-600">{item.subcategory} - {item.type}</span>
+                  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-2 border-b border-gray-100">
+                    <span class="text-gray-600 mb-1 sm:mb-0">{item.subcategory} - {item.type}</span>
                     <span class="font-medium">{item.quantity} x €{item.price}</span>
                   </div>
                 {/each}
@@ -240,7 +243,7 @@
       </div>
 
       <!-- Right Column - Notes and Images -->
-      <div class="lg:w-1/3 space-y-6">
+      <div class="w-full lg:w-1/3 space-y-6">
         <!-- Notes Section -->
         <div class="bg-white shadow rounded-lg p-6">
           <h2 class="text-xl font-semibold text-gray-900 mb-4">Opmerkingen</h2>
@@ -258,19 +261,19 @@
         </div>
 
         <!-- Payment Schedule Card -->
-        <div class="bg-white shadow rounded-lg p-6">
+        <div class="bg-white shadow rounded-lg p-4 sm:p-6">
           <h2 class="text-xl font-semibold text-gray-900 mb-4">Betalingsschema</h2>
           <div class="space-y-4">
-            <div class="flex justify-between items-center py-2 border-b border-gray-100">
-              <span class="text-gray-600">Aanbetaling ({projectData.paymentSchedule.initial}%)</span>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-2 border-b border-gray-100">
+              <span class="text-gray-600 mb-1 sm:mb-0">Aanbetaling ({projectData.paymentSchedule.initial}%)</span>
               <span class="font-medium">€{(totalPriceWithTax * projectData.paymentSchedule.initial / 100).toFixed(2)}</span>
             </div>
-            <div class="flex justify-between items-center py-2 border-b border-gray-100">
-              <span class="text-gray-600">Tijdens werkzaamheden ({projectData.paymentSchedule.during}%)</span>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-2 border-b border-gray-100">
+              <span class="text-gray-600 mb-1 sm:mb-0">Tijdens werkzaamheden ({projectData.paymentSchedule.during}%)</span>
               <span class="font-medium">€{(totalPriceWithTax * projectData.paymentSchedule.during / 100).toFixed(2)}</span>
             </div>
-            <div class="flex justify-between items-center py-2 border-b border-gray-100">
-              <span class="text-gray-600">Bij oplevering ({projectData.paymentSchedule.final}%)</span>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-2 border-b border-gray-100">
+              <span class="text-gray-600 mb-1 sm:mb-0">Bij oplevering ({projectData.paymentSchedule.final}%)</span>
               <span class="font-medium">€{(totalPriceWithTax * projectData.paymentSchedule.final / 100).toFixed(2)}</span>
             </div>
           </div>
