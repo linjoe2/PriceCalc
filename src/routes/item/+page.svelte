@@ -153,12 +153,36 @@ function toggletasksVisibility(category, index) {
     tasksVisibility[key] = !tasksVisibility[key];
 }
 
+async function changeCategoryName(category: string, newName: string) {
+    services[newName] = services[category];
+    delete services[category];
+
+    //update the category name in the database
+    for (const service of services[newName]) {
+        const response = await databases.updateDocument(databaseId, collectionId, service.$id, {
+            category: newName
+        });
+        console.log(response);
+    }
+
+
+    showInput = false;
+}
+let showInput = false;
+let newCategoryName = '';
 </script>
 <ErrorMessage error={error} />
 <!-- Replace the existing table layout with a card-based layout -->
 {#each Object.entries(services) as [category, serviceList]}
     <div class="p-4">
-        <h3 class="text-xl font-semibold mb-4">{category}</h3>
+        {#if showInput === category }
+        <input type="text" bind:value={newCategoryName} class="border p-2 rounded"/>
+        <button on:click={() => changeCategoryName(category, newCategoryName)}>Opslaan</button>
+        {:else}
+            <h3 class="text-xl font-semibold mb-4" on:click={() => {showInput = category; newCategoryName = category;}}>
+            {category}
+        </h3>
+            {/if}
         <div class="grid gap-4">
             {#each serviceList as service, index}
                 <div class="bg-white rounded-lg shadow p-4">
