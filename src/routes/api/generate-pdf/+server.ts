@@ -173,15 +173,11 @@ export async function POST({ request }) {
         if (projects.length > 0) {
             projects.forEach(project => {
                 if (project.items && project.items.length > 0) {
-                    // Add project name as header
-                    doc.font(TimesNewRomanBold)
-                       .text(project.name, { width: 495 })
-                       .moveDown(0.5);
 
                     // Add project items
                     project.items.forEach(item => {
                         const itemPrice = parseFloat(item.price) * item.quantity;
-                        const description = `${item.subcategory} - ${item.type} - ${item.quantity} ${item.unit}`;
+                        const description = `${project.name} ${item.subcategory} - ${item.type} - ${item.quantity} ${item.unit}`;
                         
                         doc.font(TimesNewRomanBold)
                            .text(description)
@@ -235,7 +231,7 @@ export async function POST({ request }) {
             doc.text(`Totaal excl. BTW:(*) € ${totalPrice.toFixed(2)}`, 50, doc.y, { align: 'right'})
             console.log(projectData.client.businessname);
             if(projectData.client.businessname === '' || projectData.client.businessname === null){
-            doc.text(`BTW: € ${(totalPrice * 0.21).toFixed(2)}`, 50, doc.y, { align: 'right'})
+            doc.text(`BTW (21%): € ${(totalPrice * 0.21).toFixed(2)}`, 50, doc.y, { align: 'right'})
             }else{
             doc.text(`BTW Verlegd: € 0,00`, 50, doc.y, { align: 'right'})
             totalPriceWithTax = totalPrice
@@ -243,7 +239,10 @@ export async function POST({ request }) {
             doc.moveTo(350, doc.y)
             .lineTo(545, doc.y)
             .stroke(2)
+            doc.font(TimesNewRomanBold)
+            doc.moveDown(0.5)
             doc.text(`Totaal incl. BTW:(*) € ${totalPriceWithTax.toFixed(2)}`, 50, doc.y, { align: 'right'})
+            doc.font(TimesNewRoman)
             doc.moveDown(0.5);
             doc.moveTo(50, doc.y)
             .lineTo(545, doc.y)
@@ -289,6 +288,8 @@ export async function POST({ request }) {
            .fontSize(11)
            doc.text('Excl. BTW', col2, y, { width: colWidth, align: 'left' })
            if(projectData.client.businessname === '' || projectData.client.businessname === null){
+
+           doc.text("9% BTW", col3, y, { width: colWidth, align: 'left' })
            doc.text('21% BTW', col4, y, { width: colWidth, align: 'left' })
            }else{
            doc.text('BTW Verlegd', col4, y, { width: colWidth, align: 'left' })
@@ -299,21 +300,48 @@ export async function POST({ request }) {
 
        // Payment rows
         doc.font(TimesNewRoman);
-        const payments = [
-            { term: '50% bij opdracht', percentage: 0.5 },
-            { term: '45% tijdens werkzaamheden', percentage: 0.45 },
-            { term: '5% bij oplevering', percentage: 0.05 }
-        ];
+        const payments = [];
+        
+        // Build payment schedule from projectData
+        if (projectData.paymentSchedule) {
+            console.log('paymentSchedule', projectData.paymentSchedule);
+            projectData.paymentSchedule = JSON.parse(projectData.paymentSchedule);
+            if (projectData.paymentSchedule.initial > 0) {
+                console.log('initial', projectData.paymentSchedule.initial);
+                payments.push({ term: `${projectData.paymentSchedule.initial}% bij opdracht`, percentage: projectData.paymentSchedule.initial / 100 });
+            }
+                if (projectData.paymentSchedule.during > 0) {
+                console.log('during', projectData.paymentSchedule.during);
+                payments.push({ term: `${projectData.paymentSchedule.during}% tijdens werkzaamheden`, percentage: projectData.paymentSchedule.during / 100 });
+            }
+                if (projectData.paymentSchedule.threequarters > 0) {
+                payments.push({ term: `${projectData.paymentSchedule.threequarters}% bij 75% gereed`, percentage: projectData.paymentSchedule.threequarters / 100 });
+            }
+            if (projectData.paymentSchedule.final > 0) {
+                console.log('final', projectData.paymentSchedule.final);
+                payments.push({ term: `${projectData.paymentSchedule.final}% bij oplevering`, percentage: projectData.paymentSchedule.final / 100 });
+            }
+            console.log('payments', payments);
+        } else {
+            // Fallback to default payment schedule
+            payments.push(
+                { term: '50% bij opdracht', percentage: 0.5 },
+                { term: '45% tijdens werkzaamheden', percentage: 0.45 },
+                { term: '5% bij oplevering', percentage: 0.05 }
+            );
+        }
 
         payments.forEach(payment => {
             const baseAmount = totalPrice * payment.percentage;
             const btw21 = baseAmount * 0.21;
+            const btw9 = baseAmount * 0.00;
             const totalRowAmount = baseAmount + btw21;
 
              y = doc.y;
             doc.text(payment.term, col1, y, { width: 190 })
                .text(`€ ${baseAmount.toFixed(2)}`, col2, y, { width: colWidth, align: 'left' })
                if(projectData.client.businessname === '' || projectData.client.businessname === null){
+               doc.text(`€ ${btw9.toFixed(2)}`, col3, y, { width: colWidth, align: 'left' })
                doc.text(`€ ${btw21.toFixed(2)}`, col4, y, { width: colWidth, align: 'left' })
                }else{
                doc.text(`€ 0,00`, col4, y, { width: colWidth, align: 'left' })
@@ -322,6 +350,9 @@ export async function POST({ request }) {
                .moveDown(0.5);
         });
 
+        doc.moveTo(50, doc.y)
+            .lineTo(545, doc.y)
+            .stroke()
         // Total row
         y = doc.y;
         doc.moveDown(0.5)
@@ -382,7 +413,7 @@ for( let i = range.start; i <  (range.start + range.count); i++) {
 
         // Save to Appwrite storage
         try {
-            const file = new File([pdfBuffer], `offerte-${projectData.projectNumber || projectData.$id}.pdf`, {
+            const file = new File([pdfBuffer], `${projectData.projectNumber} ${projectData.client.adress} ${projectData.client.huisnummer} ${projectData.client.woonplaats}.pdf`, {
                 type: 'application/pdf'
             });
 

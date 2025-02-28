@@ -203,7 +203,7 @@
                 {#each project.items as item}
                   <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-2 border-b border-gray-100">
                     <span class="text-gray-600 mb-1 sm:mb-0">{item.subcategory} - {item.type}</span>
-                    <span class="font-medium">{item.quantity} x €{item.price}</span>
+                    <span class="font-medium">{item.quantity} {item.unit} x €{item.price}</span>
                   </div>
                 {/each}
               </div>
@@ -221,16 +221,6 @@
           <p class="text-xl font-bold text-gray-900 mt-2">Totaal: €{totalPriceWithTax.toFixed(2)}</p>
         </div>
 
-        <!-- Terms -->
-        <div class="mt-8">
-          <h3 class="text-xl font-semibold text-gray-900">Voorwaarden</h3>
-          <ul class="mt-4 space-y-2 list-disc list-inside text-gray-600">
-            {#each projectData.terms as term}
-              <li>{term.text}</li>
-            {/each}
-          </ul>
-        </div>
-
         <!-- Tasks -->
         <div class="mt-8">
           <h3 class="text-xl font-semibold text-gray-900">Taken</h3>
@@ -240,15 +230,22 @@
             {/each}
           </ul>
         </div>
+
+      <!-- Terms -->
+        <div class="mt-8">
+          <h3 class="text-xl font-semibold text-gray-900">Voorwaarden</h3>
+          <ul class="mt-4 space-y-2 list-disc list-inside text-gray-600">
+            {#each projectData.terms as term}
+              <li>{term.text}</li>
+            {/each}
+          </ul>
+        </div>
       </div>
+ 
 
       <!-- Right Column - Notes and Images -->
       <div class="w-full lg:w-1/3 space-y-6">
         <!-- Notes Section -->
-        <div class="bg-white shadow rounded-lg p-6">
-          <h2 class="text-xl font-semibold text-gray-900 mb-4">Opmerkingen</h2>
-          <p class="text-gray-600 whitespace-pre-line">{projectData.opmerkingen}</p>
-        </div>
 
         <div class="bg-white shadow rounded-lg p-6">
           <h2 class="text-xl font-semibold text-gray-900 mb-4">Notities</h2>
@@ -262,19 +259,29 @@
 
         <!-- Payment Schedule Card -->
         <div class="bg-white shadow rounded-lg p-4 sm:p-6">
-          <h2 class="text-xl font-semibold text-gray-900 mb-4">Betalingsschema</h2>
+          <h2 class="text-xl font-semibold text-gray-900 mb-4">Betalingsschema (excl. BTW)</h2>
           <div class="space-y-4">
+            {#if projectData.paymentSchedule.initial > 0}
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-2 border-b border-gray-100">
               <span class="text-gray-600 mb-1 sm:mb-0">Aanbetaling ({projectData.paymentSchedule.initial}%)</span>
-              <span class="font-medium">€{(totalPriceWithTax * projectData.paymentSchedule.initial / 100).toFixed(2)}</span>
+              <span class="font-medium">€{(totalPrice * projectData.paymentSchedule.initial / 100).toFixed(2)}</span>
             </div>
+            {/if}
+            {#if projectData.paymentSchedule.during > 0}
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-2 border-b border-gray-100">
               <span class="text-gray-600 mb-1 sm:mb-0">Tijdens werkzaamheden ({projectData.paymentSchedule.during}%)</span>
-              <span class="font-medium">€{(totalPriceWithTax * projectData.paymentSchedule.during / 100).toFixed(2)}</span>
+              <span class="font-medium">€{(totalPrice * projectData.paymentSchedule.during / 100).toFixed(2)}</span>
             </div>
+            {/if}
+            {#if projectData.paymentSchedule.threequarters > 0}
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-2 border-b border-gray-100">
+              <span class="text-gray-600 mb-1 sm:mb-0">Bij driekwart gereed ({projectData.paymentSchedule.threequarters}%)</span>
+              <span class="font-medium">€{(totalPrice * projectData.paymentSchedule.threequarters / 100).toFixed(2)}</span>
+            </div>
+            {/if}
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-2 border-b border-gray-100">
               <span class="text-gray-600 mb-1 sm:mb-0">Bij oplevering ({projectData.paymentSchedule.final}%)</span>
-              <span class="font-medium">€{(totalPriceWithTax * projectData.paymentSchedule.final / 100).toFixed(2)}</span>
+              <span class="font-medium">€{(totalPrice * projectData.paymentSchedule.final / 100).toFixed(2)}</span>
             </div>
           </div>
         </div>

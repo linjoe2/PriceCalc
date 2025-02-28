@@ -2,11 +2,45 @@
     export let totalPrice = 0;
     export let paymentSchedule = {
         initial: 50,
-        during: 45,
+        during: 30,
+        threequarters: 15,
         final: 5
     };
 
     let btw21 = 0.21;
+
+    // Add function to automatically set payment schedule based on price
+    $: {
+        if (totalPrice <= 4000) {
+            paymentSchedule = {
+                initial: 0,
+                during: 0,
+                threequarters: 0,
+                final: 100
+            };
+        } else if (totalPrice <= 15000) {
+            paymentSchedule = {
+                initial: 50,
+                during: 0,
+                threequarters: 0,
+                final: 50
+            };
+        } else if (totalPrice <= 40000) {
+            paymentSchedule = {
+                initial: 50,
+                during: 45,
+                threequarters: 0,
+                final: 5
+            };
+        } else if (totalPrice <= 1000000) {
+            paymentSchedule = {
+                initial: 40,
+                during: 30,
+                threequarters: 25,
+                final: 5
+            };
+        }
+    }
 
     function adjustPercentages(changed, value) {
         paymentSchedule[changed] = value;
@@ -55,6 +89,16 @@
             />
         </label>
         <label>
+            Bij driekwart gereed: {paymentSchedule.threequarters}%
+            <input 
+                type="range" 
+                min="0" 
+                max="100" 
+                bind:value={paymentSchedule.threequarters}
+                on:input={() => adjustPercentages('threequarters', paymentSchedule.threequarters)}
+            />
+        </label>
+        <label>
             Bij oplevering: {paymentSchedule.final}%
             <input 
                 type="range" 
@@ -87,6 +131,12 @@
                     <td data-label="Excl. BTW">€ {(totalPrice * paymentSchedule.during / 100).toFixed(2)}</td>
                     <td data-label="21% BTW">€ {(totalPrice * paymentSchedule.during / 100 * btw21).toFixed(2)}</td>
                     <td data-label="Incl. BTW">€ {(totalPrice * paymentSchedule.during / 100 * (1 + btw21)).toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <td data-label="Betalingscondities">Bij driekwart gereed ({paymentSchedule.threequarters}%)</td>
+                    <td data-label="Excl. BTW">€ {(totalPrice * paymentSchedule.threequarters / 100).toFixed(2)}</td>
+                    <td data-label="21% BTW">€ {(totalPrice * paymentSchedule.threequarters / 100 * btw21).toFixed(2)}</td>
+                    <td data-label="Incl. BTW">€ {(totalPrice * paymentSchedule.threequarters / 100 * (1 + btw21)).toFixed(2)}</td>
                 </tr>
                 <tr>
                     <td data-label="Betalingscondities">Bij oplevering ({paymentSchedule.final}%)</td>
