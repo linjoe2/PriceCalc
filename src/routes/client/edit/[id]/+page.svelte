@@ -70,6 +70,7 @@
             clientData = result as unknown as Client;
             postcode = result.postcode;
             huisnummer = result.huisnummer;
+            clientData.subcontractors = result.subcontractors?.$id;
             error = undefined;
         }
         console.log(clientData);
@@ -97,14 +98,16 @@
     }
 
     async function updateAddress(address: any) {
-        console.log(address)
-        clientData.adress = address.road;
-        clientData.postcode = address.postcode;
-        clientData.huisnummer = address.house_number;
-        clientData.woonplaats = address.city || address.town || address.village || address.municipality;
+        if(!!!address){
+            console.log(address);
+            clientData.adress = address.road;
+            clientData.postcode = address.postcode;
+            clientData.huisnummer = address.house_number;
+            clientData.woonplaats = address.city || address.town || address.village || address.municipality;
+        }
     }
 
-    $: updateAddress(address)
+    // $: updateAddress(address)
 
   
 </script>
@@ -170,7 +173,7 @@
     
     <div class="mb-4">
         <label for="telefoonnummer" class="block text-sm font-medium text-gray-700">Telefoonnummer:</label>
-        <input type="number" id="telefoonnummer" bind:value={clientData.telefoonnummer}  class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+        <input type="tel" id="telefoonnummer" bind:value={clientData.telefoonnummer}  class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
     </div>
     
     <ErrorMessage message={message} bind:error={error} />

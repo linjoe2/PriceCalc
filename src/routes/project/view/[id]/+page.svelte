@@ -145,12 +145,14 @@
         class="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         on:change="{(e) => updateProjectStatus((e.target as HTMLSelectElement).value)}"
       >
-        <option value="start">start</option>
-        <option value="accepted">acceptatie</option>
-        <option value="planned">ingeplanned</option>
-        <option value="started">gestart</option>
-        <option value="in progress">in uitvoering</option>
-        <option value="completed">afgerond</option>
+        <option value="akkoord">akkoord</option>
+        <option value="niet gegund">niet gegund</option>
+        <option value="aanbetaling">aanbetaling</option>
+        <option value="werkvoorbereiding">werkvoorbereiding</option>
+        <option value="tusentijdse factuur">tussentijdse factuur</option>
+        <option value="opgeleverd">opgeleverd</option>
+        <option value="Eindfactuur">Eindfactuur</option>
+        <option value="100% opgeleverd">100% opgeleverd</option>
       </select>
       
       <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
@@ -182,6 +184,9 @@
         <!-- Client Information -->
         <div class="mt-6">
           <h2 class="text-xl font-semibold text-gray-900">Klant</h2>
+          {#if projectData.client?.subcontractors}
+            <h3 class="text-gray-600 text-lg font-semibold">{projectData.client.subcontractors?.businessname}</h3>
+          {/if}
           <div class="mt-3 text-gray-600">
             <p class="font-medium">{projectData.client.name} {projectData.client.lastname}</p>
             {#if projectData.client.businessname}

@@ -12,6 +12,7 @@ const __dirname = path.dirname(__filename);
 const TimesNewRoman = path.join(__dirname, !import.meta.env.DEV ? '../../../static/fonts/Times-New-Roman.ttf' : '../../../../static/fonts/Times-New-Roman.ttf');
 const TimesNewRomanBold = path.join(__dirname, !import.meta.env.DEV ? '../../../static/fonts/Times-New-Roman-Bold.ttf' : '../../../../static/fonts/Times-New-Roman-Bold.ttf');
 const logo = path.join(__dirname, !import.meta.env.DEV ? '../../../static/jhfbouw-logo.png' : '../../../../static/jhfbouw-logo.png');
+const handtekening = path.join(__dirname, !import.meta.env.DEV ? '../../../static/handtekening.png' : '../../../../static/handtekening.png');
 console.log(__dirname);
 console.log(TimesNewRoman);
 console.log(TimesNewRomanBold);
@@ -62,7 +63,7 @@ export async function POST({ request }) {
         .text('Dukdalfweg 16', 400, doc.y, { align: 'right'})
         .text('1041 BD Amsterdam', 400, doc.y, { align: 'right'})
         .moveDown(0.5)
-        .text('Tel: 020-2136082', 400, doc.y, { align: 'right'})
+        .text('020-7820772', 400, doc.y, { align: 'right'})
         .text('info@jhfbouw.nl', 400, doc.y, { align: 'right'})
         .moveDown(2);
         
@@ -101,31 +102,31 @@ export async function POST({ request }) {
         // if subcontractor
         if(client.subcontractors !== null){
             projectData.client.businessname = client.subcontractors.businessname;
-            doc.text(`${client.subcontractors.businessname}`, 60)
-            doc.text(`${client.subcontractors.address}`, 60)
-            doc.text(`Email: ${client.subcontractors.email}`, 60)
-            doc.text(`Tel: ${client.subcontractors.phone || 'N/B'}`, 60)
+            doc.text(`${client.subcontractors.businessname || ''}`, 60)
+            doc.text(`${client.subcontractors.address || ''}`, 60)
+            doc.text(`${client.subcontractors.email || ''}`, 60)
+            doc.text(` ${client.subcontractors.phone || ''}`, 60)
             doc.font(TimesNewRomanBold)
             doc.text("betreft:")
             doc.font(TimesNewRoman)
-            doc.text(`${client.name} ${client.lastname}`)
-            doc.text(`${client.adress} ${client.huisnummer}, ${client.postcode} ${client.woonplaats}`)
+            doc.text(`${client.name || ''} ${client.lastname || ''}`)
+            doc.text(`${client.adress || ''} ${client.huisnummer || ''} ${client.postcode || ''} ${client.woonplaats || ''}`)
             doc.moveDown(1);
         }else if(client.businessname === '' || client.businessname === null){
             doc
-           .text(`T.a.v. ${client.name} ${client.lastname}`)
-           .text(`${client.adress} ${client.huisnummer}`)
-           .text(`${client.postcode} ${client.woonplaats}`)
-           .text(`Email: ${client.email}`)
-           .text(`Tel: ${client.telefoonnummer || 'N/B'}`)
+           .text(`T.a.v. ${client.name || ''} ${client.lastname || ''}`)
+           .text(`${client.adress || ''} ${client.huisnummer || ''}`)
+           .text(`${client.postcode || ''} ${client.woonplaats || ''}`)
+           .text(`${client.email || ''}`)
+           .text(`${client.telefoonnummer || ''}`)
            .moveDown(1);
         } else {
           doc.text(`${client.businessname}`, 60)
-           .text(`T.a.v. ${client.name} ${client.lastname}`)
-           .text(`${client.adress} ${client.huisnummer}`)
-           .text(`${client.postcode} ${client.woonplaats}`)
-           .text(`Email: ${client.email}`)
-           .text(`Tel: ${client.telefoonnummer || 'N/B'}`)
+           .text(`T.a.v. ${client.name || ''} ${client.lastname || ''}`)
+           .text(`${client.adress || ''} ${client.huisnummer || ''}`)
+           .text(`${client.postcode || ''} ${client.woonplaats || ''}`)
+           .text(`${client.email || ''}`)
+           .text(`${client.telefoonnummer || 'N/B'}`)
            .moveDown(1);
 
        }
@@ -193,6 +194,7 @@ export async function POST({ request }) {
                                .text('* ' + task.description, { width: 450 })
                         });
  doc
+ .moveDown(0.5)
  .font(TimesNewRomanBold)
  .text(`Subtotaal materiaal en arbeid: € ${itemPrice.toFixed(2)}`, { align: 'right' })
  .font(TimesNewRoman)
@@ -347,7 +349,7 @@ export async function POST({ request }) {
                doc.text(`€ 0,00`, col4, y, { width: colWidth, align: 'left' })
                }
                doc.text(`€ ${totalRowAmount.toFixed(2)}`, col5, y, { width: colWidth, align: 'left' })
-               .moveDown(0.5);
+            //    .moveDown(0.5);
         });
 
         doc.moveTo(50, doc.y)
@@ -381,6 +383,15 @@ export async function POST({ request }) {
         doc.text("06-14805120")
         doc.text("info@jhfbouw.com")
         .moveDown(1);
+        try {
+            doc.image(handtekening, 50, doc.y, {
+                fit: [500, 50],  // Adjust size as needed
+                align: 'left'
+            });
+        } catch (error) {
+            console.error('Error loading logo:', error);
+            // Continue without logo if it fails to load
+        }
         // Validity notice at the bottom
 
 const range = doc.bufferedPageRange();
@@ -413,7 +424,7 @@ for( let i = range.start; i <  (range.start + range.count); i++) {
 
         // Save to Appwrite storage
         try {
-            const file = new File([pdfBuffer], `${projectData.projectNumber} ${projectData.client.adress} ${projectData.client.huisnummer} ${projectData.client.woonplaats}.pdf`, {
+            const file = new File([pdfBuffer], `O${projectData.projectNumber} ${projectData.client.adress} ${projectData.client.huisnummer} ${projectData.client.woonplaats}.pdf`, {
                 type: 'application/pdf'
             });
 

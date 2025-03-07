@@ -12,7 +12,7 @@
             projectData.$id
         );
 
-        window.open(pdfUrl.toString(), '_blank');
+        window.open(pdfUrl.toString() + "&nocache=" + new Date().getTime(), '_blank');
 
     }
 
@@ -53,10 +53,11 @@ Dukdalfweg 16
         const encodedSubject = encodeURIComponent(subject);
         const encodedBody = encodeURIComponent(body);
         
-        window.location.href = `mailto:${projectData.client.email}?subject=${encodedSubject}&body=${encodedBody}`;
+        const mailUrl= `mailto:${projectData.client.email || ''};${projectData.client.subcontractors?.email || ''}?subject=${encodedSubject}&body=${encodedBody}`;
+        window.open(mailUrl, '_blank');
+
       }
 </script>
-
 
 <button class="show-pdf-button border-2 border-black text-black px-4 py-2 rounded" on:click={showPDF}>Toon PDF</button>
 <button class="show-pdf-button border-2 border-black text-black px-4 py-2 rounded" on:click={sendPDF}>Verstuur PDF</button>

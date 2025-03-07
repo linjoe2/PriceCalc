@@ -47,6 +47,7 @@
         // Fetch subcontractors from database
         try {
             const result = await databases.listDocuments('PriceCalc', '67af40c10023be6ed3e6');
+            console.log(result);
             subcontractors = result.documents as unknown as Subcontractor[];
             error = undefined;
         } catch (error) {
@@ -77,7 +78,7 @@
 
 
     async function updateAddress(address: any) {
-        if(address){
+        if(!!!address){
             console.log(address);
             woonplaats = address.city || address.town || address.village || address.municipality;
             straat = address.road;

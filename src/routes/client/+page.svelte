@@ -75,6 +75,7 @@
                 <Table.Row>
                     <Table.Head>Name</Table.Head>
                     <Table.Head>Last Name</Table.Head>
+                    <Table.Head>Hoofdaannemer</Table.Head>
                     <Table.Head>Address</Table.Head>
                     <Table.Head>House Number</Table.Head>
                     <Table.Head>Postal Code</Table.Head>
@@ -86,6 +87,7 @@
                     <Table.Row on:click={() => window.location.href = `/client/view/${client.$id}`}>
                         <Table.Cell>{client.name}</Table.Cell>
                         <Table.Cell>{client.lastname}</Table.Cell>
+                        <Table.Cell>{client.subcontractors?.businessname || ''}</Table.Cell>
                         <Table.Cell>{client.adress}</Table.Cell>
                         <Table.Cell>{client.huisnummer}</Table.Cell>
                         <Table.Cell>{client.postcode}</Table.Cell>
