@@ -1,10 +1,9 @@
 <script>
     export let tasks;
     let newTaskTitle = '';
+    let draggedIndex = null;
 
-
-       console.log(tasks)
- 
+    console.log(tasks)
 
     function addTask() {
         if (newTaskTitle.trim()) {
@@ -21,6 +20,31 @@
         tasks[index].task = newTask;
         tasks = [...tasks]; // trigger reactivity
     }
+
+    function handleDragStart(event, index) {
+        draggedIndex = index;
+        event.dataTransfer.effectAllowed = 'move';
+        // Add a class to the dragged item for visual feedback
+        event.target.closest('.task-item').classList.add('dragging');
+    }
+
+    function handleDragEnd(event) {
+        event.target.closest('.task-item').classList.remove('dragging');
+        draggedIndex = null;
+    }
+
+    function handleDragOver(event, index) {
+        event.preventDefault();
+        if (draggedIndex === null || draggedIndex === index) return;
+        
+        // Reorder the tasks array
+        const tasksArray = [...tasks];
+        const draggedTask = tasksArray[draggedIndex];
+        tasksArray.splice(draggedIndex, 1);
+        tasksArray.splice(index, 0, draggedTask);
+        tasks = tasksArray;
+        draggedIndex = index;
+    }
 </script>
 
 <div class="task-container">
@@ -28,7 +52,14 @@
     
     <!-- Existing tasks list -->
     {#each tasks as task, index}
-        <div class="task-item">
+        <div 
+            class="task-item"
+            draggable="true"
+            on:dragstart={(e) => handleDragStart(e, index)}
+            on:dragend={handleDragEnd}
+            on:dragover={(e) => handleDragOver(e, index)}
+        >
+            <span class="drag-handle">•</span>
             <input
                 type="text"
                 bind:value={task}
@@ -60,6 +91,15 @@
         display: flex;
         gap: 10px;
         margin: 10px 0;
+        padding: 5px;
+        background: white;
+        border-radius: 4px;
+        border: 1px solid transparent;
+    }
+
+    .task-item.dragging {
+        opacity: 0.5;
+        border: 1px dashed #666;
     }
 
     .add-task {
@@ -84,5 +124,18 @@
 
     button:hover {
         background-color: #45a049;
+    }
+
+    .drag-handle {
+        cursor: grab;
+        padding: 0 8px;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        color: #666;
+    }
+
+    .drag-handle:active {
+        cursor: grabbing;
     }
 </style>

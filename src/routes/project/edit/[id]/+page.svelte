@@ -12,6 +12,7 @@
   import CreatePaymentSchedule from '../../../../components/createPaymentScedule.svelte';
   import type { Client, Task, Project, PaymentSchedule, UploadedImage, Terms, Service, Calculation, Item} from '$lib/types';
   import SavingAnimation from "../../../../components/savingAnimation.svelte";
+  import ProjectTask from '../../../../components/ProjectTask.svelte';
   let isSaving = false;
   let projectId = $page.params.id;
   const databases = new Databases(client);
@@ -488,50 +489,12 @@
 
                 <!-- Add tasks section here -->
                 {#if project.items.some((i: Item) => i.category === category && i.subcategory === item.subcategory && i.type === item.type)}
-                  <div class="ml-4 p-2 bg-gray-50 rounded-md">
-                    <h4 class="font-medium text-sm mb-2">Taken:</h4>
-                    {#each project.items.find((i: Item) => i.category === category && i.subcategory === item.subcategory && i.type === item.type).tasks || [] as task, taskIndex}
-                      <div class="flex items-center gap-2 mb-2">
-                        
-                        <input
-                          type="text"
-                          bind:value={task.description}
-                          class="flex-1 p-1 text-sm border rounded"
-                        />
-                        <button
-                          class="text-red-500 hover:text-red-700 px-2"
-                          on:click={() => {
-                            const itemIndex = project.items.findIndex((i: Item) => 
-                              i.category === category && 
-                              i.subcategory === item.subcategory && 
-                              i.type === item.type
-                            );
-                            project.items[itemIndex].tasks.splice(taskIndex, 1);
-                            projects = [...projects];
-                          }}
-                        >
-                          ×
-                        </button>
-                      </div>
-                    {/each}
-                    <button
-                      class="text-sm text-blue-500 hover:text-blue-700"
-                      on:click={() => {
-                        const itemIndex = project.items.findIndex((i: Item) => 
-                          i.category === category && 
-                          i.subcategory === item.subcategory && 
-                          i.type === item.type
-                        );
-                        if (!project.items[itemIndex].tasks) {
-                          project.items[itemIndex].tasks = [];
-                        }
-                        project.items[itemIndex].tasks.push({ description: '', completed: false });
-                        projects = [...projects];
-                      }}
-                    >
-                      + Nieuwe taak
-                    </button>
-                  </div>
+                  <ProjectTask 
+                    {project}
+                    {category}
+                    {item}
+                    bind:projects
+                  />
                 {/if}
               </div>
             {/each}

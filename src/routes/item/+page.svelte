@@ -23,6 +23,10 @@ let serviceToEdit: Service | null = null; // Store the service being edited
 // New reactive variable to track visibility of taken for each service
 let tasksVisibility = {};
 
+// Add this near the top with other reactive variables
+let serviceToDelete = null; // Store service to be deleted
+let showDeleteConfirmation = false; // Control visibility of delete confirmation dialog
+
 onMount(async () => {
     fetchServices();
 });
@@ -77,18 +81,26 @@ function updateService(category: string, index: number, updatedService: Service)
 }
 
 // Function to delete a service
-async function deleteService(category: string, index: number) {
-    console.log(category, index);
-   try {
+function confirmDelete(category: string, index: number) {
+    serviceToDelete = { category, index };
+    showDeleteConfirmation = true;
+}
+
+async function deleteService() {
+    if (!serviceToDelete) return;
+    
+    const { category, index } = serviceToDelete;
+    try {
         const response = await databases.deleteDocument(databaseId, collectionId, services[category][index].$id);
         console.log('Service deleted successfully:', response);
+        services[category].splice(index, 1);
+        services = services;
     } catch (error) {
         console.error('Error deleting service:', error);
     }
-    services[category].splice(index, 1);
-    services = services;
- 
-  }
+    showDeleteConfirmation = false;
+    serviceToDelete = null;
+}
 
 // Function to open the edit dialog
 function editService(category: string, index: number, service: Service) {
@@ -170,76 +182,147 @@ async function changeCategoryName(category: string, newName: string) {
 }
 let showInput = false;
 let newCategoryName = '';
+
+// Add these new functions for drag and drop
+function handleDragStart(event: DragEvent, category: string, index: number) {
+    if (event.dataTransfer) {
+        event.dataTransfer.setData('text/plain', JSON.stringify({
+            sourceCategory: category,
+            sourceIndex: index
+        }));
+    }
+}
+
+function handleDrop(event: DragEvent, targetCategory: string, targetIndex: number) {
+    event.preventDefault();
+    if (event.dataTransfer) {
+        const data = JSON.parse(event.dataTransfer.getData('text/plain'));
+        const { sourceCategory, sourceIndex } = data;
+        
+        // Get the service to move
+        const serviceToMove = services[sourceCategory][sourceIndex];
+        
+        // Remove from original position
+        services[sourceCategory].splice(sourceIndex, 1);
+        
+        // Add to new position
+        services[targetCategory].splice(targetIndex, 0, serviceToMove);
+        
+        // Update the category in the database if it changed
+        if (sourceCategory !== targetCategory) {
+            updateServiceCategory(serviceToMove.$id, targetCategory);
+        }
+        
+        // Force Svelte to update the view
+        services = services;
+    }
+}
+
+function handleDragOver(event: DragEvent) {
+    event.preventDefault();
+}
+
+async function updateServiceCategory(serviceId: string, newCategory: string) {
+    try {
+        await databases.updateDocument(databaseId, collectionId, serviceId, {
+            category: newCategory
+        });
+    } catch (error) {
+        console.error('Error updating service category:', error);
+    }
+}
+
+// Add this new function after the updateServiceCategory function
+async function duplicateService(category: string, index: number) {
+    const serviceToDuplicate = services[category][index];
+    const duplicatedService = {
+        ...serviceToDuplicate,
+        $id: ID.unique() // Generate new unique ID
+    };
+    
+    try {
+        const response = await databases.createDocument(
+            databaseId, 
+            collectionId, 
+            duplicatedService.$id,
+            {
+                subcategory: serviceToDuplicate.subcategory,
+                type: serviceToDuplicate.type,
+                price: parseInt(serviceToDuplicate.price),
+                unit: serviceToDuplicate.unit,
+                category: category,
+                tasks: serviceToDuplicate.tasks
+            }
+        );
+        console.log('Service duplicated successfully:', response);
+        // Refresh the services to show the new duplicate
+        await fetchServices();
+    } catch (error) {
+        console.error('Error duplicating service:', error);
+    }
+}
 </script>
 <ErrorMessage error={error} />
 <!-- Replace the existing table layout with a card-based layout -->
 {#each Object.entries(services) as [category, serviceList]}
     <div class="p-4">
-        {#if showInput === category }
-        <input type="text" bind:value={newCategoryName} class="border p-2 rounded"/>
-        <button on:click={() => changeCategoryName(category, newCategoryName)}>Opslaan</button>
+        {#if showInput === category}
+            <input type="text" bind:value={newCategoryName} class="border p-2 rounded"/>
+            <button on:click={() => changeCategoryName(category, newCategoryName)}>Opslaan</button>
         {:else}
             <h3 class="text-xl font-semibold mb-4" on:click={() => {showInput = category; newCategoryName = category;}}>
-            {category}
-        </h3>
-            {/if}
-        <div class="grid gap-4">
-            {#each serviceList as service, index}
-                <div class="bg-white rounded-lg shadow p-4">
-                    <div class="space-y-2">
-                        <div class="flex justify-between items-center">
-                            <span class="font-medium">{service.subcategory}</span>
-                            <div class="flex gap-2">
-                                <button on:click={() => editService(category, index, service)} 
-                                    class="p-2 rounded-md border text-sm hover:bg-gray-100">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                                    </svg>
-                                </button>
-                                <button on:click={() => deleteService(category, index)} 
-                                    class="p-2 rounded-md border text-sm hover:bg-gray-100">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                                    </svg>
-                                </button>
-                                <button on:click={() => toggletasksVisibility(category, index)} 
-                                    class="p-2 rounded-md border text-sm hover:bg-gray-100">
-                                    {#if tasksVisibility[`${category}-${index}`]}
+                {category}
+            </h3>
+        {/if}
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subcategorie</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prijs</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acties</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {#each serviceList as service, index}
+                        <tr class="hover:bg-gray-50"
+                            draggable="true"
+                            on:dragstart={(e) => handleDragStart(e, category, index)}
+                            on:drop={(e) => handleDrop(e, category, index)}
+                            on:dragover={handleDragOver}>
+                            <td class="px-6 py-4 whitespace-nowrap">{service.subcategory}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{service.type}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{service.price}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{service.unit}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <div class="flex justify-end gap-2">
+                                    <button on:click={() => duplicateService(category, index)} 
+                                        class="p-2 rounded-md border text-sm hover:bg-gray-100">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
                                         </svg>
-                                    {:else}
+                                    </button>
+                                    <button on:click={() => editService(category, index, service)} 
+                                        class="p-2 rounded-md border text-sm hover:bg-gray-100">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                                         </svg>
-                                    {/if}
-                                </button>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 text-sm">
-                            <div>Type: {service.type}</div>
-                            <div>Prijs: {service.price}</div>
-                            <div>Unit: {service.unit}</div>
-                        </div>
-                        {#if tasksVisibility[`${category}-${index}`]}
-                            <div class="mt-2 text-sm text-gray-600">
-                                <div class="font-medium">Taken:</div>
-                                {#each JSON.parse(service.tasks) as part}
-                                    <div class="ml-2">- {part}</div>
-                                {/each}
-                            </div>
-                        {/if}
-                    </div>
-                </div>
-            {/each}
-            <button on:click={() => editService(category, serviceList.length, {})} 
-                class="w-full px-4 py-2 rounded-md border text-sm hover:bg-gray-100 flex items-center justify-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-                <span>Dienst toevoegen</span>
-            </button>
+                                    </button>
+                                    <button on:click={() => confirmDelete(category, index)} 
+                                        class="p-2 rounded-md border text-sm hover:bg-gray-100">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    {/each}
+                </tbody>
+            </table>
         </div>
     </div>
 {/each}
@@ -300,5 +383,25 @@ let newCategoryName = '';
         </div>
     </div>
 </div>
+
+<!-- Add the delete confirmation dialog -->
+{#if showDeleteConfirmation}
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+            <h2 class="text-lg font-semibold mb-4">Bevestig verwijderen</h2>
+            <p class="mb-6">Weet je zeker dat je deze dienst wilt verwijderen?</p>
+            <div class="flex justify-end gap-2">
+                <button on:click={() => showDeleteConfirmation = false} 
+                    class="px-4 py-2 rounded-md border text-sm">
+                    Annuleer
+                </button>
+                <button on:click={deleteService} 
+                    class="px-4 py-2 rounded-md bg-red-600 text-white text-sm hover:bg-red-700">
+                    Verwijder
+                </button>
+            </div>
+        </div>
+    </div>
+{/if}
 
 
