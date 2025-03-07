@@ -382,6 +382,10 @@
             <label for="telefoonnummer">Telefoonnummer:</label>
             <span id="telefoonnummer">{$selectedUser?.telefoonnummer || 'N/A'}</span>
           </div>
+          <div>
+            <label for="subcontractor">Hoofdaannemer:</label>
+            <span id="subcontractor">{!!$selectedUser?.subcontractors?.businessname ? $selectedUser.subcontractors.businessname : 'Nee'}</span>
+          </div>
         </div>
       </div>
       <div class="md:w-1/2 m-4">

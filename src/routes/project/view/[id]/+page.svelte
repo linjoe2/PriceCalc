@@ -62,6 +62,15 @@
     }
   }
 
+  async function updateProgress(newProgress: number) {
+    try {
+      await databases.updateDocument(databaseId, projectsCollectionId, projectId, { progress: newProgress });
+      console.log('Project progress updated successfully');
+    } catch (error) {
+      console.error('Error updating project progress:', error);
+    }
+  }
+
   function incrementVersion(variableName) {
     const versionPattern = /(.*?)(?:_V(\d+))?$/; // Matches variable with optional version
     const match = variableName.match(versionPattern);
@@ -140,20 +149,35 @@
   <div class="max-w-7xl mx-auto">
     <!-- Top Bar -->
     <div class="bg-white shadow rounded-lg p-4 mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-      <select 
-        bind:value={projectData.fase} 
-        class="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        on:change="{(e) => updateProjectStatus((e.target as HTMLSelectElement).value)}"
-      >
-        <option value="akkoord">akkoord</option>
-        <option value="niet gegund">niet gegund</option>
-        <option value="aanbetaling">aanbetaling</option>
-        <option value="werkvoorbereiding">werkvoorbereiding</option>
-        <option value="tusentijdse factuur">tussentijdse factuur</option>
-        <option value="opgeleverd">opgeleverd</option>
-        <option value="Eindfactuur">Eindfactuur</option>
-        <option value="100% opgeleverd">100% opgeleverd</option>
-      </select>
+      <div class="flex flex-col sm:flex-row gap-4 items-center w-full sm:w-auto">
+        <select 
+          bind:value={projectData.fase} 
+          class="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          on:change="{(e) => updateProjectStatus((e.target as HTMLSelectElement).value)}"
+        >
+          <option value="akkoord">akkoord</option>
+          <option value="niet gegund">niet gegund</option>
+          <option value="aanbetaling">aanbetaling</option>
+          <option value="werkvoorbereiding">werkvoorbereiding</option>
+          <option value="tusentijdse factuur">tussentijdse factuur</option>
+          <option value="opgeleverd">opgeleverd</option>
+          <option value="Eindfactuur">Eindfactuur</option>
+          <option value="100% opgeleverd">100% opgeleverd</option>
+        </select>
+        
+        <div class="flex items-center gap-2 w-full sm:w-48">
+          <input 
+            type="range" 
+            min="0" 
+            max="100" 
+            step="5"
+            bind:value={projectData.progress} 
+            on:change={() => updateProgress(projectData.progress)}
+            class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+          />
+          <span class="text-sm text-gray-600 w-12">{projectData.progress}%</span>
+        </div>
+      </div>
       
       <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
         <ShowPdf projectData={projectData} />

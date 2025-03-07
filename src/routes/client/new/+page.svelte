@@ -78,7 +78,8 @@
 
 
     async function updateAddress(address: any) {
-        if(!!!address){
+        console.log('address', address);
+        if(!!address){
             console.log(address);
             woonplaats = address.city || address.town || address.village || address.municipality;
             straat = address.road;
