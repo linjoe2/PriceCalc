@@ -28,7 +28,7 @@
         bouwjaar: ''
     };
     let naam = '';
-    let achternaam: string | null = null;
+    let type: string | null = null;
     let bedrijfsnaam: string | null = null;
     let straat: string | null = null;
     let woonplaats: string | null = null;
@@ -37,23 +37,11 @@
     let oppervlakte: string;
     let bouwjaar: string;
     let chatwootid: string | null = null;
-    let subcontractor: Subcontractor | null = null;
-    let subcontractors: Subcontractor[] = [];
     let address: string | null = null;
 
     onMount(async () => {
         window.parent.postMessage('chatwoot-dashboard-app:fetch-info', '*');
         
-        // Fetch subcontractors from database
-        try {
-            const result = await databases.listDocuments('PriceCalc', '67af40c10023be6ed3e6');
-            console.log(result);
-            subcontractors = result.documents as unknown as Subcontractor[];
-            error = undefined;
-        } catch (error) {
-            console.error('Failed to fetch subcontractors:', error);
-            error = 'Er ging iets fout bij het ophalen van de onderaannemers.';
-        }
     });
 
     async function updateContacts(chatwootContact: ChatwootContact | null) {
@@ -66,7 +54,6 @@
             }else{
             const names = chatwootContact.name.split(' ');
             naam = names[0]; // First name
-            achternaam = names.slice(1).join(' '); // Last name (rest of the names)
             email = chatwootContact.email;
             postcode = chatwootContact.custom_attributes.postcode;
             houseNumber = chatwootContact.custom_attributes.huisnummer;
@@ -98,20 +85,17 @@
         //postcode trim spaces and remove spaces
         postcode = postcode.replace(/\s+/g, '');
         const user = {
+            type: type,
             name: naam,
-            lastname: achternaam,
             businessname: bedrijfsnaam,
             adress: straat,
             postcode: postcode,
             huisnummer: houseNumber,
             woonplaats: woonplaats,
-            oppervlakte: parseInt(oppervlakte),
-            bouwjaar: parseInt(bouwjaar),
             email: email,
-            telefoonnummer: parseInt(telefoonnummer),
+            telefoonnummer: telefoonnummer,
             chatwootid: chatwootid || null,
-            subcontractors: subcontractor || null,
-            search: `${naam} ${achternaam} ${bedrijfsnaam} ${postcode} ${houseNumber} ${telefoonnummer}`
+            search: `${naam} ${bedrijfsnaam} ${postcode} ${houseNumber} ${telefoonnummer}`
         };
 
         try {
@@ -139,26 +123,22 @@
 <h1>Nieuwe klant</h1>
 <ErrorMessage message={message} error={error} />
 <form class="shadow-md rounded px-8 pt-6 pb-8 mb-4">
-    <label for="naam" class="block text-sm font-medium text-gray-700">Naam*:</label>
-    <input type="text" id="naam" bind:value={naam} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
-    
-    <label for="achternaam" class="block text-sm font-medium text-gray-700">Achternaam:</label>
-    <input type="text" id="achternaam" bind:value={achternaam} class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
-    
-    <label for="bedrijfsnaam" class="block text-sm font-medium text-gray-700">Bedrijfsnaam:</label>
-    <input type="text" id="bedrijfsnaam" bind:value={bedrijfsnaam} class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
-    
-    <label for="subcontractor" class="block text-sm font-medium text-gray-700">Hoofdaannemer:</label>
-    <select 
-        id="subcontractor" 
-        bind:value={subcontractor} 
-        class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-    >
-        <option value={null}>Geen hoofdaannemer</option>
-        {#each subcontractors as contractor}
-            <option value={contractor.$id}>{contractor.businessname}</option>
-        {/each}
+
+    <label for="clientType" class="block text-sm font-medium text-gray-700">Type klant*:</label>
+    <select id="clientType" bind:value={type} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+        <option value="" disabled selected>Selecteer type klant</option>
+        <option value="Prive">Prive</option>
+        <option value="VVE">VVE</option>
+        <option value="BV">BV</option>
     </select>
+    {#if type != 'Prive'}
+        <label for="bedrijfsnaam" class="block text-sm font-medium text-gray-700">Bedrijfsnaam:</label>
+        <input type="text" id="bedrijfsnaam" bind:value={bedrijfsnaam} class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+    {/if}
+
+    <label for="naam" class="block text-sm font-medium text-gray-700">Naam geadresseerde*:</label>
+    <input type="text" id="naam" bind:value={naam} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+
 
     <SearchAdress bind:address={address} />
     

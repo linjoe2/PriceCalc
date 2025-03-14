@@ -61,9 +61,6 @@
             bind:value={filterValue}
         />
         <div class="flex items-center gap-4">
-            <a href="/client/sub">
-                <Button class="ml-auto mr-4 border border-black" variant="primary">+ hoofdaannemer</Button>
-            </a>
             <a href="/client/new">
                 <Button class="ml-auto mr-4 border border-black" variant="primary">+ klant</Button>
             </a>
@@ -73,21 +70,21 @@
         <Table.Root>
             <Table.Header>
                 <Table.Row>
-                    <Table.Head>Name</Table.Head>
-                    <Table.Head>Last Name</Table.Head>
-                    <Table.Head>Hoofdaannemer</Table.Head>
-                    <Table.Head>Address</Table.Head>
-                    <Table.Head>House Number</Table.Head>
-                    <Table.Head>Postal Code</Table.Head>
-                    <Table.Head>City</Table.Head>
+                    <Table.Head>Naam</Table.Head>
+                    <Table.Head>Type</Table.Head>
+                    <Table.Head>Bedrijfsnaam</Table.Head>
+                    <Table.Head>Adres</Table.Head>
+                    <Table.Head>Huisnummer</Table.Head>
+                    <Table.Head>Postcode</Table.Head>
+                    <Table.Head>Plaats</Table.Head>
                 </Table.Row>
             </Table.Header>
             <Table.Body>
                 {#each clients as client (client.$id)}
                     <Table.Row on:click={() => window.location.href = `/client/view/${client.$id}`}>
                         <Table.Cell>{client.name}</Table.Cell>
-                        <Table.Cell>{client.lastname}</Table.Cell>
-                        <Table.Cell>{client.subcontractors?.businessname || ''}</Table.Cell>
+                        <Table.Cell>{client.type}</Table.Cell>
+                        <Table.Cell>{client.businessname}</Table.Cell>
                         <Table.Cell>{client.adress}</Table.Cell>
                         <Table.Cell>{client.huisnummer}</Table.Cell>
                         <Table.Cell>{client.postcode}</Table.Cell>

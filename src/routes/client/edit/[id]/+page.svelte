@@ -14,8 +14,8 @@
     let error: string | undefined;
     let clientId = '';
     let clientData: Client = {
+        type: '',
         name: '',
-        lastname: '',
         businessname: '',
         adress: '',
         postcode: '',
@@ -84,6 +84,7 @@
             const filteredClientData = Object.fromEntries(
                 Object.entries(clientData).filter(([key]) => !key.startsWith('$'))
             ) as Partial<Client>;
+            console.log(filteredClientData);
 
             
             await databases.updateDocument('PriceCalc', '67362abc0039525e36b6', clientId, filteredClientData);
@@ -113,34 +114,35 @@
 </script>
 <h1 class="text-2xl font-bold text-gray-800 mb-4">Klant Gegevens Bewerken</h1>
 <form on:submit|preventDefault={updateClient} class="shadow-md rounded px-8 pt-6 pb-8 mb-4 bg-white">
+    
     <div class="mb-4">
-        <label for="naam" class="block text-sm font-medium text-gray-700">Voornaam:</label>
+        <label for="clientType" class="block text-sm font-medium text-gray-700">Type klant*:</label>
+        <select 
+            id="clientType" 
+            bind:value={clientData.type} 
+            required 
+            class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        >
+            <option value="" disabled selected>Selecteer type klant</option>
+            <option value="Prive">Prive</option>
+            <option value="VVE">VVE</option>
+            <option value="BV">BV</option>
+        </select>
+    </div>
+    
+    {#if clientData.type != 'Prive'}
+        <div class="mb-4">
+            <label for="bedrijfsnaam" class="block text-sm font-medium text-gray-700">Bedrijfsnaam:</label>
+            <input type="text" id="bedrijfsnaam" bind:value={clientData.businessname} class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+        </div>
+    {/if}
+    
+    <div class="mb-4">
+        <label for="naam" class="block text-sm font-medium text-gray-700">Naam geadresseerde:</label>
         <input type="text" id="naam" bind:value={clientData.name} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
     </div>
     
-    <div class="mb-4">
-        <label for="achternaam" class="block text-sm font-medium text-gray-700">Achternaam:</label>
-        <input type="text" id="achternaam" bind:value={clientData.lastname} class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
-    </div>
-    
-    <div class="mb-4">
-        <label for="bedrijfsnaam" class="block text-sm font-medium text-gray-700">Bedrijfsnaam:</label>
-        <input type="text" id="bedrijfsnaam" bind:value={clientData.businessname} class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
-    </div>
-    
-    <div class="mb-4">
-        <label for="subcontractor" class="block text-sm font-medium text-gray-700">Hoofdaannemer:</label>
-        <select 
-            id="subcontractor" 
-            bind:value={clientData.subcontractors} 
-            class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-        >
-            <option value={null}>Geen hoofdaannemer</option>
-            {#each subcontractors as contractor}
-                <option value={contractor.$id}>{contractor.businessname}</option>
-            {/each}
-        </select>
-    </div>
+  
     
     <SearchAdress bind:address={address} />
 
