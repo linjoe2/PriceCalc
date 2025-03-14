@@ -3,6 +3,7 @@
     import "../app.css";
     import CircleUser from "lucide-svelte/icons/circle-user";
     import ChartLine from "lucide-svelte/icons/chart-line";
+    import Droplet from "lucide-svelte/icons/droplet";
     import Package from "lucide-svelte/icons/package";
     import House from "lucide-svelte/icons/house";
     import ShoppingCart from "lucide-svelte/icons/shopping-cart";
@@ -165,6 +166,13 @@
             Agenda
           </a> -->
           <a
+            href="/daklekages"
+            class={`text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${activeRoute === 'daklekages' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
+          >
+            <Droplet class="h-4 w-4" />
+            Daklekages
+          </a>
+          <a
             href="/work"
             class={`text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${activeRoute === '/work' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
           >
@@ -237,6 +245,14 @@
               <Calendar class="h-5 w-5" />
               Agenda
             </a> -->
+            <a
+              href="/daklekages"
+              on:click={closeSheet}
+              class={`text-muted-foreground hover:text-primary flex items-center gap-4 rounded-xl px-3 py-2 ${activeRoute === 'daklekages' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
+            >
+              <Droplet class="h-5 w-5" />
+              Daklekages
+            </a>
             <a
               href="/work"
               on:click={closeSheet}

@@ -3,6 +3,7 @@
     let searchResults = [];
     let isLoading = false;
     export let address: string;
+    export let adressString: string;
 
     async function searchAddress() {
         if (searchQuery.length < 3) return;
@@ -35,12 +36,12 @@
         type="text"
         bind:value={searchQuery}
         on:input={handleInput}
-        placeholder="Search for an address..."
+        placeholder="Zoek adres..."
         class="search-input"
     />
     
     {#if isLoading}
-        <div class="loading">Searching...</div>
+        <div class="loading">zoeken...</div>
     {/if}
     
     {#if searchResults.length > 0}
@@ -48,7 +49,9 @@
             {#each searchResults as result}
                 <li on:click={() => {
                     address = result.address;
+                    adressString = result.display_name;
                     console.log(address);
+                    searchResults = [];
                 }} class="result-item">
                     <strong>{result.display_name}</strong>
                     <div class="coordinates">

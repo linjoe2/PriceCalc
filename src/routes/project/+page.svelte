@@ -69,7 +69,7 @@
     type="text"
     bind:value={filterValue}
   />
-     <!-- <a href="/project/edit/new"><button><Plus class="h-4 w-4" /></button></a> -->
+     <a href="/project/edit/new"><button class="border border-black rounded-md px-4 py-2">Project aanmaken</button></a>
 
 </div>
 
@@ -81,6 +81,7 @@
           <Table.Cell>Datum</Table.Cell>
           <Table.Cell>Offertenaam</Table.Cell>
           <Table.Cell>fase</Table.Cell>
+          <Table.Cell>Voortgang</Table.Cell>
           <Table.Cell>Actions</Table.Cell>
         </Table.Row>
       </Table.Header>
@@ -95,6 +96,7 @@
             <Table.Cell><a href="/project/view/{project.$id}">{new Date(project.$updatedAt ?? Date.now()).toLocaleDateString('nl-NL', { year: 'numeric', month: 'long', day: 'numeric' })}</a></Table.Cell>
             <Table.Cell><a href="/project/view/{project.$id}">{project.projectNumber}</a></Table.Cell>
             <Table.Cell>{project.fase}</Table.Cell>
+            <Table.Cell><a href="/project/view/{project.$id}">{project.progress}%</a></Table.Cell>
             <Table.Cell>
               <a href="/project/edit/{project.$id}" class="mr-2">
                 <button><Pencil class="h-4 w-4" /></button>

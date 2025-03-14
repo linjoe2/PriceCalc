@@ -8,11 +8,14 @@
   import { goto } from '$app/navigation';
   import ImageUploader from '../../../../components/ImageUploader.svelte'; // Adjust the path as necessary
   import { Pencil } from 'lucide-svelte';
+  import { Recycle } from 'lucide-svelte';
   import TermsComponent from '../../../terms/+page.svelte';
+  import SearchAdress from '../../../../components/searchAdress.svelte';
   import CreatePaymentSchedule from '../../../../components/createPaymentScedule.svelte';
   import type { Client, Task, Project, PaymentSchedule, UploadedImage, Terms, Service, Calculation, Item} from '$lib/types';
   import SavingAnimation from "../../../../components/savingAnimation.svelte";
   import ProjectTask from '../../../../components/ProjectTask.svelte';
+  import ClientSearch from '../../../../components/ClientSearch.svelte';
   let isSaving = false;
   let projectId = $page.params.id;
   const databases = new Databases(client);
@@ -33,7 +36,11 @@
   let isUploading = false; // Add this near other let declarations at the top
   let calculations: Record<string, Calculation> = {};
   let projectNumber: string = '';
-  
+  let adress = null;
+  let adressString = '';
+  let name = '';
+  let phone = '';
+  let email = '';
 
   onMount(async () => {
     try {
@@ -94,6 +101,10 @@
             projects = JSON.parse(result.projects);
             opmerkingen = result.opmerkingen || ''; // Load saved values
             notities = result.notities || '';       // Load saved values
+            name = result.name || '';
+            phone = result.phone || '';
+            email = result.email || '';
+            adressString = result.adress || '';
             //result.items[].price = result.items[].price;
             console.log(result.items);
             // each item in result.items
@@ -230,6 +241,10 @@
         const projectData: Partial<Project> = {
             projectNumber,
             items: JSON.stringify(allItems),
+            adress: adressString,
+            name: name,
+            phone: phone,
+            email: email,
             projects: JSON.stringify(projects),
             totalPrice: totalPrice,
             client: $selectedUser.$id,
@@ -339,13 +354,28 @@
     };
   }
 
+  async function updateAddress(address: any) {
+    console.log('address', address);
+    if(address !== undefined && address !== null){
+        console.log("add",address);
+        let woonplaats = address.city || address.town || address.village || address.municipality;
+        adressString = `${address.road} ${address.house_number}, ${address.postcode} ${woonplaats}`;
+    }
+  }
+
+  $: updateAddress(adress);
 </script>
   
     <div class="flex flex-col md:flex-row">
     <div class="md:w-1/2 border border-gray-300 rounded-md m-4 p-4">
         <h2 class="text-lg font-medium">Klantgegevens</h2>
         <div class="relative">
-          <a href="/client/edit/{$selectedUser?.$id}"><Pencil class="absolute top-0 right-0 cursor-pointer" /></a>
+          {#if projectId == "new"}
+          <a on:click={() => {$selectedUser = null}}><Recycle class="absolute right-0 cursor-pointer" /></a>
+          <br>
+          {/if}
+          <a href="/client/edit/{$selectedUser?.$id}"><Pencil class="absolute right-0 cursor-pointer" /></a>
+          
           <div>
             <label for="name">Naam:</label>
             <span id="name">{$selectedUser?.name || 'N/A'}</span>
@@ -389,6 +419,17 @@
         </div>
       </div>
       <div class="md:w-1/2 m-4">
+        {#if $selectedUser?.type != "Prive"}
+        <div class="border border-gray-300 rounded-md p-4">
+          <h2 class="text-lg font-medium">Betreft</h2>
+          
+          <input type="text" bind:value={name} placeholder="Naam" class="w-full border rounded-md p-2 mt-2"/>
+          <input type="email" bind:value={email} placeholder="Email" class="w-full border rounded-md p-2 mt-2"/>
+          <input type="tel" bind:value={phone} placeholder="Telefoonnummer" class="w-full border rounded-md p-2 mt-2"/>
+          <SearchAdress bind:address={adress} class="w-full"/>
+          <input type="text" bind:value={adressString} class="w-full border rounded-md p-2 mt-2"/>
+        </div>
+        {/if}
         <div class="border border-gray-300 rounded-md p-4">
           <h2 class="text-lg font-medium">Notities (geheim)</h2>
           <textarea 
@@ -686,6 +727,7 @@
 {#if !$selectedUser}
   <div class="absolute inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-20">
     <div class="text-lg font-medium text-white">Selecteer eerst een klant</div>
+    <ClientSearch />
   </div>
 {/if}
 <SavingAnimation isVisible={isSaving} />

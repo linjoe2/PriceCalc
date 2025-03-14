@@ -4,6 +4,7 @@
   import { client } from "$lib/appwrite";
   import { page } from '$app/stores';
   import ShowPdf from "../../../../components/showPdf.svelte";
+  import AddToGoogleAgenda from "../../../../components/addToGoogleAgenda.svelte";
   import FetchImages from "./fetchImages.svelte";
   import type { Project, UploadedImage } from '$lib/types';
 
@@ -181,6 +182,7 @@
       
       <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
         <ShowPdf projectData={projectData} />
+        <AddToGoogleAgenda projectData={projectData} />
         <button
           on:click={duplicateProject}
           class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
@@ -215,12 +217,23 @@
             <p class="font-medium">{projectData.client.name} {projectData.client.lastname}</p>
             {#if projectData.client.businessname}
               <p class="text-gray-700">{projectData.client.businessname}</p>
-            {/if}
+              <p class="mt-2">{projectData.client.email}</p>
+            <p>{projectData.client.telefoonnummer}</p>
+            <br>
+            <b>Betreft</b>
+            <p>{projectData.name}</p>
+            <p>{projectData.email}</p>
+            <p>{projectData.telefoonnummer}</p>
+            <p>{projectData.adress}</p>
+ 
+              {:else}
             <p>{projectData.client.adress} {projectData.client.huisnummer}</p>
             <p>{projectData.client.postcode} {projectData.client.woonplaats}</p>
             <p class="mt-2">{projectData.client.email}</p>
             <p>{projectData.client.telefoonnummer}</p>
-          </div>
+            {/if}
+
+         </div>
         </div>
 
         <!-- Projects and Items -->

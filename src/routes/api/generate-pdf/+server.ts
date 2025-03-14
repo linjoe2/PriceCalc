@@ -100,19 +100,7 @@ export async function POST({ request }) {
         
         const client = projectData.client;
         // if subcontractor
-        if(client.subcontractors !== null){
-            projectData.client.businessname = client.subcontractors.businessname;
-            doc.text(`${client.subcontractors.businessname || ''}`, 60)
-            doc.text(`${client.subcontractors.address || ''}`, 60)
-            doc.text(`${client.subcontractors.email || ''}`, 60)
-            doc.text(` ${client.subcontractors.phone || ''}`, 60)
-            doc.font(TimesNewRomanBold)
-            doc.text("betreft:")
-            doc.font(TimesNewRoman)
-            doc.text(`${client.name || ''} ${client.lastname || ''}`)
-            doc.text(`${client.adress || ''} ${client.huisnummer || ''} ${client.postcode || ''} ${client.woonplaats || ''}`)
-            doc.moveDown(1);
-        }else if(client.businessname === '' || client.businessname === null){
+        if(client.businessname === '' || client.businessname === null){
             doc
            .text(`T.a.v. ${client.name || ''} ${client.lastname || ''}`)
            .text(`${client.adress || ''} ${client.huisnummer || ''}`)
@@ -132,8 +120,16 @@ export async function POST({ request }) {
        }
 
         // if BV
-
-
+       if(projectData.type !== 'prive'){
+        doc.fontSize(12)
+        .font(TimesNewRomanBold)
+        .text(`Betreft:`)
+        .font(TimesNewRoman)
+        .text(`${projectData.name || ''}`)
+        .moveDown(1)
+        .text(`${projectData.adress || ''}`)
+        .moveDown(1);
+        }
         // if Particulier
 
         doc
