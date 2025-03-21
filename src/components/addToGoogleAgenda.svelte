@@ -7,8 +7,8 @@
    let selectedDate = '';
 
    function addToGoogleAgenda() {
-       const startDateTime = new Date(`${projectData.startDate}T08:00:00Z`).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-       const endDateTime = new Date(`${projectData.startDate}T16:00:00Z`).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+       const startDateTime = new Date(`${projectData.startDate}T06:00:00Z`).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+       const endDateTime = new Date(`${projectData.startDate}T15:00:00Z`).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 
        // Organize tasks by category and subcategory
        const tasksByCategory = projectData.items.reduce((acc, item) => {
@@ -34,7 +34,7 @@
        // Create details string with HTML
        const details = `${formattedTasks}<br><b>Voorwaarden:</b><br>${formattedTerms}`;
 
-       window.open(`https://www.google.com/calendar/render?action=TEMPLATE&text=${projectData.title}&dates=${startDateTime}/${endDateTime}&details=${encodeURIComponent(details)}&location=${projectData.client.adress} ${projectData.client.huisnummer} ${projectData.client.postcode} ${projectData.client.woonplaats}`, '_blank');
+       window.open(`https://www.google.com/calendar/render?action=TEMPLATE&text=O${projectData.projectNumber}&dates=${startDateTime}/${endDateTime}&details=${encodeURIComponent(details)}&location=${projectData.client.adress} ${projectData.client.huisnummer} ${projectData.client.postcode} ${projectData.client.woonplaats}`, '_blank');
    }
 
    function openModal() {

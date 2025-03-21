@@ -156,6 +156,7 @@
           class="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           on:change="{(e) => updateProjectStatus((e.target as HTMLSelectElement).value)}"
         >
+          <option value="start">start</option>
           <option value="akkoord">akkoord</option>
           <option value="niet gegund">niet gegund</option>
           <option value="aanbetaling">aanbetaling</option>
@@ -236,33 +237,6 @@
          </div>
         </div>
 
-        <!-- Projects and Items -->
-        <div class="mt-8 overflow-x-auto">
-          {#each projectData.projects as project}
-            <div class="mb-6">
-              <h2 class="text-lg font-semibold text-gray-900">{project.name}</h2>
-              <div class="mt-3 space-y-2">
-                {#each project.items as item}
-                  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-2 border-b border-gray-100">
-                    <span class="text-gray-600 mb-1 sm:mb-0">{item.subcategory} - {item.type}</span>
-                    <span class="font-medium">{item.quantity} {item.unit} x €{item.price}</span>
-                  </div>
-                {/each}
-              </div>
-            </div>
-          {/each}
-        </div>
-
-        <!-- Total -->
-        <div class="mt-8 bg-gray-50 rounded-lg p-4">
-          {#if projectData.client.businessname}
-            <p class="text-lg font-semibold text-gray-700">BTW Verlegd</p>
-          {:else}
-            <p class="text-lg text-gray-700">Totaal (excl. BTW): <span class="font-semibold">€{totalPrice.toFixed(2)}</span></p>
-          {/if}
-          <p class="text-xl font-bold text-gray-900 mt-2">Totaal: €{totalPriceWithTax.toFixed(2)}</p>
-        </div>
-
         <!-- Tasks -->
         <div class="mt-8">
           <h3 class="text-xl font-semibold text-gray-900">Taken</h3>
@@ -287,8 +261,33 @@
 
       <!-- Right Column - Notes and Images -->
       <div class="w-full lg:w-1/3 space-y-6">
-        <!-- Notes Section -->
+        <!-- Price Summary Section -->
+        <div class="bg-white shadow rounded-lg p-4">
+          <h2 class="text-xl font-semibold text-gray-900 mb-4">Prijsopbouw</h2>
+          {#each projectData.projects as project}
+            <div class="mb-4">
+              <h3 class="text-lg font-semibold text-gray-700">{project.name}</h3>
+              <div class="mt-2 space-y-2">
+                {#each project.items as item}
+                  <div class="flex justify-between items-center text-sm">
+                    <span class="text-gray-600">{item.subcategory} - {item.type}</span>
+                    <span class="font-medium">€{(item.quantity * item.price).toFixed(2)}</span>
+                  </div>
+                {/each}
+              </div>
+            </div>
+          {/each}
+          <div class="mt-4 pt-4 border-t border-gray-200">
+            {#if projectData.client.businessname}
+              <p class="text-lg font-semibold text-gray-700">BTW Verlegd</p>
+            {:else}
+              <p class="text-lg text-gray-700">Totaal (excl. BTW): <span class="font-semibold">€{totalPrice.toFixed(2)}</span></p>
+            {/if}
+            <p class="text-xl font-bold text-gray-900 mt-2">Totaal: €{totalPriceWithTax.toFixed(2)}</p>
+          </div>
+        </div>
 
+        <!-- Notes Section -->
         <div class="bg-white shadow rounded-lg p-6">
           <h2 class="text-xl font-semibold text-gray-900 mb-4">Notities</h2>
           <p class="text-gray-600 whitespace-pre-line">{projectData.notities}</p>

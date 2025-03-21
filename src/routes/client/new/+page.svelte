@@ -69,9 +69,8 @@
         if(!!address){
             console.log(address);
             woonplaats = address.city || address.town || address.village || address.municipality;
-            straat = address.road;
+            straat = address.road + ' ' + address.house_number;
             postcode = address.postcode;
-            houseNumber = address.house_number;
         }
     }
     $: updateAddress(address)
@@ -90,7 +89,6 @@
             businessname: bedrijfsnaam,
             adress: straat,
             postcode: postcode,
-            huisnummer: houseNumber,
             woonplaats: woonplaats,
             email: email,
             telefoonnummer: telefoonnummer,
@@ -127,9 +125,9 @@
     <label for="clientType" class="block text-sm font-medium text-gray-700">Type klant*:</label>
     <select id="clientType" bind:value={type} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
         <option value="" disabled selected>Selecteer type klant</option>
-        <option value="Prive">Prive</option>
+        <option value="Particulier">Particulier</option>
         <option value="VVE">VVE</option>
-        <option value="BV">BV</option>
+        <option value="Bedrijf">Bedrijf</option>
     </select>
     {#if type != 'Prive'}
         <label for="bedrijfsnaam" class="block text-sm font-medium text-gray-700">Bedrijfsnaam:</label>
@@ -142,17 +140,16 @@
 
     <SearchAdress bind:address={address} />
     
-    <label for="postcode" class="block text-sm font-medium text-gray-700">Postcode*:</label>
-    <input type="text" id="postcode" bind:value={postcode} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
-    
-    <label for="huisnummer" class="block text-sm font-medium text-gray-700">Huisnummer*:</label>
-    <input type="text" id="huisnummer" bind:value={houseNumber} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
-    
-    <label for="adres" class="block text-sm font-medium text-gray-700">Straat:</label>
+   
+
+    <label for="adres" class="block text-sm font-medium text-gray-700">adress:</label>
     <input type="text" id="adres" bind:value={straat} class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
-    
+   
     <label for="stad" class="block text-sm font-medium text-gray-700">Woonplaats:</label>
     <input type="text" id="stad" bind:value={woonplaats} class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+ 
+    <label for="postcode" class="block text-sm font-medium text-gray-700">Postcode*:</label>
+    <input type="text" id="postcode" bind:value={postcode} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
   
     <label for="email" class="block text-sm font-medium text-gray-700">Email:</label>
     <input type="email" id="email" bind:value={email} class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />

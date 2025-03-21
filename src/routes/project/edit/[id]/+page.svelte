@@ -359,7 +359,7 @@
     if(address !== undefined && address !== null){
         console.log("add",address);
         let woonplaats = address.city || address.town || address.village || address.municipality;
-        adressString = `${address.road} ${address.house_number}, ${address.postcode} ${woonplaats}`;
+        adressString = `${address.road} ${address.house_number}\n${address.postcode} ${woonplaats}`;
     }
   }
 
@@ -427,7 +427,7 @@
           <input type="email" bind:value={email} placeholder="Email" class="w-full border rounded-md p-2 mt-2"/>
           <input type="tel" bind:value={phone} placeholder="Telefoonnummer" class="w-full border rounded-md p-2 mt-2"/>
           <SearchAdress bind:address={adress} class="w-full"/>
-          <input type="text" bind:value={adressString} class="w-full border rounded-md p-2 mt-2"/>
+          <textarea bind:value={adressString} class="w-full border rounded-md p-2 mt-2"/>
         </div>
         {/if}
         <div class="border border-gray-300 rounded-md p-4">

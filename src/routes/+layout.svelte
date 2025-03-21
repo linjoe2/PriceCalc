@@ -166,11 +166,11 @@
             Agenda
           </a> -->
           <a
-            href="/daklekages"
-            class={`text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${activeRoute === 'daklekages' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
+            href="/daklekkages"
+            class={`text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${activeRoute === 'daklekkages' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
           >
             <Droplet class="h-4 w-4" />
-            Daklekages
+            Daklekkages
           </a>
           <a
             href="/work"
@@ -246,12 +246,12 @@
               Agenda
             </a> -->
             <a
-              href="/daklekages"
+              href="/Daklekkages"
               on:click={closeSheet}
-              class={`text-muted-foreground hover:text-primary flex items-center gap-4 rounded-xl px-3 py-2 ${activeRoute === 'daklekages' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
+              class={`text-muted-foreground hover:text-primary flex items-center gap-4 rounded-xl px-3 py-2 ${activeRoute === 'Daklekkages' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
             >
               <Droplet class="h-5 w-5" />
-              Daklekages
+              Daklekkages
             </a>
             <a
               href="/work"

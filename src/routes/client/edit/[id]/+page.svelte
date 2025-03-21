@@ -99,16 +99,15 @@
     }
 
     async function updateAddress(address: any) {
-        if(!!!address){
+        if(!!address){
             console.log(address);
-            clientData.adress = address.road;
+            clientData.adress = address.road + ' ' + address.house_number;
             clientData.postcode = address.postcode;
-            clientData.huisnummer = address.house_number;
             clientData.woonplaats = address.city || address.town || address.village || address.municipality;
         }
     }
 
-    // $: updateAddress(address)
+    $: updateAddress(address)
 
   
 </script>
@@ -124,9 +123,9 @@
             class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         >
             <option value="" disabled selected>Selecteer type klant</option>
-            <option value="Prive">Prive</option>
+            <option value="Particulier">Particulier</option>
             <option value="VVE">VVE</option>
-            <option value="BV">BV</option>
+            <option value="Bedrijf">Bedrijf</option>
         </select>
     </div>
     
@@ -146,24 +145,21 @@
     
     <SearchAdress bind:address={address} />
 
+   
     <div class="mb-4">
-        <label for="postcode" class="block text-sm font-medium text-gray-700">Postcode:</label>
-        <input type="text" id="postcode" bind:value={clientData.postcode} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
-    </div>
-    
-    <div class="mb-4">
-        <label for="huisnummer" class="block text-sm font-medium text-gray-700">Huisnummer:</label>
-        <input type="text" id="huisnummer" bind:value={clientData.huisnummer} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
-    </div>
-    
-    <div class="mb-4">
-        <label for="straat" class="block text-sm font-medium text-gray-700">Straat:</label>
+        <label for="straat" class="block text-sm font-medium text-gray-700">Adress:</label>
         <input type="text" id="straat" bind:value={clientData.adress}  class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
     </div>
-    
+
+
     <div class="mb-4">
         <label for="woonplaats" class="block text-sm font-medium text-gray-700">Woonplaats:</label>
         <input type="text" id="woonplaats" bind:value={clientData.woonplaats} class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+    </div>
+  
+    <div class="mb-4">
+        <label for="postcode" class="block text-sm font-medium text-gray-700">Postcode:</label>
+        <input type="text" id="postcode" bind:value={clientData.postcode} required class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
     </div>
     
 

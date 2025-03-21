@@ -94,7 +94,7 @@ export async function POST({ request }) {
         // Left column - Client details
         doc
         .font(TimesNewRomanBold)
-        .text('Adres:', 60, startY)
+        .text('Gegevens klant:', 60, startY)
         .font(TimesNewRoman)
            .fontSize(12)
         
@@ -102,7 +102,7 @@ export async function POST({ request }) {
         // if subcontractor
         if(client.businessname === '' || client.businessname === null){
             doc
-           .text(`T.a.v. ${client.name || ''} ${client.lastname || ''}`)
+           .text(`${client.name || ''}`)
            .text(`${client.adress || ''} ${client.huisnummer || ''}`)
            .text(`${client.postcode || ''} ${client.woonplaats || ''}`)
            .text(`${client.email || ''}`)
@@ -110,11 +110,11 @@ export async function POST({ request }) {
            .moveDown(1);
         } else {
           doc.text(`${client.businessname}`, 60)
-           .text(`T.a.v. ${client.name || ''} ${client.lastname || ''}`)
+           .text(`${client.name || ''}`)
            .text(`${client.adress || ''} ${client.huisnummer || ''}`)
            .text(`${client.postcode || ''} ${client.woonplaats || ''}`)
            .text(`${client.email || ''}`)
-           .text(`${client.telefoonnummer || 'N/B'}`)
+           .text(`${client.telefoonnummer || ''}`)
            .moveDown(1);
 
        }
@@ -126,7 +126,6 @@ export async function POST({ request }) {
         .text(`Betreft:`)
         .font(TimesNewRoman)
         .text(`${projectData.name || ''}`)
-        .moveDown(1)
         .text(`${projectData.adress || ''}`)
         .moveDown(1);
         }
@@ -149,9 +148,9 @@ export async function POST({ request }) {
            .moveDown(1.5);
 
         //boxes top
-        doc.rect(50, 50, 250, 250).stroke();
+        doc.rect(50, 50, 250, 300).stroke();
          
-        doc.rect(300, 50, 250, 250).stroke();
+        doc.rect(300, 50, 250, 300).stroke();
         
         // Draw table header
         // doc.fontSize(12)
@@ -164,7 +163,7 @@ export async function POST({ request }) {
         //    .lineTo(545, doc.y)
         //    .stroke()
         //    .moveDown(1);
-        doc.y = 310;
+        doc.y = 360;
         // Add items if available
         const projects = JSON.parse(projectData.projects) || [];
         if (projects.length > 0) {
@@ -174,7 +173,7 @@ export async function POST({ request }) {
                     // Add project items
                     project.items.forEach(item => {
                         const itemPrice = parseFloat(item.price) * item.quantity;
-                        const description = `${project.name} ${item.subcategory} - ${item.type} - ${item.quantity} ${item.unit}`;
+                    const description = `${project.name} ${item.subcategory} - ${item.type}`;
                         
                         doc.font(TimesNewRomanBold)
                            .text(description)
@@ -376,7 +375,7 @@ export async function POST({ request }) {
         .moveDown(1);
         doc.text("John Fenenga | Eigenaar")
         doc.text("JHF Bouw B.V.")
-        doc.text("06-14805120")
+        doc.text("020-7820772")
         doc.text("info@jhfbouw.com")
         .moveDown(1);
         try {

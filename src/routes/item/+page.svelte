@@ -33,17 +33,23 @@ onMount(async () => {
 
 async function fetchServices() {
     try {
-        const response = await databases.listDocuments(databaseId, collectionId, [Query.limit(100),Query.offset(0)]);
-        console.log(response)
-        services = response.documents.reduce((acc, doc) => {
-            const { category, subcategory, type, price, unit, $id, tasks } = doc;
+        const response = await databases.listDocuments(databaseId, collectionId, [Query.limit(100), Query.offset(0)]);
+        console.log(response);
+        services = response.documents.reduce((acc, doc, index) => {
+            const { category, subcategory, type, price, unit, $id, tasks, order } = doc;
             if (!acc[category]) {
                 acc[category] = [];
             }
-            acc[category].push({ subcategory, type, price, unit, $id, tasks});
+            acc[category].push({ subcategory, type, price, unit, $id, tasks, order });
             return acc;
         }, {});
-        console.log(services)
+
+        // Sort categories based on the order of the first item in each category
+        services = Object.fromEntries(
+            Object.entries(services).sort(([, a], [, b]) => a[0].order - b[0].order)
+        );
+
+        console.log(services);
     } catch (error) {
         console.error('Error fetching services:', error);
     }
@@ -60,7 +66,11 @@ let newService = {
 
 function addService(category: string) {
     if (newService.subcategory && newService.type && newService.price && newService.unit) {
-        services[category].push({ ...newService });
+        // Calculate the orderIndex as a decimal
+        const categoryIndex = Object.keys(services).indexOf(category) + 1;
+        const subcategoryIndex = services[category].length + 1;
+        const order = parseFloat(`${categoryIndex}.${subcategoryIndex}`);
+        services[category].push({ ...newService, order });
         resetNewService();
     }
 }
@@ -71,13 +81,16 @@ function resetNewService() {
         type: '',
         price: '',
         unit: '',
-        tasks: ''
+        tasks: '',
+        order: ''
     };
 }
 
 // Function to update an existing service
 function updateService(category: string, index: number, updatedService: Service) {
-    services[category][index] = updatedService;
+    // Ensure the orderIndex is preserved
+    // updatedService.order = services[category][index].order;
+    // services[category][index] = updatedService;
 }
 
 // Function to delete a service
@@ -124,7 +137,8 @@ async function saveEditedService() {
                     price: parseInt(serviceToEdit.price),
                     unit: serviceToEdit.unit,
                     category: serviceToEdit.category, // Optionally include the category
-                    tasks: serviceToEdit.tasks // Include taken
+                    tasks: serviceToEdit.tasks, // Include taken
+                    order: serviceToEdit.order // Include order
                 });
                 console.log('Service saved and updated successfully:', response);
             } catch (error) {
@@ -142,7 +156,8 @@ async function saveEditedService() {
                     price: parseInt(serviceToEdit.price),
                     unit: serviceToEdit.unit,
                     category: serviceToEdit.category, // Optionally include the category
-                    tasks: JSON.stringify(serviceToEdit.tasks) // Include taken
+                    tasks: JSON.stringify(serviceToEdit.tasks), // Include taken
+                    order: serviceToEdit.order // Include order
                 });
                 console.log('Service created successfully:', response);
                 fetchServices();
@@ -193,6 +208,16 @@ function handleDragStart(event: DragEvent, category: string, index: number) {
     }
 }
 
+// Function to update the order index of services
+function updateOrderIndex(category: string) {
+    services[category].forEach((service, index) => {
+        const categoryIndex = Object.keys(services).indexOf(category) + 1;
+        const subcategoryIndex = index + 1;
+        service.order = parseFloat(`${categoryIndex}.${subcategoryIndex}`);
+    });
+}
+
+// Modify handleDrop to update order index and save changes to the database
 function handleDrop(event: DragEvent, targetCategory: string, targetIndex: number) {
     event.preventDefault();
     if (event.dataTransfer) {
@@ -208,13 +233,40 @@ function handleDrop(event: DragEvent, targetCategory: string, targetIndex: numbe
         // Add to new position
         services[targetCategory].splice(targetIndex, 0, serviceToMove);
         
+        // Update the order index
+        updateOrderIndex(targetCategory);
+        if (sourceCategory !== targetCategory) {
+            updateOrderIndex(sourceCategory);
+        }
+        
         // Update the category in the database if it changed
         if (sourceCategory !== targetCategory) {
             updateServiceCategory(serviceToMove.$id, targetCategory);
         }
         
+        // Save the updated order to the database
+        saveOrderChangesToDatabase(targetCategory);
+        if (sourceCategory !== targetCategory) {
+            saveOrderChangesToDatabase(sourceCategory);
+        }
+        
         // Force Svelte to update the view
         services = services;
+    }
+}
+
+// New function to save order changes to the database
+async function saveOrderChangesToDatabase(category: string) {
+    try {
+        for (const service of services[category]) {
+            console.log(service.order);
+            await databases.updateDocument(databaseId, collectionId, service.$id, {
+                order: JSON.stringify(service.order)
+            });
+        }
+        console.log(`Order changes saved for category: ${category}`);
+    } catch (error) {
+        console.error('Error saving order changes:', error);
     }
 }
 
@@ -261,6 +313,72 @@ async function duplicateService(category: string, index: number) {
         console.error('Error duplicating service:', error);
     }
 }
+
+// Ensure services are sorted by order before rendering
+$: {
+    for (const category in services) {
+        services[category].sort((a, b) => a.order - b.order);
+    }
+}
+
+// Function to move a category up
+function moveCategoryUp(category: string) {
+    const categories = Object.keys(services);
+    const index = categories.indexOf(category);
+    if (index > 0) {
+        const temp = categories[index - 1];
+        categories[index - 1] = categories[index];
+        categories[index] = temp;
+        reorderCategories(categories);
+    }
+}
+
+// Function to move a category down
+function moveCategoryDown(category: string) {
+    const categories = Object.keys(services);
+    const index = categories.indexOf(category);
+    if (index < categories.length - 1) {
+        const temp = categories[index + 1];
+        categories[index + 1] = categories[index];
+        categories[index] = temp;
+        reorderCategories(categories);
+    }
+}
+
+// Helper function to reorder categories and save changes to the database
+async function reorderCategories(newOrder: string[]) {
+    services = newOrder.reduce((acc, category) => {
+        acc[category] = services[category];
+        return acc;
+    }, {});
+
+    // Save the new order to the database
+    await saveCategoryOrderToDatabase(newOrder);
+}
+
+// New function to save category order to the database
+async function saveCategoryOrderToDatabase(newOrder: string[]) {
+    try {
+        for (let i = 0; i < newOrder.length; i++) {
+            const category = newOrder[i];
+            for (let j = 0; j < services[category].length; j++) {
+                const service = services[category][j];
+                // Update the order index for each service
+                const categoryIndex = i + 1;
+                const subcategoryIndex = j + 1;
+                service.order = `${categoryIndex}.${subcategoryIndex}`;
+
+                // Save the updated order to the database
+                await databases.updateDocument(databaseId, collectionId, service.$id, {
+                    order: service.order
+                });
+            }
+        }
+        console.log('Category and subcategory order saved successfully');
+    } catch (error) {
+        console.error('Error saving category and subcategory order:', error);
+    }
+}
 </script>
 <ErrorMessage error={error} />
 <!-- Replace the existing table layout with a card-based layout -->
@@ -270,8 +388,14 @@ async function duplicateService(category: string, index: number) {
             <input type="text" bind:value={newCategoryName} class="border p-2 rounded"/>
             <button on:click={() => changeCategoryName(category, newCategoryName)}>Opslaan</button>
         {:else}
-            <h3 class="text-xl font-semibold mb-4" on:click={() => {showInput = category; newCategoryName = category;}}>
-                {category}
+            <h3 class="text-xl font-semibold mb-4 flex items-center">
+                <span on:click={() => {showInput = category; newCategoryName = category;}}>{category}</span>
+                <button on:click={() => moveCategoryUp(category)} class="ml-2">
+                    ▲
+                </button>
+                <button on:click={() => moveCategoryDown(category)} class="ml-1">
+                    ▼
+                </button>
             </h3>
         {/if}
         
@@ -283,6 +407,7 @@ async function duplicateService(category: string, index: number) {
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prijs</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acties</th>
                     </tr>
                 </thead>
@@ -295,8 +420,9 @@ async function duplicateService(category: string, index: number) {
                             on:dragover={handleDragOver}>
                             <td class="px-6 py-4 whitespace-nowrap">{service.subcategory}</td>
                             <td class="px-6 py-4 whitespace-nowrap">{service.type}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">{service.price}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">€{service.price}</td>
                             <td class="px-6 py-4 whitespace-nowrap">{service.unit}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{service.order}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
                                 <div class="flex justify-end gap-2">
                                     <button on:click={() => duplicateService(category, index)} 
@@ -351,6 +477,10 @@ async function duplicateService(category: string, index: number) {
                         <option value="uur">uur</option>
                     </select>
                     <CreateTasks bind:tasks={serviceToEdit.tasks} />
+
+                    <input type="string" placeholder="Order" 
+                        bind:value={serviceToEdit.order} 
+                        class="w-full px-3 py-2 rounded-md border" />
                     
                     <div class="flex gap-2 justify-end mt-6">
                         <button on:click={() => isEditDialogOpen = false} 
