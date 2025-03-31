@@ -34,7 +34,7 @@
        // Create details string with HTML
        const details = `${formattedTasks}<br><b>Voorwaarden:</b><br>${formattedTerms}`;
 
-       window.open(`https://www.google.com/calendar/render?action=TEMPLATE&text=O${projectData.projectNumber}&dates=${startDateTime}/${endDateTime}&details=${encodeURIComponent(details)}&location=${projectData.client.adress} ${projectData.client.huisnummer} ${projectData.client.postcode} ${projectData.client.woonplaats}`, '_blank');
+       window.open(`https://www.google.com/calendar/render?action=TEMPLATE&text=O-${projectData.projectNumber}&dates=${startDateTime}/${endDateTime}&details=${encodeURIComponent(details)}&location=${projectData.client.adress} ${projectData.client.huisnummer} ${projectData.client.postcode} ${projectData.client.woonplaats}`, '_blank');
    }
 
    function openModal() {

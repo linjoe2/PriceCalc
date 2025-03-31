@@ -17,6 +17,11 @@ console.log(__dirname);
 console.log(TimesNewRoman);
 console.log(TimesNewRomanBold);
 
+// Helper function for price formatting using toLocaleString
+const formatPrice = (price: number): string => {
+    return price.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+
 export async function POST({ request }) {
 
     const client = new Client();
@@ -64,7 +69,7 @@ export async function POST({ request }) {
         .text('1041 BD Amsterdam', 400, doc.y, { align: 'right'})
         .moveDown(0.5)
         .text('020-7820772', 400, doc.y, { align: 'right'})
-        .text('info@jhfbouw.nl', 400, doc.y, { align: 'right'})
+        .text('info@jhfbouw.com', 400, doc.y, { align: 'right'})
         .moveDown(2);
         
 
@@ -94,7 +99,7 @@ export async function POST({ request }) {
         // Left column - Client details
         doc
         .font(TimesNewRomanBold)
-        .text('Gegevens klant:', 60, startY)
+        .text('Opdrachtgever:', 60, startY)
         .font(TimesNewRoman)
            .fontSize(12)
         
@@ -120,10 +125,10 @@ export async function POST({ request }) {
        }
 
         // if BV
-       if(projectData.type !== 'prive'){
+       if(projectData.type !== 'particulier'){
         doc.fontSize(12)
         .font(TimesNewRomanBold)
-        .text(`Betreft:`)
+        .text(`werkadress:`)
         .font(TimesNewRoman)
         .text(`${projectData.name || ''}`)
         .text(`${projectData.adress || ''}`)
@@ -139,18 +144,10 @@ export async function POST({ request }) {
             .text(`${new Date(projectData.createdAt).toLocaleDateString('nl-NL')}`)
            .moveDown(0.5);
 
-
-        doc.fontSize(12)
-           .font(TimesNewRomanBold)
-           .text(`Offertenummer:`)
-           .font(TimesNewRoman)
-           .text(`${projectData.projectNumber}`)
-           .moveDown(1.5);
-
         //boxes top
-        doc.rect(50, 50, 250, 300).stroke();
+        doc.rect(50, 50, 250, 275).stroke();
          
-        doc.rect(300, 50, 250, 300).stroke();
+        doc.rect(300, 50, 250, 275).stroke();
         
         // Draw table header
         // doc.fontSize(12)
@@ -163,8 +160,9 @@ export async function POST({ request }) {
         //    .lineTo(545, doc.y)
         //    .stroke()
         //    .moveDown(1);
-        doc.y = 360;
+        doc.y = 350;
         // Add items if available
+        let counter = 0;
         const projects = JSON.parse(projectData.projects) || [];
         if (projects.length > 0) {
             projects.forEach(project => {
@@ -173,8 +171,8 @@ export async function POST({ request }) {
                     // Add project items
                     project.items.forEach(item => {
                         const itemPrice = parseFloat(item.price) * item.quantity;
-                    const description = `${project.name} ${item.subcategory} - ${item.type}`;
-                        
+                    const description = `${counter} ${item.subcategory} ${item.type} ${project.name}`;
+                    counter++;
                         doc.font(TimesNewRomanBold)
                            .text(description)
                           // Check for tasks in project.tasks that match this item
@@ -191,7 +189,7 @@ export async function POST({ request }) {
  doc
  .moveDown(0.5)
  .font(TimesNewRomanBold)
- .text(`Subtotaal materiaal en arbeid: € ${itemPrice.toFixed(2)}`, { align: 'right' })
+ .text(`Subtotaal materiaal en arbeid: € ${formatPrice(itemPrice)}`, { align: 'right' })
  .font(TimesNewRoman)
  .moveDown(0.5);
                     });
@@ -225,10 +223,10 @@ export async function POST({ request }) {
             .stroke()
             .moveDown(0.5);
 
-            doc.text(`Totaal excl. BTW:(*) € ${totalPrice.toFixed(2)}`, 50, doc.y, { align: 'right'})
+            doc.text(`Totaal excl. BTW:(*) € ${formatPrice(totalPrice)}`, 50, doc.y, { align: 'right'})
             console.log(projectData.client.businessname);
             if(projectData.client.businessname === '' || projectData.client.businessname === null){
-            doc.text(`BTW (21%): € ${(totalPrice * 0.21).toFixed(2)}`, 50, doc.y, { align: 'right'})
+            doc.text(`BTW (21%): € ${formatPrice(totalPrice * 0.21)}`, 50, doc.y, { align: 'right'})
             }else{
             doc.text(`BTW Verlegd: € 0,00`, 50, doc.y, { align: 'right'})
             totalPriceWithTax = totalPrice
@@ -238,7 +236,7 @@ export async function POST({ request }) {
             .stroke(2)
             doc.font(TimesNewRomanBold)
             doc.moveDown(0.5)
-            doc.text(`Totaal incl. BTW:(*) € ${totalPriceWithTax.toFixed(2)}`, 50, doc.y, { align: 'right'})
+            doc.text(`Totaal incl. BTW:(*) € ${formatPrice(totalPriceWithTax)}`, 50, doc.y, { align: 'right'})
             doc.font(TimesNewRoman)
             doc.moveDown(0.5);
             doc.moveTo(50, doc.y)
@@ -288,11 +286,13 @@ export async function POST({ request }) {
 
            doc.text("9% BTW", col3, y, { width: colWidth, align: 'left' })
            doc.text('21% BTW', col4, y, { width: colWidth, align: 'left' })
+           doc.text('Incl. BTW', col5, y, { width: colWidth, align: 'left' })
+
            }else{
            doc.text('BTW Verlegd', col4, y, { width: colWidth, align: 'left' })
+           doc.text('Totaal', col5, y, { width: colWidth, align: 'left' })
            }
-           doc.text('Incl. BTW', col5, y, { width: colWidth, align: 'left' })
-           .moveDown(0.5);
+           doc.moveDown(0.5);
 
 
        // Payment rows
@@ -336,14 +336,16 @@ export async function POST({ request }) {
 
              y = doc.y;
             doc.text(payment.term, col1, y, { width: 190 })
-               .text(`€ ${baseAmount.toFixed(2)}`, col2, y, { width: colWidth, align: 'left' })
+               .text(`€ ${formatPrice(baseAmount)}`, col2, y, { width: colWidth, align: 'left' })
                if(projectData.client.businessname === '' || projectData.client.businessname === null){
-               doc.text(`€ ${btw9.toFixed(2)}`, col3, y, { width: colWidth, align: 'left' })
-               doc.text(`€ ${btw21.toFixed(2)}`, col4, y, { width: colWidth, align: 'left' })
+               doc.text(`€ ${formatPrice(btw9)}`, col3, y, { width: colWidth, align: 'left' })
+               doc.text(`€ ${formatPrice(btw21)}`, col4, y, { width: colWidth, align: 'left' })
+               doc.text(`€ ${formatPrice(totalRowAmount)}`, col5, y, { width: colWidth, align: 'left' })
                }else{
                doc.text(`€ 0,00`, col4, y, { width: colWidth, align: 'left' })
-               }
-               doc.text(`€ ${totalRowAmount.toFixed(2)}`, col5, y, { width: colWidth, align: 'left' })
+               doc.text(`€ ${formatPrice(baseAmount)}`, col5, y, { width: colWidth, align: 'left' })   
+            }
+              
             //    .moveDown(0.5);
         });
 
@@ -355,15 +357,15 @@ export async function POST({ request }) {
         doc.moveDown(0.5)
            .font(TimesNewRomanBold)
            .text('Totaal:', col1, y, { width: 190 })
-           .text(`€ ${totalPrice.toFixed(2)}`, col2, y, { width: colWidth, align: 'left' })
+           .text(`€ ${formatPrice(totalPrice)}`, col2, y, { width: colWidth, align: 'left' })
         //    .text(`€ 0,00`, col3, y, { width: colWidth, align: 'left' })
         if(projectData.client.businessname === '' || projectData.client.businessname === null){
-           doc.text(`€ ${(totalPrice * 0.21).toFixed(2)}`, col4, y, { width: colWidth, align: 'left' })
+           doc.text(`€ ${formatPrice(totalPrice * 0.21)}`, col4, y, { width: colWidth, align: 'left' })
            }else{
            doc.text(`€ 0,00`, col4, y, { width: colWidth, align: 'left' })
            }
 
-           doc.text(`€ ${totalPriceWithTax.toFixed(2)}`, col5, y, { width: colWidth, align: 'left' })
+           doc.text(`€ ${formatPrice(totalPriceWithTax)}`, col5, y, { width: colWidth, align: 'left' })
            .moveDown(2);
 // move back to left column
 
@@ -401,7 +403,7 @@ for( let i = range.start; i <  (range.start + range.count); i++) {
             doc.page.height - 30, 
             { height : 25, width : 400});
 
-  doc.text(`Offerte ${projectData.projectNumber}`, 
+  doc.text(`Offerte O-${projectData.projectNumber}`, 
             250, 
             30, 
             { height : 25, width : 100});
@@ -419,7 +421,7 @@ for( let i = range.start; i <  (range.start + range.count); i++) {
 
         // Save to Appwrite storage
         try {
-            const file = new File([pdfBuffer], `O${projectData.projectNumber} ${projectData.client.adress} ${projectData.client.huisnummer} ${projectData.client.woonplaats}.pdf`, {
+            const file = new File([pdfBuffer], `O-${projectData.projectNumber} ${projectData.client.adress} ${projectData.client.huisnummer} ${projectData.client.woonplaats}.pdf`, {
                 type: 'application/pdf'
             });
 

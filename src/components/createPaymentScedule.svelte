@@ -6,6 +6,7 @@
         threequarters: 15,
         final: 5
     };
+    export let isAdmin = false;
 
     let btw21 = 0.21;
 
@@ -67,7 +68,8 @@
 </script>
 
 <div class="payment-schedule">
-   <div class="sliders">
+    {#if isAdmin}
+    <div class="sliders">
         <label>
             Bij opdracht: {paymentSchedule.initial}%
             <input 
@@ -109,6 +111,7 @@
             />
         </label>
     </div>
+    {/if}
     <div class="table-wrapper">
         <table>
             <thead class="desktop-only">

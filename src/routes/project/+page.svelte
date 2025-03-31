@@ -18,11 +18,38 @@
   let filterValue = '';
   let offset = 0;
   const limit = 100;
+  let sortField = 'createdAt';
+  let sortOrder: 'asc' | 'desc' = 'desc';
+
+  const phases = [
+    "opstellen offerte",
+    "offerte verstuurd",
+    "akkoord",
+    "niet gegund",
+    "aanbetaling",
+    "werkvoorbereiding",
+    "tusentijdse factuur",
+    "opgeleverd",
+    "Eindfactuur",
+    "100% opgeleverd"
+  ];
+
+  let selectedPhase = '';
 
   async function fetchProjects(contact?: any) {
     console.log(contact)
     try {
-      const response = await databases.listDocuments(databaseId, collectionId, [Query.limit(limit), Query.offset(offset), Query.orderDesc("createdAt")]);
+      const queries = [
+        Query.limit(limit), 
+        Query.offset(offset),
+        sortOrder === 'desc' ? Query.orderDesc(sortField) : Query.orderAsc(sortField)
+      ];
+      
+      if (selectedPhase) {
+        queries.push(Query.equal('fase', selectedPhase));
+      }
+      
+      const response = await databases.listDocuments(databaseId, collectionId, queries);
       projects = response.documents.map((doc: any) => ({
         ...doc,
         isEditing: false,
@@ -57,10 +84,22 @@
     projects = projects.filter((project: Project) => project.$id !== id);
     console.log(projects);
   }
+
+  function handleSort(field: string) {
+    if (sortField === field) {
+      // Toggle sort order if clicking the same field
+      sortOrder = sortOrder === 'desc' ? 'asc' : 'desc';
+    } else {
+      // New field, default to descending
+      sortField = field;
+      sortOrder = 'desc';
+    }
+    fetchProjects();
+  }
 </script>
 
 <div class="flex flex-col gap-4 table-container">
-  <h1>Projects</h1>
+  <h1>Projecten</h1>
   <div class="flex justify-between items-center">
   
    <Input
@@ -77,12 +116,39 @@
     <Table.Root>
       <Table.Header>
         <Table.Row>
-          <Table.Cell>Klant</Table.Cell>
-          <Table.Cell>Datum</Table.Cell>
-          <Table.Cell>Offertenaam</Table.Cell>
-          <Table.Cell>fase</Table.Cell>
-          <Table.Cell>Voortgang</Table.Cell>
-          <Table.Cell>Actions</Table.Cell>
+          <Table.Cell>Opdrachtgever</Table.Cell>
+          <Table.Cell>Adress</Table.Cell>
+          <Table.Cell>
+            <button on:click={() => handleSort('projectNumber')} class="w-full text-left">
+              Offertenummer {sortField === 'projectNumber' ? (sortOrder === 'desc' ? '↓' : '↑') : ''}
+            </button>
+          </Table.Cell>
+          <Table.Cell>
+            <button on:click={() => handleSort('$updatedAt')} class="w-full text-left">
+              Datum {sortField === '$updatedAt' ? (sortOrder === 'desc' ? '↓' : '↑') : ''}
+            </button>
+          </Table.Cell>
+          <Table.Cell>
+            <button on:click={() => handleSort('fase')} class="w-full text-left">
+              Fase {sortField === 'fase' ? (sortOrder === 'desc' ? '↓' : '↑') : ''}
+            </button>
+            <select 
+              bind:value={selectedPhase} 
+              on:change={() => fetchProjects()}
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+            >
+              <option value="">Alle fases</option>
+              {#each phases as phase}
+                <option value={phase}>{phase}</option>
+              {/each}
+            </select>
+          </Table.Cell>
+          <Table.Cell>
+            <button on:click={() => handleSort('progress')} class="w-full text-left">
+              Voortgang {sortField === 'progress' ? (sortOrder === 'desc' ? '↓' : '↑') : ''}
+            </button>
+          </Table.Cell>
+          <Table.Cell>Acties</Table.Cell>
         </Table.Row>
       </Table.Header>
       <Table.Body>
@@ -90,11 +156,12 @@
           <Table.Row>
             <Table.Cell>
               <a href="/project/view/{project.$id}">
-                {project.client.name} {project.client.lastname}
+                {project.client.businessname || project.client.name}
               </a>
             </Table.Cell>
-            <Table.Cell><a href="/project/view/{project.$id}">{new Date(project.$updatedAt ?? Date.now()).toLocaleDateString('nl-NL', { year: 'numeric', month: 'long', day: 'numeric' })}</a></Table.Cell>
+            <Table.Cell><a href="/project/view/{project.$id}">{project.adress || `${project.client.adress} ${project.client.huisnummer}, ${project.client.postcode} ${project.client.woonplaats}`}</a></Table.Cell>
             <Table.Cell><a href="/project/view/{project.$id}">{project.projectNumber}</a></Table.Cell>
+            <Table.Cell>{new Date(project.$updatedAt ?? Date.now()).toLocaleDateString('nl-NL', { year: 'numeric', month: 'long', day: 'numeric' })}</Table.Cell>
             <Table.Cell>{project.fase}</Table.Cell>
             <Table.Cell><a href="/project/view/{project.$id}">{project.progress}%</a></Table.Cell>
             <Table.Cell>

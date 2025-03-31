@@ -143,6 +143,11 @@
     }
   }
 
+  // Helper function to format numbers to European notation
+  function formatEuro(number: number): string {
+    return number.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
 </script>
 
 {#if projectData}
@@ -156,7 +161,8 @@
           class="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           on:change="{(e) => updateProjectStatus((e.target as HTMLSelectElement).value)}"
         >
-          <option value="start">start</option>
+          <option value="opstellen offerte">Opstellen offerte</option>
+          <option value="offerte verstuurd">offerte verstuurd</option>
           <option value="akkoord">akkoord</option>
           <option value="niet gegund">niet gegund</option>
           <option value="aanbetaling">aanbetaling</option>
@@ -204,13 +210,12 @@
       <!-- Left Column - Invoice -->
       <div class="w-full lg:flex-1 bg-white shadow rounded-lg p-4 sm:p-6">
         <div class="border-b border-gray-200 pb-4">
-          <h1 class="text-3xl font-bold text-gray-900">Offerte</h1>
-          <p class="text-sm text-gray-500 mt-1">Offerte nummer: {projectData.projectNumber}</p>
+          <h1 class="text-3xl font-bold text-gray-900">O-{projectData.projectNumber}</h1>
         </div>
 
         <!-- Client Information -->
         <div class="mt-6">
-          <h2 class="text-xl font-semibold text-gray-900">Klant</h2>
+          <h2 class="text-xl font-semibold text-gray-900">Opdrachtgever</h2>
           {#if projectData.client?.subcontractors}
             <h3 class="text-gray-600 text-lg font-semibold">{projectData.client.subcontractors?.businessname}</h3>
           {/if}
@@ -221,7 +226,7 @@
               <p class="mt-2">{projectData.client.email}</p>
             <p>{projectData.client.telefoonnummer}</p>
             <br>
-            <b>Betreft</b>
+            <b>Werkadres</b>
             <p>{projectData.name}</p>
             <p>{projectData.email}</p>
             <p>{projectData.telefoonnummer}</p>
@@ -261,7 +266,21 @@
 
       <!-- Right Column - Notes and Images -->
       <div class="w-full lg:w-1/3 space-y-6">
-        <!-- Price Summary Section -->
+ 
+
+        <!-- Notes Section -->
+        <div class="bg-white shadow rounded-lg p-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-4">Notities</h2>
+          <p class="text-gray-600 whitespace-pre-line">{projectData.notities}</p>
+        </div>
+
+        <!-- Images Section -->
+        <div class="bg-white shadow rounded-lg p-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-4">Gerelateerde Foto's</h2>
+          <FetchImages bind:uploadedImages />
+        </div>
+
+       <!-- Price Summary Section -->
         <div class="bg-white shadow rounded-lg p-4">
           <h2 class="text-xl font-semibold text-gray-900 mb-4">Prijsopbouw</h2>
           {#each projectData.projects as project}
@@ -271,7 +290,7 @@
                 {#each project.items as item}
                   <div class="flex justify-between items-center text-sm">
                     <span class="text-gray-600">{item.subcategory} - {item.type}</span>
-                    <span class="font-medium">€{(item.quantity * item.price).toFixed(2)}</span>
+                    <span class="font-medium">€{formatEuro(item.quantity * item.price)}</span>
                   </div>
                 {/each}
               </div>
@@ -281,21 +300,10 @@
             {#if projectData.client.businessname}
               <p class="text-lg font-semibold text-gray-700">BTW Verlegd</p>
             {:else}
-              <p class="text-lg text-gray-700">Totaal (excl. BTW): <span class="font-semibold">€{totalPrice.toFixed(2)}</span></p>
+              <p class="text-lg text-gray-700">Totaal (excl. BTW): <span class="font-semibold">€{formatEuro(totalPrice)}</span></p>
             {/if}
-            <p class="text-xl font-bold text-gray-900 mt-2">Totaal: €{totalPriceWithTax.toFixed(2)}</p>
+            <p class="text-xl font-bold text-gray-900 mt-2">Totaal: €{formatEuro(totalPriceWithTax)}</p>
           </div>
-        </div>
-
-        <!-- Notes Section -->
-        <div class="bg-white shadow rounded-lg p-6">
-          <h2 class="text-xl font-semibold text-gray-900 mb-4">Notities</h2>
-          <p class="text-gray-600 whitespace-pre-line">{projectData.notities}</p>
-        </div>
-
-        <div class="bg-white shadow rounded-lg p-6">
-          <h2 class="text-xl font-semibold text-gray-900 mb-4">Gerelateerde Foto's</h2>
-          <FetchImages bind:uploadedImages />
         </div>
 
         <!-- Payment Schedule Card -->
@@ -305,24 +313,24 @@
             {#if projectData.paymentSchedule.initial > 0}
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-2 border-b border-gray-100">
               <span class="text-gray-600 mb-1 sm:mb-0">Aanbetaling ({projectData.paymentSchedule.initial}%)</span>
-              <span class="font-medium">€{(totalPrice * projectData.paymentSchedule.initial / 100).toFixed(2)}</span>
+              <span class="font-medium">€{formatEuro(totalPrice * projectData.paymentSchedule.initial / 100)}</span>
             </div>
             {/if}
             {#if projectData.paymentSchedule.during > 0}
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-2 border-b border-gray-100">
               <span class="text-gray-600 mb-1 sm:mb-0">Tijdens werkzaamheden ({projectData.paymentSchedule.during}%)</span>
-              <span class="font-medium">€{(totalPrice * projectData.paymentSchedule.during / 100).toFixed(2)}</span>
+              <span class="font-medium">€{formatEuro(totalPrice * projectData.paymentSchedule.during / 100)}</span>
             </div>
             {/if}
             {#if projectData.paymentSchedule.threequarters > 0}
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-2 border-b border-gray-100">
               <span class="text-gray-600 mb-1 sm:mb-0">Bij driekwart gereed ({projectData.paymentSchedule.threequarters}%)</span>
-              <span class="font-medium">€{(totalPrice * projectData.paymentSchedule.threequarters / 100).toFixed(2)}</span>
+              <span class="font-medium">€{formatEuro(totalPrice * projectData.paymentSchedule.threequarters / 100)}</span>
             </div>
             {/if}
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-2 border-b border-gray-100">
               <span class="text-gray-600 mb-1 sm:mb-0">Bij oplevering ({projectData.paymentSchedule.final}%)</span>
-              <span class="font-medium">€{(totalPrice * projectData.paymentSchedule.final / 100).toFixed(2)}</span>
+              <span class="font-medium">€{formatEuro(totalPrice * projectData.paymentSchedule.final / 100)}</span>
             </div>
           </div>
         </div>

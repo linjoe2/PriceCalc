@@ -32,7 +32,7 @@
   let notities: string = '';    // Add these variables
   let terms: Terms[] = [];
   let paymentSchedule: PaymentSchedule;
-  let openCategories: Record<string, boolean> = {};  // Add this near other let declarations
+  let openCategories: Record<string, Record<string, boolean>> = {};  // Update the type to nest by project
   let isUploading = false; // Add this near other let declarations at the top
   let calculations: Record<string, Calculation> = {};
   let projectNumber: string = '';
@@ -412,10 +412,7 @@
             <label for="telefoonnummer">Telefoonnummer:</label>
             <span id="telefoonnummer">{$selectedUser?.telefoonnummer || 'N/A'}</span>
           </div>
-          <div>
-            <label for="subcontractor">Hoofdaannemer:</label>
-            <span id="subcontractor">{!!$selectedUser?.subcontractors?.businessname ? $selectedUser.subcontractors.businessname : 'Nee'}</span>
-          </div>
+         
         </div>
       </div>
       <div class="md:w-1/2 m-4">
@@ -424,8 +421,10 @@
           <h2 class="text-lg font-medium">Betreft</h2>
           
           <input type="text" bind:value={name} placeholder="Naam" class="w-full border rounded-md p-2 mt-2"/>
-          <input type="email" bind:value={email} placeholder="Email" class="w-full border rounded-md p-2 mt-2"/>
-          <input type="tel" bind:value={phone} placeholder="Telefoonnummer" class="w-full border rounded-md p-2 mt-2"/>
+          {#if $selectedUser?.type != "Bedrijf"}
+            <input type="email" bind:value={email} placeholder="Email" class="w-full border rounded-md p-2 mt-2"/>
+            <input type="tel" bind:value={phone} placeholder="Telefoonnummer" class="w-full border rounded-md p-2 mt-2"/>
+          {/if}
           <SearchAdress bind:address={adress} class="w-full"/>
           <textarea bind:value={adressString} class="w-full border rounded-md p-2 mt-2"/>
         </div>
@@ -442,7 +441,7 @@
       </div>
     </div>
 
-  <div class="max-w-4xl mx-auto p-4 space-y-2 flex flex-col gap-4"> 
+  <div class="w-full mx-auto p-4 space-y-2 flex flex-col gap-4"> 
     <!-- <UserSearch /> -->
      {#each projects as project}
       <div class="border rounded-lg p-2 bg-gray-100">
@@ -462,14 +461,18 @@
       <div class="border rounded-lg bg-white">
         <button
           class="w-full p-4 flex items-center justify-between hover:bg-gray-50"
-          on:click={() => openCategories[category] = !openCategories[category]}
+          on:click={() => {
+            // Initialize nested structure if it doesn't exist
+            openCategories[project.name] = openCategories[project.name] || {};
+            openCategories[project.name][category] = !openCategories[project.name]?.[category];
+          }}
         >
           <div class="flex items-center gap-3">
             <span class="font-medium">{category}</span>
           </div>
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 transform transition-transform {openCategories[category] ? 'rotate-180' : ''}"
+            class="h-5 w-5 transform transition-transform {openCategories[project.name]?.[category] ? 'rotate-180' : ''}"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -478,8 +481,70 @@
           </svg>
         </button>
         
-        {#if openCategories[category] || items.some((item: Item) => project.items.some((selected: Item) => selected.category === category && selected.subcategory === item.subcategory && selected.type === item.type))}
+        {#if openCategories[project.name]?.[category] || items.some((item: Item) => project.items.some((selected: Item) => selected.category === category && selected.subcategory === item.subcategory && selected.type === item.type))}
           <div class="p-4 pt-0 space-y-4">
+            {#if items[0].unit === "m²" || items[0].unit === "m¹"}
+              <div class="space-y-3">
+                <h3 class="font-medium">
+                  {items[0].unit === "m²" ? "Oppervlakte" : "Lengte"}:
+                </h3>
+                <div>
+                  <label for="measurement-input" class="block text-sm text-gray-600">
+                    {items[0].unit === "m²" ? "Oppervlakte (m²)" : "Lengte (m¹)"}
+                  </label>
+                  <input 
+                    id="measurement-input"
+                    type="number" 
+                    min="1"
+                    bind:value={calculations[category].length}
+                    on:input={(event) => {
+                      calculations[category] = calculations[category] || {};
+                      calculations[category].length = parseFloat((event.target as HTMLInputElement).value);
+                      // Update quantities for selected items in this category
+                      project.items = project.items.map((item: any) => {
+                        if (item.category === category) {
+                          return {
+                            ...item,
+                            quantity: calculations[category].length || 1
+                          };
+                        }
+                        return item;
+                      });
+                    }}
+                    class="w-full p-2 border rounded-md"
+                  />
+                </div>
+              </div>
+            {:else}
+              <div class="space-y-3">
+                <h3 class="font-medium">Aantal:</h3>
+                <div>
+                  <label for="quantity-input" class="block text-sm text-gray-600">Aantal stuks</label>
+                  <input 
+                    id="quantity-input"
+                    type="number" 
+                    bind:value={calculations[category].length}
+                    min="1"
+                    on:input={(event) => {
+                      calculations[category] = calculations[category] || {};
+                      calculations[category].length = parseFloat((event.target as HTMLInputElement).value);
+                      // Update quantities for selected items in this category
+                      project.items = project.items.map((item: any) => {
+                        if (item.category === category) {
+                          return {
+                            ...item,
+                            quantity: calculations[category].length || 1
+                          };
+                        }
+                        return item;
+                      });
+                    }}
+                    class="w-full p-2 border rounded-md"
+                  />
+                </div>
+              </div>
+            {/if}
+
             {#each items as item}
               <div class="space-y-2">
                 <div 
@@ -525,14 +590,13 @@
                         />
                       {:else}
                         <div on:click|stopPropagation={() => item.isEditing = true}>
-                          €{item.price}{#if item.unit !== "custom"}/{item.unit}{/if}
+                          €{typeof item.price === 'number' ? item.price.toLocaleString('nl-NL', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : item.price}{#if item.unit !== "custom"}/{item.unit}{/if}
                         </div>
                       {/if}
                     {/if}
                   </span>
                 </div>
 
-                <!-- Add tasks section here -->
                 {#if project.items.some((i: Item) => i.category === category && i.subcategory === item.subcategory && i.type === item.type)}
                   <ProjectTask 
                     {project}
@@ -543,119 +607,6 @@
                 {/if}
               </div>
             {/each}
-  
-            {#if items[0].unit === "m²" || items[0].unit === "m¹"}
-              <div class="space-y-3">
-                <h3 class="font-medium">
-                  {items[0].unit === "m²" ? "Oppervlakte" : "Lengte"} berekenen:
-                </h3>
-                {#if items[0].unit === "m²"}
-                  <div class="grid grid-cols-2 gap-4">
-                    <div>
-                      <label for="length-input" class="block text-sm text-gray-600">Lengte (m)</label>
-                      <input 
-                        id="length-input"
-                        type="number" 
-                        min="1"
-                        bind:value={calculations[category].length}
-                        on:input={(event) => {
-                          calculations[category] = calculations[category] || {};
-                          calculations[category].length = parseFloat((event.target as HTMLInputElement).value);
-                          // Update quantities for selected items in this category
-                          project.items = project.items.map((item: Item) => {
-                            if (item.category === category) {
-                              return {
-                                ...item,
-                                quantity: (calculations[category].length || 1) * (calculations[category].width || 1)
-                              };
-                            }
-                            return item;
-                          });
-                        }}
-                        class="w-full p-2 border rounded-md"
-                      />
-                    </div>
-                    <div>
-                      <label for="width-input" class="block text-sm text-gray-600">Breedte (m)</label>
-                      <input 
-                        id="width-input"
-                        type="number" 
-                        min="1"
-                        bind:value={calculations[category].width}
-                        on:input={(event) => {
-                          calculations[category] = calculations[category] || {};
-                          calculations[category].width = parseFloat((event.target as HTMLInputElement).value);
-                          // Update quantities for selected items in this category
-                          project.items = project.items.map((item: any) => {
-                            if (item.category === category) {
-                              return {
-                                ...item,
-                                quantity: (calculations[category].length || 1) * (calculations[category].width || 1)
-                              };
-                            }
-                            return item;
-                          });
-                        }}
-                        class="w-full p-2 border rounded-md"
-                      />
-                    </div>
-                  </div>
-                {:else}
-                  <div>
-                    <label for="length-input" class="block text-sm text-gray-600">Lengte (m)</label>
-                    <input 
-                      id="length-input"
-                      type="number" 
-                      min="1"
-                      bind:value={calculations[category].length}
-                      on:input={(event) => {
-                        calculations[category] = calculations[category] || {};
-                        calculations[category].length = parseFloat((event.target as HTMLInputElement).value);
-                        // Update quantities for selected items in this category
-                        project.items = project.items.map((item: any) => {
-                          if (item.category === category) {
-                            return {
-                              ...item,
-                              quantity: calculations[category].length || 1
-                            };
-                          }
-                          return item;
-                        });
-                      }}
-                      class="w-full p-2 border rounded-md"
-                    />
-                  </div>
-                {/if}
-              </div>
-            {:else}
-              <div class="space-y-3">
-                <h3 class="font-medium">Aantal:</h3>
-                <div>
-                  <label for="quantity-input" class="block text-sm text-gray-600">Aantal stuks</label>
-                  <input 
-                    id="quantity-input"
-                    type="number" 
-                    bind:value={calculations[category].length}
-                    min="1"
-                    on:input={(event) => {
-                      calculations[category] = calculations[category] || {};
-                      calculations[category].length = parseFloat((event.target as HTMLInputElement).value);
-                      // Update quantities for selected items in this category
-                      project.items = project.items.map((item: any) => {
-                        if (item.category === category) {
-                          return {
-                            ...item,
-                            quantity: calculations[category].length || 1
-                          };
-                        }
-                        return item;
-                      });
-                    }}
-                    class="w-full p-2 border rounded-md"
-                  />
-                </div>
-              </div>
-            {/if}
           </div>
         {/if}
       </div>
@@ -684,37 +635,12 @@
     <CreatePaymentSchedule bind:totalPrice={totalPrice} bind:paymentSchedule={paymentSchedule} />
 
     {#if projects.length > 0 || uploadedImages.length > 0}
-      <div 
-        class="fixed bottom-4 right-4 bg-white shadow-lg rounded-lg p-4 border"
-        role="button"
-        tabindex="0"
-        on:click={() => showInvoice = !showInvoice}
-        on:keydown={e => e.key === 'Enter' && (showInvoice = !showInvoice)}
+      <button 
+        class="fixed bottom-4 right-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg"
+        on:click={saveProject}
       >
-        <div>
-          <div class="text-lg font-medium">Totaal: €{totalPrice.toFixed(2)}</div>
-          <div class="text-sm text-gray-600">{totalItems} item{totalItems === 1 ? '' : 's'} geselecteerd</div>
-        </div>
-        {#if showInvoice}
-          <div class="mt-4">
-            {#each projects as project}
-              <h2 class="text-lg font-medium">{project.name}</h2>
-              {#each project.items as item, index}
-                <div class="flex justify-between items-center mt-2">
-                  <div>{item.subcategory} - {item.type}</div>
-                <div>{item.quantity} x €{item.price}</div>
-              </div>
-            {/each}
-            {/each}
-            <button class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" on:click={saveProject}>
-              Opslaan
-            </button>
-            <!-- <button class="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" on:click={saveProject}>
-              Opslaan & Inplannen
-            </button> -->
-          </div>
-        {/if}
-      </div>
+        Opslaan
+      </button>
     {/if}
   </div>
 

@@ -117,7 +117,7 @@
     <!-- List of terms -->
     <div class="space-y-2">
         {#each terms as term (term.$id)}
-            <div class="flex items-center group hover:bg-gray-50 p-2 rounded-md">
+            <div class="flex items-center group hover:bg-gray-50 p-0 m-0 rounded-md">
                 {#if isEditing && editingTerm?.$id === term.$id}
                     <div class="flex-1 flex gap-2">
                         <input

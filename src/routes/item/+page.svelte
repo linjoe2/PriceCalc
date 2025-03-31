@@ -181,17 +181,33 @@ function toggletasksVisibility(category, index) {
 }
 
 async function changeCategoryName(category: string, newName: string) {
-    services[newName] = services[category];
-    delete services[category];
+    // Store the original order of categories
+    const originalOrder = Object.keys(services);
+    const categoryIndex = originalOrder.indexOf(category);
+    
+    // Create new services object with updated category name while preserving order
+    const updatedServices = {};
+    originalOrder.forEach((key, index) => {
+        if (index === categoryIndex) {
+            updatedServices[newName] = services[category];
+        } else {
+            updatedServices[key] = services[key];
+        }
+    });
+    
+    services = updatedServices;
 
-    //update the category name in the database
-    for (const service of services[newName]) {
-        const response = await databases.updateDocument(databaseId, collectionId, service.$id, {
-            category: newName
-        });
-        console.log(response);
+    // Update the category name in the database
+    try {
+        for (const service of services[newName]) {
+            await databases.updateDocument(databaseId, collectionId, service.$id, {
+                category: newName
+            });
+        }
+        console.log('Category name updated successfully');
+    } catch (error) {
+        console.error('Error updating category name:', error);
     }
-
 
     showInput = false;
 }
@@ -403,12 +419,12 @@ async function saveCategoryOrderToDatabase(newOrder: string[]) {
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subcategorie</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prijs</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acties</th>
+                        <th class="w-1/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subcategorie</th>
+                        <th class="w-1/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th class="w-1/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prijs</th>
+                        <th class="w-1/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Eenheid</th>
+                        <th class="w-1/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
+                        <th class="w-1/6 px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acties</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -418,12 +434,12 @@ async function saveCategoryOrderToDatabase(newOrder: string[]) {
                             on:dragstart={(e) => handleDragStart(e, category, index)}
                             on:drop={(e) => handleDrop(e, category, index)}
                             on:dragover={handleDragOver}>
-                            <td class="px-6 py-4 whitespace-nowrap">{service.subcategory}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">{service.type}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">€{service.price}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">{service.unit}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">{service.order}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                            <td class="w-1/6 px-6 py-4 whitespace-nowrap">{service.subcategory}</td>
+                            <td class="w-1/6 px-6 py-4 whitespace-nowrap">{service.type}</td>
+                            <td class="w-1/6 px-6 py-4 whitespace-nowrap">€{service.price}</td>
+                            <td class="w-1/6 px-6 py-4 whitespace-nowrap">{service.unit}</td>
+                            <td class="w-1/6 px-6 py-4 whitespace-nowrap">{service.order}</td>
+                            <td class="w-1/6 px-6 py-4 whitespace-nowrap text-right">
                                 <div class="flex justify-end gap-2">
                                     <button on:click={() => duplicateService(category, index)} 
                                         class="p-2 rounded-md border text-sm hover:bg-gray-100">

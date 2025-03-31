@@ -30,7 +30,7 @@
       />
       {#if getPlaceholderOptions(task.description)}
         <select 
-          class="p-1 text-sm border rounded"
+          class="p-1 text-sm border rounded task-select"
           on:change={(e) => {
             task.description = replacePlaceholder(task.description, e.currentTarget.value);
             projects = [...projects];
@@ -75,4 +75,15 @@
   >
     + Nieuwe taak
   </button>
-</div> 
+</div>
+
+
+<style>
+  .task-input {
+    width: 100%;
+  }
+
+  .task-select {
+    width: 100px;
+  }
+</style>
