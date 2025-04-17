@@ -2,7 +2,7 @@
   // import UserSearch from '../../userSearch.svelte';
   import { onMount } from 'svelte';
   import { Databases, Query } from "appwrite";
-  import { client } from "$lib/appwrite";
+  import { client, account } from "$lib/appwrite";
   import { selectedUser } from "../../../../stores/userStore";
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
@@ -229,15 +229,14 @@
         }
         isSaving = true;
     try {
-        // Flatten all items from all projects and include their tasks
         const allItems = projects.flatMap(project => 
             project.items.map(item => ({
                 ...item,
-                tasks: item.tasks || [], // Ensure tasks exists
-                calculations: calculations[item.category] || {} // Add calculations for this category
+                tasks: item.tasks || [],
+                calculations: calculations[item.category] || {}
             }))
         );
-
+        let loggedInUser = await account.get();
         const projectData: Partial<Project> = {
             projectNumber,
             items: JSON.stringify(allItems),
@@ -248,16 +247,23 @@
             projects: JSON.stringify(projects),
             totalPrice: totalPrice,
             client: $selectedUser.$id,
-            createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
+            lastUpdatedBy: `${loggedInUser.name}`,
             uploadedImages: uploadedImages.map(image => (JSON.stringify({ id: image.id, category: image.category }))),
             opmerkingen,
             notities,
             terms: JSON.stringify(terms.filter(term => term.checked)),
             paymentSchedule: JSON.stringify(paymentSchedule),
-            calculations: JSON.stringify(calculations) // Add calculations to project data
+            calculations: JSON.stringify(calculations)
         };
+
+        if (projectId === "new") {
+            projectData.createdAt = new Date().toISOString();
+            projectData.createdBy = `${loggedInUser.name}`;
+        }
+
         console.log(projectData);
+        
         // Generate tasks from all items across all projects
         projectData.tasks = allItems.flatMap(item => {
             if (!item.tasks) return [];

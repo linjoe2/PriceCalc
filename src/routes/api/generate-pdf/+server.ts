@@ -171,7 +171,7 @@ export async function POST({ request }) {
                     // Add project items
                     project.items.forEach(item => {
                         const itemPrice = parseFloat(item.price) * item.quantity;
-                    const description = `${counter} ${item.subcategory} ${item.type} ${project.name}`;
+                    const description = `${counter}. ${item.subcategory} ${item.type} ${project.name}`;
                     counter++;
                         doc.font(TimesNewRomanBold)
                            .text(description)
@@ -403,7 +403,7 @@ for( let i = range.start; i <  (range.start + range.count); i++) {
             doc.page.height - 30, 
             { height : 25, width : 400});
 
-  doc.text(`Offerte O-${projectData.projectNumber}`, 
+  doc.text(`O-${projectData.projectNumber}`, 
             250, 
             30, 
             { height : 25, width : 100});

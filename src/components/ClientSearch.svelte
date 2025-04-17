@@ -83,7 +83,7 @@
 {#if clients.length > 0}
     <ul>
         {#each clients as client}
-            <li on:click={() => selectClient(client)}>{client.name}</li>
+            <li on:click={() => selectClient(client)}>{client.businessname || client.name}</li>
         {/each}
     </ul>
 {:else}

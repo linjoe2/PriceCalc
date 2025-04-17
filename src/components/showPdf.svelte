@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import { Storage } from 'appwrite';
     import { client } from '$lib/appwrite';
     export let projectData;
@@ -56,7 +56,7 @@ Dukdalfweg 16
         const mailUrl= `mailto:${projectData.client.email || ''};${projectData.client.subcontractors?.email || ''}?subject=${encodedSubject}&body=${encodedBody}`;
         window.open(mailUrl, '_blank');
 
-      }
+    }
 </script>
 
 <button class="show-pdf-button border-2 border-black text-black px-4 py-2 rounded" on:click={showPDF}>Toon PDF</button>

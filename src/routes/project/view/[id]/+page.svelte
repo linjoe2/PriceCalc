@@ -7,10 +7,12 @@
   import AddToGoogleAgenda from "../../../../components/addToGoogleAgenda.svelte";
   import FetchImages from "./fetchImages.svelte";
   import type { Project, UploadedImage } from '$lib/types';
+  import SendWithDocumenso from "../../../../components/SendWithDocumenso.svelte";
 
   let projectId = $page.params.id;
   let projectData: Project | null = null;
   let uploadedImages: UploadedImage[] = [];
+  let pdfBlob: Blob | null = null;
 
   $: console.log(projectData)
 
@@ -148,6 +150,11 @@
     return number.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
+  // Add this function to store the PDF blob when it's generated
+  function handlePdfGenerated(event: CustomEvent<Blob>) {
+    pdfBlob = event.detail;
+  }
+
 </script>
 
 {#if projectData}
@@ -188,8 +195,15 @@
       </div>
       
       <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-        <ShowPdf projectData={projectData} />
+        <ShowPdf 
+          projectData={projectData} 
+          on:pdfGenerated={handlePdfGenerated}
+        />
         <AddToGoogleAgenda projectData={projectData} />
+        <SendWithDocumenso 
+          {projectData}
+          {pdfBlob}
+        />
         <button
           on:click={duplicateProject}
           class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
@@ -216,6 +230,14 @@
         <!-- Client Information -->
         <div class="mt-6">
           <h2 class="text-xl font-semibold text-gray-900">Opdrachtgever</h2>
+          <div class="text-sm text-gray-400 mb-3">
+            {#if projectData.createdBy}
+              <p>Aangemaakt door: {projectData.createdBy}</p>
+            {/if}
+            {#if projectData.lastUpdatedBy}
+              <p>Laatst bijgewerkt door: {projectData.lastUpdatedBy}</p>
+            {/if}
+          </div>
           {#if projectData.client?.subcontractors}
             <h3 class="text-gray-600 text-lg font-semibold">{projectData.client.subcontractors?.businessname}</h3>
           {/if}
