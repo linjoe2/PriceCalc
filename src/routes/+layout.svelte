@@ -27,6 +27,7 @@
     import { derived } from 'svelte/store';
     import { chatwootContact } from "../stores/userStore";
     import FileText from "lucide-svelte/icons/file-text";
+    import CreateProject from "../components/createProject.svelte";
 
     $: pathSegments = $page.url.pathname.split('/').filter(Boolean);
     interface LoggedInUser {
@@ -37,6 +38,7 @@
 
     let loggedInUser: LoggedInUser = {name: '', labels: []};
     let activeRoute = ''
+    let isProjectModalOpen = false;
     // Add sheet open state store
     const sheetOpen = writable(false);
     
@@ -129,8 +131,15 @@
               <div class="rounded-md bg-white shadow-xs">
                 <div class="py-1">
                   <a href="/client/new" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Klant</a>
-                  <a href="/project/edit/new" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Project</a>
-                  <!-- <a href="/agenda" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Afspraak</a> -->
+                  <button 
+                    on:click={() => {
+                      isProjectModalOpen = true;
+                      showNewItemMenu = false;
+                    }}
+                    class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Project
+                  </button>
                 </div>
               </div>
             </div>
@@ -314,3 +323,5 @@
    </main>
   </div>
 </div>
+
+<CreateProject bind:isOpen={isProjectModalOpen} />

@@ -40,6 +40,9 @@ export interface Project {
     notities: string;
     uploadedImages: UploadedImage[];
     paymentSchedule: PaymentSchedule;
+    projectNumber: string;
+    adress?: string;
+    progress?: number;
 }
 
 export interface PaymentSchedule {

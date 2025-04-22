@@ -103,12 +103,6 @@
     }
     fetchProjects();
   }
-
-  function handleCreateProject(event) {
-    const { clientName } = event.detail;
-    // Handle the project creation here
-    console.log('Creating project for client:', clientName);
-  }
 </script>
 
 <div class="flex flex-col gap-4 table-container">
@@ -130,7 +124,6 @@
 
   <CreateProject 
     bind:isOpen={isProjectModalOpen}
-    on:createProject={handleCreateProject}
   />
 
   <div class="rounded-md border">
