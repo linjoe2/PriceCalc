@@ -127,9 +127,10 @@
         <option value="" disabled selected>Selecteer type klant</option>
         <option value="Particulier">Particulier</option>
         <option value="VVE">VVE</option>
-        <option value="Bedrijf">Bedrijf</option>
+        <option value="Bedrijf">Bedrijf met BTW</option>
+        <option value="BedrijfZonderBTW">Bedrijf zonder BTW</option>
     </select>
-    {#if type != 'Prive'}
+    {#if type != 'Particulier'}
         <label for="bedrijfsnaam" class="block text-sm font-medium text-gray-700">Bedrijfsnaam:</label>
         <input type="text" id="bedrijfsnaam" bind:value={bedrijfsnaam} class="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
     {/if}

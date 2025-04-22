@@ -136,7 +136,6 @@
     <div class="mt-4 grid grid-cols-4 sm:grid-cols-6 gap-2">
       {#each uploadedImages as image, index}
         <div class="relative group">
-          {#if image.category === category}
           <img 
             src={image.preview || image.url} 
             alt="Preview" 
@@ -152,9 +151,8 @@
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          {/if}
+            </svg>
+          </button>
         </div>
       {/each}
     </div>
