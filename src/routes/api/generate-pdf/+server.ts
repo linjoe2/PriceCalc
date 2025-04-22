@@ -225,12 +225,22 @@ export async function POST({ request }) {
 
             doc.text(`Totaal excl. BTW:(*) € ${formatPrice(totalPrice)}`, 50, doc.y, { align: 'right'})
             console.log(projectData.client.businessname);
-            if(projectData.client.businessname === '' || projectData.client.businessname === null){
-            doc.text(`BTW (21%): € ${formatPrice(totalPrice * 0.21)}`, 50, doc.y, { align: 'right'})
-            }else{
-            doc.text(`BTW Verlegd: € 0,00`, 50, doc.y, { align: 'right'})
-            totalPriceWithTax = totalPrice
+            
+            // Determine BTW based on client type
+            if (projectData.client.type === 'BedrijfZonderBTW') {
+                // Business without BTW - show "BTW Verlegd"
+                doc.text(`BTW Verlegd: € 0,00`, 50, doc.y, { align: 'right'})
+                totalPriceWithTax = totalPrice;
+            } else if (projectData.client.type === 'Bedrijf') {
+                // Business with BTW - show "BTW (21%)"
+                doc.text(`BTW (21%): € ${formatPrice(totalPrice * 0.21)}`, 50, doc.y, { align: 'right'})
+                totalPriceWithTax = totalPrice * 1.21;
+            } else {
+                // Private individual or other types - apply 21% BTW
+                doc.text(`BTW (21%): € ${formatPrice(totalPrice * 0.21)}`, 50, doc.y, { align: 'right'})
+                totalPriceWithTax = totalPrice * 1.21;
             }
+            
             doc.moveTo(350, doc.y)
             .lineTo(545, doc.y)
             .stroke(2)
@@ -282,15 +292,13 @@ export async function POST({ request }) {
            .text('Betalingscondities *:', col1, y, { width: 150 })
            .fontSize(11)
            doc.text('Excl. BTW', col2, y, { width: colWidth, align: 'left' })
-           if(projectData.client.businessname === '' || projectData.client.businessname === null){
-
+           if(projectData.client.type === 'BedrijfZonderBTW' || projectData.client.type === 'Bedrijf'){
+           doc.text('BTW Verlegd', col4, y, { width: colWidth, align: 'left' })
+           doc.text('Totaal', col5, y, { width: colWidth, align: 'left' })
+           }else{
            doc.text("9% BTW", col3, y, { width: colWidth, align: 'left' })
            doc.text('21% BTW', col4, y, { width: colWidth, align: 'left' })
            doc.text('Incl. BTW', col5, y, { width: colWidth, align: 'left' })
-
-           }else{
-           doc.text('BTW Verlegd', col4, y, { width: colWidth, align: 'left' })
-           doc.text('Totaal', col5, y, { width: colWidth, align: 'left' })
            }
            doc.moveDown(0.5);
 
@@ -337,14 +345,14 @@ export async function POST({ request }) {
              y = doc.y;
             doc.text(payment.term, col1, y, { width: 190 })
                .text(`€ ${formatPrice(baseAmount)}`, col2, y, { width: colWidth, align: 'left' })
-               if(projectData.client.businessname === '' || projectData.client.businessname === null){
+               if(projectData.client.type === 'BedrijfZonderBTW' || projectData.client.type === 'Bedrijf'){
+               doc.text(`€ 0,00`, col4, y, { width: colWidth, align: 'left' })
+               doc.text(`€ ${formatPrice(baseAmount)}`, col5, y, { width: colWidth, align: 'left' })   
+            }else{
                doc.text(`€ ${formatPrice(btw9)}`, col3, y, { width: colWidth, align: 'left' })
                doc.text(`€ ${formatPrice(btw21)}`, col4, y, { width: colWidth, align: 'left' })
                doc.text(`€ ${formatPrice(totalRowAmount)}`, col5, y, { width: colWidth, align: 'left' })
-               }else{
-               doc.text(`€ 0,00`, col4, y, { width: colWidth, align: 'left' })
-               doc.text(`€ ${formatPrice(baseAmount)}`, col5, y, { width: colWidth, align: 'left' })   
-            }
+               }
               
             //    .moveDown(0.5);
         });
@@ -359,10 +367,10 @@ export async function POST({ request }) {
            .text('Totaal:', col1, y, { width: 190 })
            .text(`€ ${formatPrice(totalPrice)}`, col2, y, { width: colWidth, align: 'left' })
         //    .text(`€ 0,00`, col3, y, { width: colWidth, align: 'left' })
-        if(projectData.client.businessname === '' || projectData.client.businessname === null){
-           doc.text(`€ ${formatPrice(totalPrice * 0.21)}`, col4, y, { width: colWidth, align: 'left' })
-           }else{
+        if(projectData.client.type === 'BedrijfZonderBTW' || projectData.client.type === 'Bedrijf'){
            doc.text(`€ 0,00`, col4, y, { width: colWidth, align: 'left' })
+           }else{
+           doc.text(`€ ${formatPrice(totalPrice * 0.21)}`, col4, y, { width: colWidth, align: 'left' })
            }
 
            doc.text(`€ ${formatPrice(totalPriceWithTax)}`, col5, y, { width: colWidth, align: 'left' })

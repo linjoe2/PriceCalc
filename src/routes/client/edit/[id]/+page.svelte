@@ -109,7 +109,7 @@
 
     $: updateAddress(address)
 
-  
+    const shouldApplyBTW = clientData.type === 'Bedrijf';
 </script>
 <h1 class="text-2xl font-bold text-gray-800 mb-4">Klant Gegevens Bewerken</h1>
 <form on:submit|preventDefault={updateClient} class="shadow-md rounded px-8 pt-6 pb-8 mb-4 bg-white">

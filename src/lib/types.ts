@@ -23,6 +23,7 @@ export interface Client {
     bouwjaar?: number;
     search?: string;
     chatwootid?: string;
+    type?: 'Particulier' | 'VVE' | 'Bedrijf' | 'BedrijfZonderBTW';
 }
 
 export interface Project {
