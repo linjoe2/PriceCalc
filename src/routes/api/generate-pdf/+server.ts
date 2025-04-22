@@ -292,7 +292,7 @@ export async function POST({ request }) {
            .text('Betalingscondities *:', col1, y, { width: 150 })
            .fontSize(11)
            doc.text('Excl. BTW', col2, y, { width: colWidth, align: 'left' })
-           if(projectData.client.type === 'BedrijfZonderBTW' || projectData.client.type === 'Bedrijf'){
+           if(projectData.client.type === 'BedrijfZonderBTW'){
            doc.text('BTW Verlegd', col4, y, { width: colWidth, align: 'left' })
            doc.text('Totaal', col5, y, { width: colWidth, align: 'left' })
            }else{
@@ -345,7 +345,7 @@ export async function POST({ request }) {
              y = doc.y;
             doc.text(payment.term, col1, y, { width: 190 })
                .text(`€ ${formatPrice(baseAmount)}`, col2, y, { width: colWidth, align: 'left' })
-               if(projectData.client.type === 'BedrijfZonderBTW' || projectData.client.type === 'Bedrijf'){
+               if(projectData.client.type === 'BedrijfZonderBTW'){
                doc.text(`€ 0,00`, col4, y, { width: colWidth, align: 'left' })
                doc.text(`€ ${formatPrice(baseAmount)}`, col5, y, { width: colWidth, align: 'left' })   
             }else{
@@ -367,7 +367,7 @@ export async function POST({ request }) {
            .text('Totaal:', col1, y, { width: 190 })
            .text(`€ ${formatPrice(totalPrice)}`, col2, y, { width: colWidth, align: 'left' })
         //    .text(`€ 0,00`, col3, y, { width: colWidth, align: 'left' })
-        if(projectData.client.type === 'BedrijfZonderBTW' || projectData.client.type === 'Bedrijf'){
+        if(projectData.client.type === 'BedrijfZonderBTW'){
            doc.text(`€ 0,00`, col4, y, { width: colWidth, align: 'left' })
            }else{
            doc.text(`€ ${formatPrice(totalPrice * 0.21)}`, col4, y, { width: colWidth, align: 'left' })
