@@ -254,7 +254,16 @@
             notities,
             terms: JSON.stringify(terms.filter(term => term.checked)),
             paymentSchedule: JSON.stringify(paymentSchedule),
-            calculations: JSON.stringify(calculations)
+            calculations: JSON.stringify(calculations),
+            // Add search field for better querying
+            search: [
+                projectNumber,
+                $selectedUser?.adress,
+                $selectedUser?.huisnummer,
+                $selectedUser?.postcode,
+                $selectedUser?.woonplaats,
+                adressString
+            ].filter(Boolean).join(' ').toLowerCase()
         };
 
         if (projectId === "new") {

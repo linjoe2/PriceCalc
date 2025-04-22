@@ -22,11 +22,20 @@
         if (Mounted == false) {
             return;
         }
-        const searchQuery = filterValue ? [Query.search('search', filterValue)] : [];
+        const queries = [
+            Query.limit(limit), 
+            Query.offset(offset), 
+            Query.orderAsc("lastname")
+        ];
+        
+        if (filterValue?.trim()) {
+            queries.push(Query.search('search', filterValue));
+        }
+
         const result = await databases.listDocuments(
             'PriceCalc',
             '67362abc0039525e36b6',
-            [...searchQuery, Query.limit(limit), Query.offset(offset), Query.orderAsc("lastname")]
+            queries
         );
         clients = result.documents as unknown as Client[];
     }

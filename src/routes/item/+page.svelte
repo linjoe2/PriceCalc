@@ -125,45 +125,54 @@ function editService(category: string, index: number, service: Service) {
 // Function to save the edited service
 async function saveEditedService() {
     if (serviceToEdit) {
-        if (serviceToEdit.$id) {
-            updateService(serviceToEdit.category, serviceToEdit.index, serviceToEdit);
-            isEditDialogOpen = false; // Close the dialog
-            resetNewService(); // Reset new service fields if needed
-            serviceToEdit.tasks = JSON.stringify(serviceToEdit.tasks);
-            try {
+        serviceToEdit.tasks = JSON.stringify(serviceToEdit.tasks);
+        try {
+            if (serviceToEdit.$id) {
+                // Update existing service
                 const response = await databases.updateDocument(databaseId, collectionId, serviceToEdit.$id, {
                     subcategory: serviceToEdit.subcategory,
                     type: serviceToEdit.type,
                     price: parseInt(serviceToEdit.price),
                     unit: serviceToEdit.unit,
-                    category: serviceToEdit.category, // Optionally include the category
-                    tasks: serviceToEdit.tasks, // Include taken
-                    order: serviceToEdit.order // Include order
+                    category: serviceToEdit.category,
+                    tasks: serviceToEdit.tasks,
+                    order: serviceToEdit.order
                 });
                 console.log('Service saved and updated successfully:', response);
-            } catch (error) {
-                console.error('Error saving and updating service:', error);
-            }
-        } else {
-            // If no $id, create a new item
-            services[serviceToEdit.category].push(serviceToEdit);
-            isEditDialogOpen = false; // Close the dialog
-            resetNewService(); // Reset new service fields if needed
-            try {
+                
+                // Update the local services object
+                services[serviceToEdit.category][serviceToEdit.index] = {
+                    ...response, // Use the response from the server
+                    tasks: serviceToEdit.tasks // Keep the stringified tasks
+                };
+            } else {
+                // Create new service
                 const response = await databases.createDocument(databaseId, collectionId, ID.unique(), {
                     subcategory: serviceToEdit.subcategory,
                     type: serviceToEdit.type,
                     price: parseInt(serviceToEdit.price),
                     unit: serviceToEdit.unit,
-                    category: serviceToEdit.category, // Optionally include the category
-                    tasks: JSON.stringify(serviceToEdit.tasks), // Include taken
-                    order: serviceToEdit.order // Include order
+                    category: serviceToEdit.category,
+                    tasks: serviceToEdit.tasks,
+                    order: serviceToEdit.order
                 });
                 console.log('Service created successfully:', response);
-                fetchServices();
-            } catch (error) {
-                console.error('Error creating service:', error);
+                
+                // Add the new service to the local services object
+                if (!services[serviceToEdit.category]) {
+                    services[serviceToEdit.category] = [];
+                }
+                services[serviceToEdit.category].push(response);
             }
+            
+            // Force Svelte to update the view
+            services = services;
+            
+            // Close dialog and reset
+            isEditDialogOpen = false;
+            serviceToEdit = null;
+        } catch (error) {
+            console.error('Error saving service:', error);
         }
     }
 }
@@ -419,12 +428,11 @@ async function saveCategoryOrderToDatabase(newOrder: string[]) {
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="w-1/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subcategorie</th>
-                        <th class="w-1/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                        <th class="w-1/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prijs</th>
-                        <th class="w-1/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Eenheid</th>
-                        <th class="w-1/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
-                        <th class="w-1/6 px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acties</th>
+                        <th class="w-1/5 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subcategorie</th>
+                        <th class="w-1/5 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th class="w-1/5 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prijs</th>
+                        <th class="w-1/5 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Eenheid</th>
+                        <th class="w-1/5 px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acties</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -434,12 +442,11 @@ async function saveCategoryOrderToDatabase(newOrder: string[]) {
                             on:dragstart={(e) => handleDragStart(e, category, index)}
                             on:drop={(e) => handleDrop(e, category, index)}
                             on:dragover={handleDragOver}>
-                            <td class="w-1/6 px-6 py-4 whitespace-nowrap">{service.subcategory}</td>
-                            <td class="w-1/6 px-6 py-4 whitespace-nowrap">{service.type}</td>
-                            <td class="w-1/6 px-6 py-4 whitespace-nowrap">€{service.price}</td>
-                            <td class="w-1/6 px-6 py-4 whitespace-nowrap">{service.unit}</td>
-                            <td class="w-1/6 px-6 py-4 whitespace-nowrap">{service.order}</td>
-                            <td class="w-1/6 px-6 py-4 whitespace-nowrap text-right">
+                            <td class="w-1/5 px-6 py-4 whitespace-nowrap">{service.subcategory}</td>
+                            <td class="w-1/5 px-6 py-4 whitespace-nowrap">{service.type}</td>
+                            <td class="w-1/5 px-6 py-4 whitespace-nowrap">€{service.price}</td>
+                            <td class="w-1/5 px-6 py-4 whitespace-nowrap">{service.unit}</td>
+                            <td class="w-1/5 px-6 py-4 whitespace-nowrap text-right">
                                 <div class="flex justify-end gap-2">
                                     <button on:click={() => duplicateService(category, index)} 
                                         class="p-2 rounded-md border text-sm hover:bg-gray-100">
@@ -463,6 +470,31 @@ async function saveCategoryOrderToDatabase(newOrder: string[]) {
                             </td>
                         </tr>
                     {/each}
+                    <!-- Add new row for adding items -->
+                    <tr class="hover:bg-gray-50">
+                        <td colspan="5" class="px-6 py-4">
+                            <button 
+                                on:click={() => {
+                                    serviceToEdit = {
+                                        subcategory: '',
+                                        type: '',
+                                        price: '',
+                                        unit: '',
+                                        tasks: [],
+                                        category,
+                                        order: `${Object.keys(services).indexOf(category) + 1}.${serviceList.length + 1}`
+                                    };
+                                    isEditDialogOpen = true;
+                                }}
+                                class="w-full text-left text-sm text-gray-600 hover:text-gray-900 flex items-center gap-2"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                </svg>
+                                Nieuwe dienst toevoegen
+                            </button>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -493,10 +525,6 @@ async function saveCategoryOrderToDatabase(newOrder: string[]) {
                         <option value="uur">uur</option>
                     </select>
                     <CreateTasks bind:tasks={serviceToEdit.tasks} />
-
-                    <input type="string" placeholder="Order" 
-                        bind:value={serviceToEdit.order} 
-                        class="w-full px-3 py-2 rounded-md border" />
                     
                     <div class="flex gap-2 justify-end mt-6">
                         <button on:click={() => isEditDialogOpen = false} 

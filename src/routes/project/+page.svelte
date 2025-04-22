@@ -9,6 +9,7 @@
   import * as Table from "$lib/components/ui/table";
   import { chatwootContact } from '../../stores/userStore';
   import type { Project } from '$lib/types';
+  import CreateProject from '../../components/createProject.svelte';
 
   const databases = new Databases(client);
   const databaseId = 'PriceCalc';
@@ -35,6 +36,7 @@
   ];
 
   let selectedPhase = '';
+  let isProjectModalOpen = false;
 
   async function fetchProjects(contact?: any) {
     console.log(contact)
@@ -47,6 +49,10 @@
       
       if (selectedPhase) {
         queries.push(Query.equal('fase', selectedPhase));
+      }
+
+      if(filterValue) {
+        queries.push(Query.search('search', filterValue));
       }
       
       const response = await databases.listDocuments(databaseId, collectionId, queries);
@@ -63,6 +69,7 @@
   }
 
   $: fetchProjects($chatwootContact)
+  $: fetchProjects(filterValue);
 
   onMount(fetchProjects);
 
@@ -96,21 +103,35 @@
     }
     fetchProjects();
   }
+
+  function handleCreateProject(event) {
+    const { clientName } = event.detail;
+    // Handle the project creation here
+    console.log('Creating project for client:', clientName);
+  }
 </script>
 
 <div class="flex flex-col gap-4 table-container">
   <h1>Projecten</h1>
   <div class="flex justify-between items-center">
-  
-   <Input
-    class="max-w-sm"
-    placeholder="Filter projects..."
-    type="text"
-    bind:value={filterValue}
-  />
-     <a href="/project/edit/new"><button class="border border-black rounded-md px-4 py-2">Project aanmaken</button></a>
+    <Input
+      class="max-w-sm"
+      placeholder="Filter projects..."
+      type="text"
+      bind:value={filterValue}
+    />
+    <button 
+      class="border border-black rounded-md px-4 py-2"
+      on:click={() => isProjectModalOpen = true}
+    >
+      Project aanmaken
+    </button>
+  </div>
 
-</div>
+  <CreateProject 
+    bind:isOpen={isProjectModalOpen}
+    on:createProject={handleCreateProject}
+  />
 
   <div class="rounded-md border">
     <Table.Root>
