@@ -43,31 +43,31 @@ export async function POST({ request }) {
             email: projectData.client.email,
             name: projectData.client.name,
             role: "SIGNER",
-            // signingOrder: null
-            fields: [
-              {
-                type: "SIGNATURE",
-                pageNumber: 1,
-                pageX: 10,
-                pageY: 10,
-                width: 10,
-                height: 10,
-              }
-            ],
-
-          }
+            signingOrder: 0
+            
+          },
+          // {
+          //   email: "info@jhfbouw.com",
+          //   name: "JHF Bouw",
+          //   role: "CC",
+          // },
+          // {
+          //   email: "administratie@jhfbouw.com",
+          //   name: "JHF Bouw Administratie",
+          //   role: "CC",
+          // },
+          // {
+          //   email: "j.fenenga@jhfbouw.com",
+          //   name: "John Fenenga",
+          //   role: "CC",
+          // }
         ],
         meta: {
-       //  timezone: "Europe/Amsterdam",
-       //  dateFormat: "yyyy-MM-dd HH:mm",
+         timezone: "Europe/Amsterdam",
+        //  dateFormat: "yyyy-MM-dd HH:mm",
      //    language: "en",
-        //  subject: `Offerte O-${projectData.projectNumber}`,
-        //  message: "Hierbij ontvangt u de offerte. Graag deze digitaal ondertekenen.",
-        //   cc: [
-        //     "info@jhfbouw.com",
-        //     "administratie@jhfbouw.com",
-        //     "j.fenenga@jhfbouw.com"
-        //   ],
+          subject: `Offerte O-${projectData.projectNumber}`,
+          message: "Hierbij ontvangt u de offerte. Graag deze digitaal ondertekenen.",
         }
       })
     });
@@ -93,6 +93,83 @@ export async function POST({ request }) {
 
     if (!response.ok) {
       throw new Error(`Upload failed with status: ${response.status}`);
+    }
+
+    // Log the document data to see the structure
+    console.log('Document data:', JSON.stringify(documentData, null, 2));
+
+    // Extract the recipient ID - ensure it's a number
+    const recipientId = documentData.recipients && documentData.recipients.length > 0 
+      ? parseInt(documentData.recipients[0].recipientId, 10) 
+      : null;
+    
+    if (!recipientId) {
+      throw new Error('No valid recipient ID found in the document data');
+    }
+    console.log(recipientId);
+    // Add fields to the document
+    console.log('documentId', documentData.documentId);
+    const addFieldsResponse = await fetch(`${DOCUMENSO_BASE_URL}/documents/${documentData.documentId}/fields`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${VITE_DOCUMENSO_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify([
+        {
+          recipientId: recipientId,
+          type: "SIGNATURE",
+          pageNumber: 1, // First page
+          pageX: 10, // X position on the page
+          pageY: 33, // Y position on the page
+          pageWidth: 25, // Width of the signature field
+          pageHeight: 5, // Height of the signature field,
+          // fieldMeta: {
+            // label: "Handtekening",
+            // required: true
+          // }
+        },
+        // {
+        //   recipientId: recipientId,
+        //   type: "TEXT",
+        //   pageNumber: 1,
+        //   pageX: 400,
+        //   pageY: 800,
+        //   pageWidth: 200,
+        //   pageHeight: 50,
+        //   fieldMeta: {
+        //     label: "Datum",
+        //     placeholder: "DD-MM-YYYY",
+        //     required: true,
+        //     type: "text"
+        //   }
+        // }
+      ])
+    });
+
+    if (!addFieldsResponse.ok) {
+      const errorText = await addFieldsResponse.text();
+      console.error('Failed to add fields:', errorText);
+      throw new Error(`Failed to add fields: ${addFieldsResponse.status}`);
+    }
+
+    // Send the document to recipients
+    const sendDocumentResponse = await fetch(`${DOCUMENSO_BASE_URL}/documents/${documentData.documentId}/send`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${VITE_DOCUMENSO_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        sendEmail: true,
+        sendCompletionEmails: true
+      })
+    });
+
+    if (!sendDocumentResponse.ok) {
+      const errorText = await sendDocumentResponse.text();
+      console.error('Failed to send document:', errorText);
+      throw new Error(`Failed to send document: ${sendDocumentResponse.status}`);
     }
 
     return json({ success: true });
