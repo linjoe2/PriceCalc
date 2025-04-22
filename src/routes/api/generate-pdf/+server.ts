@@ -162,20 +162,36 @@ export async function POST({ request }) {
         //    .moveDown(1);
         doc.y = 350;
         // Add items if available
-        let counter = 0;
         const projects = JSON.parse(projectData.projects) || [];
         if (projects.length > 0) {
-            projects.forEach(project => {
+            projects.forEach((project: { 
+                items: Array<{ 
+                    price: string; 
+                    quantity: number;
+                    subcategory: string;
+                    type: string;
+                    category: string;
+                }>; 
+                name: string 
+            }, index: number) => {
                 if (project.items && project.items.length > 0) {
+                    // Calculate total price for this project
+                    const projectTotal = project.items.reduce((total: number, item: { 
+                        price: string; 
+                        quantity: number;
+                        subcategory: string;
+                        type: string;
+                        category: string;
+                    }) => {
+                        return total + (parseFloat(item.price) * item.quantity);
+                    }, 0);
 
                     // Add project items
                     project.items.forEach(item => {
-                        const itemPrice = parseFloat(item.price) * item.quantity;
-                    const description = `${counter}. ${item.subcategory} ${item.type} ${project.name}`;
-                    counter++;
+                        const description = `${index + 1}. ${item.subcategory} ${item.type} ${project.name}`;
                         doc.font(TimesNewRomanBold)
                            .text(description)
-                          // Check for tasks in project.tasks that match this item
+                           // Check for tasks in project.tasks that match this item
                         const itemTasks = projectData.tasks.filter(task => 
                             task.subcategory === item.subcategory && 
                             task.type === item.type &&
@@ -186,16 +202,13 @@ export async function POST({ request }) {
                             doc.font(TimesNewRoman)
                                .text('* ' + task.description, { width: 450 })
                         });
- doc
- .moveDown(0.5)
- .font(TimesNewRomanBold)
- .text(`Subtotaal materiaal en arbeid: € ${formatPrice(itemPrice)}`, { align: 'right' })
- .font(TimesNewRoman)
- .moveDown(0.5);
                     });
-                    doc.moveDown(0.5);
-                   
 
+                    doc.moveDown(0.5)
+                       .font(TimesNewRomanBold)
+                       .text(`Subtotaal materiaal en arbeid: € ${formatPrice(projectTotal)}`, { align: 'right' })
+                       .font(TimesNewRoman)
+                       .moveDown(1);
                 }
             });
         } else {
@@ -367,7 +380,7 @@ export async function POST({ request }) {
            .text('Totaal:', col1, y, { width: 190 })
            .text(`€ ${formatPrice(totalPrice)}`, col2, y, { width: colWidth, align: 'left' })
         //    .text(`€ 0,00`, col3, y, { width: colWidth, align: 'left' })
-        if(projectData.client.type === 'BedrijfZonderBTW'){
+        if(projectData.client.type === 'BedrijfZonderBTW' || projectData.client.type === 'Bedrijf'){
            doc.text(`€ 0,00`, col4, y, { width: colWidth, align: 'left' })
            }else{
            doc.text(`€ ${formatPrice(totalPrice * 0.21)}`, col4, y, { width: colWidth, align: 'left' })
