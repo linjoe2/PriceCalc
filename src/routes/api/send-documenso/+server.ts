@@ -66,8 +66,8 @@ export async function POST({ request }) {
          timezone: "Europe/Amsterdam",
         //  dateFormat: "yyyy-MM-dd HH:mm",
      //    language: "en",
-          subject: `Offerte O-${projectData.projectNumber}`,
-          message: "Hierbij ontvangt u de offerte. Graag deze digitaal ondertekenen.",
+          subject: `Offerte O-${projectData.projectNumber} van JHF Bouw`,
+          message: "Hierbij ontvangt u de offerte. Bij akkord graag deze digitaal ondertekenen.",
         }
       })
     });

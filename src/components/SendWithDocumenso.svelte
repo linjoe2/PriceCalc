@@ -14,13 +14,13 @@
       });
 
       if (!response.ok) {
-        throw new Error('Failed to send document');
+        throw new Error('Document niet succesvol verstuurd');
       }
 
-      alert('Document successfully sent for signing!');
+      alert('Document succesvol verstuurd!');
     } catch (error) {
       console.error('Error sending document:', error);
-      alert('Error sending document. Please try again.');
+      alert('Error bij het versturen van het document. Probeer het opnieuw.');
     }
   }
 </script>

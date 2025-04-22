@@ -7,10 +7,11 @@ export async function POST({ request }) {
   try {
     // Verify the webhook secret
     const authHeader = request.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.substring(7) !== WEBHOOK_SECRET) {
-      console.error('Invalid webhook secret');
-      return json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    console.log("authHeader", authHeader);
+    // if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.substring(7) !== WEBHOOK_SECRET) {
+    //   console.error('Invalid webhook secret');
+    //   return json({ error: 'Unauthorized' }, { status: 401 });
+    // }
     
     // Get the raw body as text
     const rawBody = await request.text();
