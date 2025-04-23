@@ -35,19 +35,40 @@ async function fetchServices() {
     try {
         const response = await databases.listDocuments(databaseId, collectionId, [Query.limit(100), Query.offset(0)]);
         console.log(response);
-        services = response.documents.reduce((acc, doc, index) => {
+        services = response.documents.reduce((acc, doc) => {
             const { category, subcategory, type, price, unit, $id, tasks, order } = doc;
             if (!acc[category]) {
                 acc[category] = [];
             }
-            acc[category].push({ subcategory, type, price, unit, $id, tasks, order });
+            acc[category].push({ 
+                subcategory, 
+                type, 
+                price, 
+                unit, 
+                $id, 
+                tasks, 
+                order: parseFloat(order) // Ensure order is a number
+            });
             return acc;
         }, {});
 
         // Sort categories based on the order of the first item in each category
         services = Object.fromEntries(
-            Object.entries(services).sort(([, a], [, b]) => a[0].order - b[0].order)
+            Object.entries(services).sort(([, a], [, b]) => {
+                const aOrder = parseFloat(a[0]?.order || '0');
+                const bOrder = parseFloat(b[0]?.order || '0');
+                return aOrder - bOrder;
+            })
         );
+
+        // Sort items within each category
+        for (const category in services) {
+            services[category].sort((a, b) => {
+                const aOrder = parseFloat(a.order || '0');
+                const bOrder = parseFloat(b.order || '0');
+                return aOrder - bOrder;
+            });
+        }
 
         console.log(services);
     } catch (error) {
@@ -284,9 +305,8 @@ function handleDrop(event: DragEvent, targetCategory: string, targetIndex: numbe
 async function saveOrderChangesToDatabase(category: string) {
     try {
         for (const service of services[category]) {
-            console.log(service.order);
             await databases.updateDocument(databaseId, collectionId, service.$id, {
-                order: JSON.stringify(service.order)
+                order: service.order // Don't stringify the order
             });
         }
         console.log(`Order changes saved for category: ${category}`);
@@ -342,7 +362,11 @@ async function duplicateService(category: string, index: number) {
 // Ensure services are sorted by order before rendering
 $: {
     for (const category in services) {
-        services[category].sort((a, b) => a.order - b.order);
+        services[category].sort((a, b) => {
+            const aOrder = parseFloat(a.order || '0');
+            const bOrder = parseFloat(b.order || '0');
+            return aOrder - bOrder;
+        });
     }
 }
 
@@ -391,11 +415,11 @@ async function saveCategoryOrderToDatabase(newOrder: string[]) {
                 // Update the order index for each service
                 const categoryIndex = i + 1;
                 const subcategoryIndex = j + 1;
-                service.order = `${categoryIndex}.${subcategoryIndex}`;
+                service.order = parseFloat(`${categoryIndex}.${subcategoryIndex}`);
 
                 // Save the updated order to the database
                 await databases.updateDocument(databaseId, collectionId, service.$id, {
-                    order: service.order
+                    order: service.order // Don't stringify the order
                 });
             }
         }

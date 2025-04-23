@@ -46,7 +46,7 @@
     try {
         const response = await databases.listDocuments(databaseId, itemsCollectionId, [Query.limit(100),Query.offset(0)]);
         services = response.documents.reduce((acc: Record<string, Service[]>, doc) => {
-            const { category, subcategory, type, price, unit, tasks } = doc;
+            const { category, subcategory, type, price, unit, tasks, order } = doc;
             if (!acc[category]) {
                 acc[category] = [];
                 // Initialize calculations for this category
@@ -65,10 +65,30 @@
                 type, 
                 price, 
                 unit, 
-                tasks 
+                tasks,
+                order: parseFloat(order || '0') // Ensure order is a number
             });
             return acc;
         }, {});
+
+        // Sort categories based on the order of the first item in each category
+        services = Object.fromEntries(
+            Object.entries(services).sort(([, a], [, b]) => {
+                const aOrder = parseFloat(a[0]?.order || '0');
+                const bOrder = parseFloat(b[0]?.order || '0');
+                return aOrder - bOrder;
+            })
+        );
+
+        // Sort items within each category
+        for (const category in services) {
+            services[category].sort((a, b) => {
+                const aOrder = parseFloat(a.order || '0');
+                const bOrder = parseFloat(b.order || '0');
+                return aOrder - bOrder;
+            });
+        }
+
         console.log(response)
 
         if (projectId === "new") {
@@ -140,6 +160,19 @@
         console.error('Error:', error);
     }
   });
+
+  // Add a reactive statement to ensure items stay sorted
+  $: {
+    for (const category in services) {
+        if (services[category]) {
+            services[category].sort((a, b) => {
+                const aOrder = parseFloat(a.order || '0');
+                const bOrder = parseFloat(b.order || '0');
+                return aOrder - bOrder;
+            });
+        }
+    }
+  }
 
   let showInvoice = false;
 

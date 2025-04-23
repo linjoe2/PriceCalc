@@ -95,6 +95,7 @@ export interface Service {
     isEditing: boolean;
     tasks: Task[];
     isOpen: boolean;
+    order?: string;
 }
 
 export interface Calculation {

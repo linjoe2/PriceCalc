@@ -128,7 +128,7 @@ export async function POST({ request }) {
        if(projectData.type !== 'particulier'){
         doc.fontSize(12)
         .font(TimesNewRomanBold)
-        .text(`werkadress:`)
+        .text(`Werk adres:`)
         .font(TimesNewRoman)
         .text(`${projectData.name || ''}`)
         .text(`${projectData.adress || ''}`)
@@ -185,10 +185,12 @@ export async function POST({ request }) {
                     }) => {
                         return total + (parseFloat(item.price) * item.quantity);
                     }, 0);
-
+                    doc
+                    .font(TimesNewRomanBold)
+                    .text(`${index + 1}. ${project.name}`);
                     // Add project items
                     project.items.forEach(item => {
-                        const description = `${index + 1}. ${item.subcategory} ${item.type} ${project.name}`;
+                        const description = `${item.subcategory} ${item.type}`;
                         doc.font(TimesNewRomanBold)
                            .text(description)
                            // Check for tasks in project.tasks that match this item
@@ -396,12 +398,7 @@ export async function POST({ request }) {
         .moveDown(1);
         doc.text("Met vriendelijke groet,")
         .moveDown(1);
-        doc.text("John Fenenga | Eigenaar")
-        doc.text("JHF Bouw B.V.")
-        doc.text("020-7820772")
-        doc.text("info@jhfbouw.com")
-        .moveDown(1);
-        try {
+         try {
             doc.image(handtekening, 50, doc.y, {
                 fit: [500, 50],  // Adjust size as needed
                 align: 'left'
@@ -410,6 +407,12 @@ export async function POST({ request }) {
             console.error('Error loading logo:', error);
             // Continue without logo if it fails to load
         }
+        doc.text("John Fenenga | Eigenaar")
+        doc.text("JHF Bouw B.V.")
+        doc.text("020-7820772")
+        doc.text("info@jhfbouw.com")
+        .moveDown(1);
+       
         // Validity notice at the bottom
 
 const range = doc.bufferedPageRange();
