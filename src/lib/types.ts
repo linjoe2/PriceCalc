@@ -1,9 +1,7 @@
 export interface Task {
-    $id?: string;
+    id: string;
+    name: string;
     description: string;
-    completed: boolean;
-    category: string;
-    subcategory: string;
 }
 
 export interface Client {
@@ -84,18 +82,28 @@ export interface Task {
   }
 
 export interface Service {
-    id?: string;
-    name: string;
-    price: string;
-    description: string;
-    unit: string;
-    category: string;
+    $id?: string;
     subcategory: string;
     type: string;
-    isEditing: boolean;
-    tasks: Task[];
-    isOpen: boolean;
-    order?: string;
+    price: string | number;
+    unit: string;
+    tasks: string | Task[];
+    category?: string;
+    order?: string | number;
+}
+
+export interface Services {
+    [category: string]: Service[];
+}
+
+export interface ServiceToDelete {
+    category: string;
+    index: number;
+}
+
+export interface ServiceToEdit extends Service {
+    category: string;
+    index: number;
 }
 
 export interface Calculation {
