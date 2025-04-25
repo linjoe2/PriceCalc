@@ -198,18 +198,6 @@
         i => i.category === category && i.subcategory === item.subcategory && i.type === item.type
       );
       
-      // Calculate quantity based on measurements or amount
-      let quantity = 1;
-      if (calculations[category]) {
-        if (item.unit === "m²") {
-          quantity = (calculations[category].length || 0) * (calculations[category].width || 0);
-        } else if (item.unit === "m¹") {
-          quantity = calculations[category].length || 0;
-        } else {
-          quantity = calculations[category].length || 1;
-        }
-      }
-      
       if (index === -1) {
         // Parse tasks from the tasks field if it exists
         let initialTasks = [];
@@ -230,7 +218,7 @@
           category,
           ...item,
           price: typeof item.price === 'string' && item.price !== 'custom' ? parseFloat(item.price) : item.price,
-          quantity: quantity,
+          quantity: 1, // Set initial quantity to 1
           tasks: initialTasks
         };
         project.items = [...(project.items || []), newItem];
@@ -531,68 +519,6 @@
         
         {#if openCategories[project.name]?.[category] || items.some((item: Item) => project.items.some((selected: Item) => selected.category === category && selected.subcategory === item.subcategory && selected.type === item.type))}
           <div class="p-4 pt-0 space-y-4">
-            {#if items[0].unit === "m²" || items[0].unit === "m¹"}
-              <div class="space-y-3">
-                <h3 class="font-medium">
-                  {items[0].unit === "m²" ? "Oppervlakte" : "Lengte"}:
-                </h3>
-                <div>
-                  <label for="measurement-input" class="block text-sm text-gray-600">
-                    {items[0].unit === "m²" ? "Oppervlakte (m²)" : "Lengte (m¹)"}
-                  </label>
-                  <input 
-                    id="measurement-input"
-                    type="number" 
-                    min="1"
-                    bind:value={calculations[category].length}
-                    on:input={(event) => {
-                      calculations[category] = calculations[category] || {};
-                      calculations[category].length = parseFloat((event.target as HTMLInputElement).value);
-                      // Update quantities for selected items in this category
-                      project.items = project.items.map((item: any) => {
-                        if (item.category === category) {
-                          return {
-                            ...item,
-                            quantity: calculations[category].length || 1
-                          };
-                        }
-                        return item;
-                      });
-                    }}
-                    class="w-full p-2 border rounded-md"
-                  />
-                </div>
-              </div>
-            {:else}
-              <div class="space-y-3">
-                <h3 class="font-medium">Aantal:</h3>
-                <div>
-                  <label for="quantity-input" class="block text-sm text-gray-600">Aantal stuks</label>
-                  <input 
-                    id="quantity-input"
-                    type="number" 
-                    bind:value={calculations[category].length}
-                    min="1"
-                    on:input={(event) => {
-                      calculations[category] = calculations[category] || {};
-                      calculations[category].length = parseFloat((event.target as HTMLInputElement).value);
-                      // Update quantities for selected items in this category
-                      project.items = project.items.map((item: any) => {
-                        if (item.category === category) {
-                          return {
-                            ...item,
-                            quantity: calculations[category].length || 1
-                          };
-                        }
-                        return item;
-                      });
-                    }}
-                    class="w-full p-2 border rounded-md"
-                  />
-                </div>
-              </div>
-            {/if}
-
             {#each items as item}
               <div class="space-y-2">
                 <div 
@@ -618,6 +544,7 @@
                       {#if item.isEditing}
                         <input 
                           type="number"
+                          data-item-id="{item.type}-{item.subcategory}"
                           bind:value={item.price}
                           on:input={(event) => {
                             let price = (event.target as HTMLInputElement).value;
@@ -637,7 +564,14 @@
                         on:keydown={(event) => event.key === 'Enter' && (item.isEditing = false)}
                         />
                       {:else}
-                        <div on:click|stopPropagation={() => item.isEditing = true}>
+                        <div on:click|stopPropagation={() => {
+                          item.isEditing = true;
+                          // Use setTimeout to ensure the input is rendered before focusing
+                          setTimeout(() => {
+                            const input = document.querySelector(`input[data-item-id="${item.type}-${item.subcategory}"]`) as HTMLInputElement;
+                            if (input) input.focus();
+                          }, 0);
+                        }}>
                           €{typeof item.price === 'number' ? item.price.toLocaleString('nl-NL', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : item.price}{#if item.unit !== "custom"}/{item.unit}{/if}
                         </div>
                       {/if}
@@ -646,6 +580,29 @@
                 </div>
 
                 {#if project.items.some((i: Item) => i.category === category && i.subcategory === item.subcategory && i.type === item.type)}
+                  <div class="flex items-center gap-2 ml-4">
+                    <label class="text-sm text-gray-600">Aantal:</label>
+                    <input 
+                      type="number" 
+                      min="1"
+                      value={project.items.find((i: Item) => i.category === category && i.subcategory === item.subcategory && i.type === item.type)?.quantity || 1}
+                      on:input={(event) => {
+                        const quantity = parseFloat((event.target as HTMLInputElement).value);
+                        project.items = project.items.map((i: Item) => {
+                          if (i.category === category && i.subcategory === item.subcategory && i.type === item.type) {
+                            return {
+                              ...i,
+                              quantity: quantity
+                            };
+                          }
+                          return i;
+                        });
+                        projects = [...projects];
+                      }}
+                      class="w-24 p-1 border rounded-md"
+                    />
+                    <span class="text-sm text-gray-600">{item.unit}</span>
+                  </div>
                   <ProjectTask 
                     {project}
                     {category}
