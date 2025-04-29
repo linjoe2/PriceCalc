@@ -537,43 +537,80 @@
                         type="number"
                         bind:value={item.price}
                         class="w-32 p-1 border rounded-md text-right"
-                        on:blur={() => item.isEditing = false}
-                        use:clickOutside={() => item.isEditing = false}
+                        on:blur={() => {
+                          const projectItem = project.items.find(i => i.category === category && i.subcategory === item.subcategory && i.type === item.type);
+                          if (projectItem) projectItem.isEditing = false;
+                        }}
+                        use:clickOutside={() => {
+                          const projectItem = project.items.find(i => i.category === category && i.subcategory === item.subcategory && i.type === item.type);
+                          if (projectItem) projectItem.isEditing = false;
+                        }}
                       />
                     {:else}
-                      {#if item.isEditing}
-                        <input 
-                          type="number"
-                          data-item-id="{item.type}-{item.subcategory}"
-                          bind:value={item.price}
-                          on:input={(event) => {
-                            let price = (event.target as HTMLInputElement).value;
-                            project.items = project.items.map((item: Item) => {
-                              if (item.category === category) {
-                                console.log(price);
-                                return {
-                                ...item,
-                                price: price
-                              };
-                            }
-                            return item;
-                          });
-                        }}
-                        on:blur={() => item.isEditing = false}
-                        use:clickOutside={() => item.isEditing = false}
-                        on:keydown={(event) => event.key === 'Enter' && (item.isEditing = false)}
-                        />
-                      {:else}
+                      {#if project.items.find(i => i.category === category && i.subcategory === item.subcategory && i.type === item.type)}
                         <div on:click|stopPropagation={() => {
-                          item.isEditing = true;
-                          // Use setTimeout to ensure the input is rendered before focusing
-                          setTimeout(() => {
-                            const input = document.querySelector(`input[data-item-id="${item.type}-${item.subcategory}"]`) as HTMLInputElement;
-                            if (input) input.focus();
-                          }, 0);
+                          const projectItem = project.items.find(i => i.category === category && i.subcategory === item.subcategory && i.type === item.type);
+                          if (projectItem) {
+                            projectItem.isEditing = true;
+                            projects = [...projects];
+                            setTimeout(() => {
+                              const input = document.querySelector(`input[data-item-id="${item.type}-${item.subcategory}"]`) as HTMLInputElement;
+                              if (input) input.focus();
+                            }, 0);
+                          }
                         }}>
-                          €{typeof item.price === 'number' ? item.price.toLocaleString('nl-NL', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : item.price}{#if item.unit !== "custom"}/{item.unit}{/if}
+                          {#if project.items.find(i => i.category === category && i.subcategory === item.subcategory && i.type === item.type)?.isEditing}
+                            <input 
+                              type="number"
+                              data-item-id="{item.type}-{item.subcategory}"
+                              value={project.items.find(i => i.category === category && i.subcategory === item.subcategory && i.type === item.type)?.price}
+                              on:input={(event) => {
+                                let price = (event.target as HTMLInputElement).value;
+                                project.items = project.items.map((projectItem: Item) => {
+                                  if (projectItem.category === category && 
+                                      projectItem.subcategory === item.subcategory && 
+                                      projectItem.type === item.type) {
+                                    return {
+                                      ...projectItem,
+                                      price: price
+                                    };
+                                  }
+                                  return projectItem;
+                                });
+                                projects = [...projects];
+                              }}
+                              on:blur={() => {
+                                const projectItem = project.items.find(i => i.category === category && i.subcategory === item.subcategory && i.type === item.type);
+                                if (projectItem) {
+                                  projectItem.isEditing = false;
+                                  projects = [...projects];
+                                }
+                              }}
+                              use:clickOutside={() => {
+                                const projectItem = project.items.find(i => i.category === category && i.subcategory === item.subcategory && i.type === item.type);
+                                if (projectItem) {
+                                  projectItem.isEditing = false;
+                                  projects = [...projects];
+                                }
+                              }}
+                              on:keydown={(event) => {
+                                if (event.key === 'Enter') {
+                                  const projectItem = project.items.find(i => i.category === category && i.subcategory === item.subcategory && i.type === item.type);
+                                  if (projectItem) {
+                                    projectItem.isEditing = false;
+                                    projects = [...projects];
+                                  }
+                                }
+                              }}
+                            />
+                          {:else}
+                            €{typeof project.items.find(i => i.category === category && i.subcategory === item.subcategory && i.type === item.type)?.price === 'number' 
+                              ? project.items.find(i => i.category === category && i.subcategory === item.subcategory && i.type === item.type)?.price.toLocaleString('nl-NL', {minimumFractionDigits: 2, maximumFractionDigits: 2}) 
+                              : project.items.find(i => i.category === category && i.subcategory === item.subcategory && i.type === item.type)?.price}{#if item.unit !== "custom"}/{item.unit}{/if}
+                          {/if}
                         </div>
+                      {:else}
+                        €{typeof item.price === 'number' ? item.price.toLocaleString('nl-NL', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : item.price}{#if item.unit !== "custom"}/{item.unit}{/if}
                       {/if}
                     {/if}
                   </span>
