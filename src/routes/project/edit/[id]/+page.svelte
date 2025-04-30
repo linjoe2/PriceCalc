@@ -92,7 +92,7 @@
 
         console.log(response)
 
-        if (projectId === "new") {
+        if (projectId === "new" && !projectNumber) {
             console.log("New project creation initiated.");
             // Fetch all projects to determine the next project number
             const projectsResponse = await databases.listDocuments(
@@ -114,6 +114,7 @@
             
             // Format: YYYY001, YYYY002, etc.
             projectNumber = `${currentYear}${counter.toString().padStart(3, '0')}`;
+            console.log('Generated new project number:', projectNumber);
         } else {
             const result = await databases.getDocument(databaseId, projectsCollectionId, projectId);
             result.items = JSON.parse(result.items);
@@ -126,6 +127,10 @@
             phone = result.phone || '';
             email = result.email || '';
             adressString = result.adress || '';
+            // Set project number first to ensure it's preserved
+            projectNumber = result.projectNumber;
+            console.log('Loaded existing project number:', projectNumber);
+            
             // Initialize terms from project data
             const projectTerms = JSON.parse(result.terms || '[]');
             // Create a map of project terms by text for easy lookup
@@ -290,7 +295,7 @@
         );
         let loggedInUser = await account.get();
         const projectData: Partial<Project> = {
-            projectNumber,
+            projectNumber: projectNumber,
             items: JSON.stringify(allItems),
             adress: adressString,
             name: name,
@@ -323,7 +328,8 @@
             projectData.createdBy = `${loggedInUser.name}`;
         }
 
-        console.log(projectData);
+        console.log('Saving project with number:', projectNumber);
+        console.log('Project data:', projectData);
         
         // Generate tasks from all items across all projects
         projectData.tasks = allItems.flatMap(item => {
@@ -339,8 +345,6 @@
             }));
         });
 
-        console.log(projectData);
-        
         // Check if projectId is "new" to create a new document, otherwise update the existing one
         const response = projectId === "new"
             ? await databases.createDocument(databaseId, projectsCollectionId, 'unique()', projectData)
