@@ -41,6 +41,7 @@
   let name = '';
   let phone = '';
   let email = '';
+  let projectData: Project | null = null;
 
   onMount(async () => {
     try {
@@ -125,6 +126,36 @@
             phone = result.phone || '';
             email = result.email || '';
             adressString = result.adress || '';
+            // Initialize terms from project data
+            const projectTerms = JSON.parse(result.terms || '[]');
+            // Create a map of project terms by text for easy lookup
+            const projectTermsMap = new Map(projectTerms.map(term => [term.text, term]));
+            // Load all terms from database
+            const termsResponse = await databases.listDocuments(databaseId, '67a280b30007409faa24');
+            terms = termsResponse.documents.map(doc => ({
+                ...doc,
+                checked: projectTermsMap.get(doc.text)?.checked || false,
+                order: doc.order || 0
+            }));
+            paymentSchedule = JSON.parse(result.paymentSchedule || '{"initial": 50, "during": 45, "final": 5}');
+            // Set project data
+            projectData = {
+                ...result,
+                items: JSON.parse(result.items),
+                projects: JSON.parse(result.projects),
+                terms: JSON.parse(result.terms || '[]'),
+                paymentSchedule: JSON.parse(result.paymentSchedule || '{"initial": 50, "during": 45, "final": 5}'),
+                name: result.name || '',
+                client: result.client,
+                fase: result.fase || 'opstellen offerte',
+                tasks: result.tasks || [],
+                opmerkingen: result.opmerkingen || '',
+                notities: result.notities || '',
+                uploadedImages: result.uploadedImages || [],
+                projectNumber: result.projectNumber || '',
+                adress: result.adress || '',
+                progress: result.progress || 0
+            };
             //result.items[].price = result.items[].price;
             console.log(result.items);
             // each item in result.items
@@ -672,7 +703,7 @@
       Voeg dak toe
     </button>
 
-    <TermsComponent bind:terms={terms} bind:projects={projects} />
+    <TermsComponent bind:terms={terms} bind:projectData={projectData} />
 
     <CreatePaymentSchedule bind:totalPrice={totalPrice} bind:paymentSchedule={paymentSchedule} />
 

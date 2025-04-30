@@ -42,6 +42,7 @@ export interface Project {
     projectNumber: string;
     adress?: string;
     progress?: number;
+    description?: string;
 }
 
 export interface PaymentSchedule {
@@ -61,8 +62,9 @@ export interface UploadedImage {
 export interface Term {
     $id?: string;
     text: string;
-    projectId: string;
     checked: boolean;
+    projectId?: string;
+    order: number;
 }
 
 export interface UploadedImage {
