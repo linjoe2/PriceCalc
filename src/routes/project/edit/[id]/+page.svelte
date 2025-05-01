@@ -771,13 +771,13 @@
     <input 
       type="text" 
       bind:value={newProjectName} 
-      placeholder="Vul daknaam in" 
+      placeholder="Vul onderdeel naam in" 
       class="mt-2 p-2 border rounded-md"
       on:keypress={(event) => event.key === 'Enter' && addProject()}
     />
    
     <button class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" on:click={addProject}>
-      Voeg dak toe
+      Onderdeel toevoegen
     </button>
 
     <TermsComponent bind:terms={terms} bind:projectData={projectData} />
