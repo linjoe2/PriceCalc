@@ -171,6 +171,7 @@ export async function POST({ request }) {
                     subcategory: string;
                     type: string;
                     category: string;
+                    projectName: string;
                 }>; 
                 name: string 
             }, index: number) => {
@@ -182,22 +183,26 @@ export async function POST({ request }) {
                         subcategory: string;
                         type: string;
                         category: string;
+                        projectName: string;
                     }) => {
                         return total + (parseFloat(item.price) * item.quantity);
                     }, 0);
                     doc
                     .font(TimesNewRomanBold)
-                    .text(`${index + 1}. ${project.name}`);
+                    .text(`${index + 1}. ${project.items[0].subcategory} ${project.items[0].type} ${project.name}`);
                     // Add project items
-                    project.items.forEach(item => {
+                    project.items.forEach((item, index) => {
                         const description = `${item.subcategory} ${item.type}`;
+                        if(index !== 0){
                         doc.font(TimesNewRomanBold)
                            .text(description)
-                           // Check for tasks in project.tasks that match this item
+                        }
+                        // Check for tasks in project.tasks that match this item
                         const itemTasks = projectData.tasks.filter(task => 
                             task.subcategory === item.subcategory && 
                             task.type === item.type &&
-                            task.category === item.category
+                            task.category === item.category &&
+                            task.projectName === project.name // Match against project name instead of item.projectName
                         );
 
                         itemTasks.forEach(task => {

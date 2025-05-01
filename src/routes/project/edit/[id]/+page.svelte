@@ -255,7 +255,8 @@
           ...item,
           price: typeof item.price === 'string' && item.price !== 'custom' ? parseFloat(item.price) : item.price,
           quantity: 1, // Set initial quantity to 1
-          tasks: initialTasks
+          tasks: initialTasks,
+          projectName: project.name // Add project name to the item
         };
         project.items = [...(project.items || []), newItem];
       } else {
@@ -332,18 +333,20 @@
         console.log('Project data:', projectData);
         
         // Generate tasks from all items across all projects
-        projectData.tasks = allItems.flatMap(item => {
-            if (!item.tasks) return [];
-            const tasksArray = typeof item.tasks === 'string' ? JSON.parse(item.tasks) : item.tasks;
-            return tasksArray.map(task => ({
-                category: item.category,
-                subcategory: item.subcategory,
-                type: item.type,
-                completed: false,
-                description: task.description,
-                projectName: item.projectName // Include project name with each item
-            }));
-        });
+        projectData.tasks = projects.flatMap(project => 
+            project.items.flatMap(item => {
+                if (!item.tasks) return [];
+                const tasksArray = typeof item.tasks === 'string' ? JSON.parse(item.tasks) : item.tasks;
+                return tasksArray.map(task => ({
+                    category: item.category,
+                    subcategory: item.subcategory,
+                    type: item.type,
+                    completed: false,
+                    description: task.description,
+                    projectName: project.name // Use the project name directly from the project
+                }));
+            })
+        );
 
         // Check if projectId is "new" to create a new document, otherwise update the existing one
         const response = projectId === "new"
