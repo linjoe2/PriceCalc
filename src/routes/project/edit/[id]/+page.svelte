@@ -475,7 +475,7 @@
   
     <div class="flex flex-col md:flex-row">
     <div class="md:w-1/2 border border-gray-300 rounded-md m-4 p-4">
-        <h2 class="text-lg font-medium">Klantgegevens</h2>
+        <h2 class="text-lg font-medium">Opdrachtgever</h2>
         <div class="relative">
           {#if projectId == "new"}
           <a on:click={() => {$selectedUser = null}}><Recycle class="absolute right-0 cursor-pointer" /></a>
@@ -525,7 +525,7 @@
       <div class="md:w-1/2 m-4">
         {#if $selectedUser?.type != "Prive"}
         <div class="border border-gray-300 rounded-md p-4">
-          <h2 class="text-lg font-medium">Betreft</h2>
+          <h2 class="text-lg font-medium">Werkadres</h2>
           
           <input type="text" bind:value={name} placeholder="Naam" class="w-full border rounded-md p-2 mt-2"/>
           {#if $selectedUser?.type != "Bedrijf"}
