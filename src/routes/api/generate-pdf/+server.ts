@@ -128,7 +128,7 @@ export async function POST({ request }) {
        if(projectData.type !== 'particulier'){
         doc.fontSize(12)
         .font(TimesNewRomanBold)
-        .text(`Werk adres:`)
+        .text(`Werkadres:`)
         .font(TimesNewRoman)
         .text(`${projectData.name || ''}`)
         .text(`${projectData.adress || ''}`)
@@ -386,7 +386,7 @@ export async function POST({ request }) {
            .font(TimesNewRomanBold)
            .text('Totaal:', col1, y, { width: 190 })
            .text(`€ ${formatPrice(totalPrice)}`, col2, y, { width: colWidth, align: 'left' })
-        //    .text(`€ 0,00`, col3, y, { width: colWidth, align: 'left' })
+           .text(`€ 0,00`, col3, y, { width: colWidth, align: 'left' })
         if(projectData.client.type === 'BedrijfZonderBTW' || projectData.client.type === 'Bedrijf'){
            doc.text(`€ 0,00`, col4, y, { width: colWidth, align: 'left' })
            }else{
