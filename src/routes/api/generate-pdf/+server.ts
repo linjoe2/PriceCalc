@@ -197,10 +197,10 @@ export async function POST({ request }) {
                     }, 0);
                     doc
                     .font(TimesNewRomanBold)
-                    .text(`${index + 1}. ${project.items[0].subcategory} ${project.items[0].type} ${project.name}`);
+                    .text(`${index + 1}.  ${project.items[0].subcategory} - ${project.items[0].type} - ${project.name}`);
                     // Add project items
                     project.items.forEach((item, index) => {
-                        const description = `${item.subcategory} ${item.type}`;
+                        const description = `${item.subcategory} - ${item.type}`;
                         if(index !== 0){
                         doc.font(TimesNewRomanBold)
                            .text(description)

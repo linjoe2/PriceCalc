@@ -16,6 +16,7 @@
   import SavingAnimation from "../../../../components/savingAnimation.svelte";
   import ProjectTask from '../../../../components/ProjectTask.svelte';
   import ClientSearch from '../../../../components/ClientSearch.svelte';
+  import { ArrowUp, ArrowDown } from 'lucide-svelte';
   let isSaving = false;
   let projectId = $page.params.id;
   const databases = new Databases(client);
@@ -403,7 +404,11 @@
 
   function addProject() {
     if (newProjectName.trim()) {
-      projects = [...projects, {name: newProjectName, items: []}]; // Add the new project name to the projects array
+      projects = [...projects, {
+        name: newProjectName, 
+        items: [],
+        isEditingName: false
+      }]; // Add the new project name to the projects array
       newProjectName = ''; // Clear the input field after adding
     }
   }
@@ -438,6 +443,34 @@
   }
 
   $: updateAddress(adress);
+
+  function moveProject(index: number, direction: 'up' | 'down') {
+    if ((direction === 'up' && index > 0) || (direction === 'down' && index < projects.length - 1)) {
+      const newProjects = [...projects];
+      const temp = newProjects[index];
+      if (direction === 'up') {
+        newProjects[index] = newProjects[index - 1];
+        newProjects[index - 1] = temp;
+      } else {
+        newProjects[index] = newProjects[index + 1];
+        newProjects[index + 1] = temp;
+      }
+      projects = newProjects;
+    }
+  }
+
+  function startEditingName(project: Project) {
+    project.isEditingName = true;
+    projects = [...projects];
+  }
+
+  function finishEditingName(project: Project, event: KeyboardEvent | FocusEvent) {
+    if (event instanceof KeyboardEvent && event.key !== 'Enter') {
+      return;
+    }
+    project.isEditingName = false;
+    projects = [...projects];
+  }
 </script>
   
     <div class="flex flex-col md:flex-row">
@@ -517,10 +550,47 @@
 
   <div class="w-full mx-auto p-4 space-y-2 flex flex-col gap-4"> 
     <!-- <UserSearch /> -->
-     {#each projects as project}
+     {#each projects as project, index}
       <div class="border rounded-lg p-2 bg-gray-100">
         <div class="flex justify-between items-center p-2">
-          <h1 class="text-lg font-medium">{project.name}</h1>
+          <div class="flex items-center gap-2">
+            <div class="flex flex-col">
+              <button 
+                class="text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                on:click={() => moveProject(index, 'up')}
+                disabled={index === 0}
+              >
+                <ArrowUp size={20} />
+              </button>
+              <button 
+                class="text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                on:click={() => moveProject(index, 'down')}
+                disabled={index === projects.length - 1}
+              >
+                <ArrowDown size={20} />
+              </button>
+            </div>
+            {#if project.isEditingName}
+              <input 
+                type="text" 
+                bind:value={project.name}
+                class="text-lg font-medium border rounded px-2 py-1"
+                on:blur={(e) => finishEditingName(project, e)}
+                on:keydown={(e) => finishEditingName(project, e)}
+                use:clickOutside={() => {
+                  project.isEditingName = false;
+                  projects = [...projects];
+                }}
+              />
+            {:else}
+              <h1 
+                class="text-lg font-medium cursor-pointer hover:text-blue-600"
+                on:click={() => startEditingName(project)}
+              >
+                {project.name}
+              </h1>
+            {/if}
+          </div>
           <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" on:click={() => removeProject(project.name)}>
             Verwijder
           </button>

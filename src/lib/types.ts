@@ -43,6 +43,7 @@ export interface Project {
     adress?: string;
     progress?: number;
     description?: string;
+    isEditingName?: boolean;
 }
 
 export interface PaymentSchedule {
