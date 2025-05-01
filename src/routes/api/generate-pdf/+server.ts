@@ -172,10 +172,18 @@ export async function POST({ request }) {
                     type: string;
                     category: string;
                     projectName: string;
+                    order?: number | string;
                 }>; 
                 name: string 
             }, index: number) => {
                 if (project.items && project.items.length > 0) {
+                    // Sort items by order if available
+                    project.items.sort((a, b) => {
+                        const aOrder = typeof a.order === 'string' ? parseFloat(a.order) : (a.order || 0);
+                        const bOrder = typeof b.order === 'string' ? parseFloat(b.order) : (b.order || 0);
+                        return aOrder - bOrder;
+                    });
+
                     // Calculate total price for this project
                     const projectTotal = project.items.reduce((total: number, item: { 
                         price: string; 
