@@ -22,25 +22,26 @@
             projectData.$id
         );
         
-        window.open(pdfUrl.toString(), '_blank');
-        const subject = "Offerte staat klaar";
-        const body = `Beste ${projectData.client.name} ${projectData.client.lastname} 
+        // Create a temporary link for PDF download
+        const link = document.createElement('a');
+        link.href = pdfUrl.toString();
+        link.target = '_blank';
+        link.click();
+        
+        console.log(projectData);
+        const subject = `O-${projectData.projectNumber} ${projectData.adress || projectData.client.adress + " "+  projectData.client.postcode + " "+ projectData.client.woonplaats}`;
+        const body = `Beste ${projectData.client.name}
 
+Hartelijk dank voor uw offerte aanvraag, met genoegen bieden wij u vrijblijvend onze offerte aan. Heeft u vragen of opmerkingen naar aanleiding van onze aanbieding, neem dan gerust contact met ons op.
+Indien u gebruik wenst te maken van onze offerte, verzoeken wij u vriendelijk het akkoord te verstrekken door eenvoudigweg met "akkoord" te reageren op deze e-mail.
 
-Hierbij ontvangt u onze offerte. 
-Als u gebruik wenst te maken van onze offerte willen wij u vriendelijk verzoeken eenvoudigweg met "akkoord" te reageren op deze e-mail. 
-Wij willen u vragen om de adressering op de offerte goed na te kijken, dit zal tevens als facturatieadres gebruikt worden. 
-Indien het adres niet juist is, gelieve dit z.s.m. per e-mail doorgeven zodat de gegevens aangepast kunnen worden. 
-De offerte is 30 dagen geldig, hierna zal de offerte komen te vervallen. 
- 
-Vertrouwende u zo voldoende te hebben geïnformeerd.
+Vertrouwende u voldoende te hebben geïnformeerd.
  
 
 Met vriendelijke groet,
  
 John Fenenga
 0614805120
-
 
 JHF Bouw BV – Dakdekkers
 Dukdalfweg 16
@@ -53,9 +54,14 @@ Dukdalfweg 16
         const encodedSubject = encodeURIComponent(subject);
         const encodedBody = encodeURIComponent(body);
         
-        const mailUrl= `mailto:${projectData.client.email || ''};${projectData.client.subcontractors?.email || ''}?subject=${encodedSubject}&body=${encodedBody}`;
-        window.open(mailUrl, '_blank');
-
+        const mailUrl= `mailto:${projectData.client.email||''};${projectData.client.subcontractors?.email||''}?subject=${encodedSubject}&body=${encodedBody}&cc=j.fenenga@jhfbouw.com`;
+        
+        // Create a temporary link for email
+        const mailLink = document.createElement('a');
+        mailLink.href = mailUrl;
+        mailLink.click();
+        
+        console.log(mailUrl);
     }
 </script>
 

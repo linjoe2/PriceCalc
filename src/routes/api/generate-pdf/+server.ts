@@ -82,10 +82,10 @@ export async function POST({ request }) {
         //
 
         // Add styled content to PDF
-        doc.font(TimesNewRomanBold)
-           .fontSize(32)
-           .text('Offerte', 60, 50)
-           .moveDown(0.5);
+        // doc.font(TimesNewRomanBold)
+        //    .fontSize(32)
+        //    .text('Offerte', 60, 50)
+        //    .moveDown(0.5);
 
 
         // Add company logo placeholder line
@@ -94,7 +94,7 @@ export async function POST({ request }) {
            .fontSize(14);
         
         // Client information section
-        const startY = doc.y;
+        const startY = 50;
         
         // Left column - Client details
         doc
@@ -320,7 +320,7 @@ export async function POST({ request }) {
            .text('Betalingscondities *:', col1, y, { width: 150 })
            .fontSize(11)
            doc.text('Excl. BTW', col2, y, { width: colWidth, align: 'left' })
-           if(projectData.client.type === 'BedrijfZonderBTW'){
+           if(projectData.client.type === 'Bouwbedrijf'){
            doc.text('BTW Verlegd', col4, y, { width: colWidth, align: 'left' })
            doc.text('Totaal', col5, y, { width: colWidth, align: 'left' })
            }else{
@@ -373,7 +373,7 @@ export async function POST({ request }) {
              y = doc.y;
             doc.text(payment.term, col1, y, { width: 190 })
                .text(`€ ${formatPrice(baseAmount)}`, col2, y, { width: colWidth, align: 'left' })
-               if(projectData.client.type === 'BedrijfZonderBTW'){
+               if(projectData.client.type === 'Bouwbedrijf'){
                doc.text(`€ 0,00`, col4, y, { width: colWidth, align: 'left' })
                doc.text(`€ ${formatPrice(baseAmount)}`, col5, y, { width: colWidth, align: 'left' })   
             }else{
@@ -395,7 +395,7 @@ export async function POST({ request }) {
            .text('Totaal:', col1, y, { width: 190 })
            .text(`€ ${formatPrice(totalPrice)}`, col2, y, { width: colWidth, align: 'left' })
            .text(`€ 0,00`, col3, y, { width: colWidth, align: 'left' })
-        if(projectData.client.type === 'BedrijfZonderBTW'){
+        if(projectData.client.type === 'Bouwbedrijf'){
            doc.text(`€ 0,00`, col4, y, { width: colWidth, align: 'left' })
            }else{
            doc.text(`€ ${formatPrice(totalPrice * 0.21)}`, col4, y, { width: colWidth, align: 'left' })
@@ -458,7 +458,7 @@ for( let i = range.start; i <  (range.start + range.count); i++) {
 
         // Save to Appwrite storage
         try {
-            const file = new File([pdfBuffer], `O-${projectData.projectNumber} ${projectData.client.adress} ${projectData.client.huisnummer} ${projectData.client.woonplaats}.pdf`, {
+            const file = new File([pdfBuffer], `O-${projectData.projectNumber} ${projectData.client.adress} ${projectData.client.woonplaats}.pdf`, {
                 type: 'application/pdf'
             });
 

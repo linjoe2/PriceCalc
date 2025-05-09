@@ -192,20 +192,6 @@
         
         <!-- Add bottom links for desktop menu -->
         <div class="mt-auto border-t px-2 pt-2 lg:px-4">
-          <a
-            href="/item"
-            class={`text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${activeRoute === 'item' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
-          >
-            <Package class="h-4 w-4" />
-            Diensten
-          </a>
-          <a
-            href="/terms"
-            class={`text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${activeRoute === 'terms' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
-          >
-            <FileText class="h-4 w-4" />
-            Voorwaarden
-          </a>
         </div>
       </div>
     </div>
@@ -274,22 +260,6 @@
           
           <!-- Add this new div for bottom links -->
           <div class="mt-auto border-t pt-2">
-            <a
-              href="/item"
-              on:click={closeSheet}
-              class={`text-muted-foreground hover:text-primary flex items-center gap-4 rounded-xl px-3 py-2 ${activeRoute === 'item' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
-            >
-              <Package class="h-5 w-5" />
-              Diensten
-            </a>
-            <a
-              href="/terms"
-              on:click={closeSheet}
-              class={`text-muted-foreground hover:text-primary flex items-center gap-4 rounded-xl px-3 py-2 ${activeRoute === 'terms' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
-            >
-              <FileText class="h-5 w-5" />
-              Voorwaarden
-            </a>
           </div>
         </Sheet.Content>
       </Sheet.Root>
@@ -312,6 +282,8 @@
           <DropdownMenu.Label>My Account</DropdownMenu.Label>
           <DropdownMenu.Separator />
           <DropdownMenu.Item><a href="/settings">Instellingen</a></DropdownMenu.Item>
+          <DropdownMenu.Item><a href="/item">Diensten</a></DropdownMenu.Item>
+          <DropdownMenu.Item><a href="/terms">Voorwaarden</a></DropdownMenu.Item>
           <DropdownMenu.Item>Support</DropdownMenu.Item>
           <DropdownMenu.Separator />
           <DropdownMenu.Item>Logout</DropdownMenu.Item>

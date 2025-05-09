@@ -52,7 +52,7 @@
     return sum + (price * item.quantity);
   }, 0) : 0;
 
-  $: totalPriceWithTax = projectData && projectData.client.businessname 
+  $: totalPriceWithTax = projectData && projectData.client.type === 'Bouwbedrijf' 
     ? totalPrice 
     : totalPrice * 1.21; // Add 21% tax if no business name
 
@@ -319,7 +319,7 @@
             </div>
           {/each}
           <div class="mt-4 pt-4 border-t border-gray-200">
-            {#if projectData.client.businessname}
+            {#if projectData.client.type === 'Bouwbedrijf'}
               <p class="text-lg font-semibold text-gray-700">BTW Verlegd</p>
             {:else}
               <p class="text-lg text-gray-700">Totaal (excl. BTW): <span class="font-semibold">€{formatEuro(totalPrice)}</span></p>

@@ -780,7 +780,7 @@
       Onderdeel toevoegen
     </button>
 
-    <TermsComponent bind:terms={terms} bind:projectData={projectData} />
+    <TermsComponent bind:terms={terms} bind:projects={projects} />
 
     <CreatePaymentSchedule bind:totalPrice={totalPrice} bind:paymentSchedule={paymentSchedule} />
 

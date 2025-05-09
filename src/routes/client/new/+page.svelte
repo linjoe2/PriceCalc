@@ -128,7 +128,7 @@
         <option value="Particulier">Particulier</option>
         <option value="VVE">VVE</option>
         <option value="Bedrijf">Bedrijf met BTW</option>
-        <option value="BedrijfZonderBTW">Bedrijf zonder BTW</option>
+        <option value="Bouwbedrijf">Bedrijf zonder BTW</option>
     </select>
     {#if type != 'Particulier'}
         <label for="bedrijfsnaam" class="block text-sm font-medium text-gray-700">Bedrijfsnaam:</label>

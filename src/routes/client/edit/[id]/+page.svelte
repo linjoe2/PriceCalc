@@ -125,8 +125,8 @@
             <option value="" disabled selected>Selecteer type klant</option>
             <option value="Particulier">Particulier</option>
             <option value="VVE">VVE</option>
-            <option value="Bedrijf">Bedrijf met BTW</option>
-            <option value="BedrijfZonderBTW">Bedrijf zonder BTW</option>
+            <option value="Bedrijf">Bedrijf</option>
+            <option value="Bouwbedrijf">Bouwbedrijf</option>
         </select>
     </div>
     

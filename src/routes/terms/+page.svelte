@@ -77,18 +77,26 @@
 
     async function updateTerm() {
         if(projects.length > 0) {
+            // When in project context, just update the local state
+            if (!editingTerm) return;
+            const index = terms.findIndex(t => t.$id === editingTerm.$id);
+            if (index !== -1) {
+                terms[index] = { ...editingTerm };
+                terms = [...terms]; // Trigger reactivity
+            }
             isEditing = false;
             editingTerm = null;
             return;
         }
         try {
+            if (!editingTerm?.$id) return;
             await databases.updateDocument(
                 databaseId,
                 collectionId,
-                editingTerm?.$id,
+                editingTerm.$id,
                 { 
-                    text: editingTerm?.text,
-                    checked: editingTerm?.checked 
+                    text: editingTerm.text,
+                    checked: editingTerm.checked 
                 }
             );
             isEditing = false;
@@ -139,6 +147,17 @@
     async function saveEdit() {
         if (!editingTerm || !editingTerm.$id) return;
         try {
+            if (projects.length > 0) {
+                // When in project context, just update the local state
+                const index = terms.findIndex(t => t.$id === editingTerm.$id);
+                if (index !== -1) {
+                    terms[index] = { ...editingTerm };
+                    terms = [...terms]; // Trigger reactivity
+                }
+                isEditing = false;
+                editingTerm = null;
+                return;
+            }
             await databases.updateDocument(
                 databaseId,
                 collectionId,
