@@ -496,10 +496,6 @@
             <span id="adress">{$selectedUser?.adress || 'N/A'}</span>
           </div>
           <div>
-            <label for="huisnummer">Huisnummer:</label>
-            <span id="huisnummer">{$selectedUser?.huisnummer || 'N/A'}</span>
-          </div>
-          <div>
             <label for="postcode">Postcode:</label>
             <span id="postcode">{$selectedUser?.postcode || 'N/A'}</span>
           </div>

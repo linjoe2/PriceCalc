@@ -108,7 +108,7 @@ export async function POST({ request }) {
         if(client.businessname === '' || client.businessname === null){
             doc
            .text(`${client.name || ''}`)
-           .text(`${client.adress || ''} ${client.huisnummer || ''}`)
+           .text(`${client.adress || ''}`)
            .text(`${client.postcode || ''} ${client.woonplaats || ''}`)
            .text(`${client.email || ''}`)
            .text(`${client.telefoonnummer || ''}`)
@@ -116,7 +116,7 @@ export async function POST({ request }) {
         } else {
           doc.text(`${client.businessname}`, 60)
            .text(`${client.name || ''}`)
-           .text(`${client.adress || ''} ${client.huisnummer || ''}`)
+           .text(`${client.adress || ''}`)
            .text(`${client.postcode || ''} ${client.woonplaats || ''}`)
            .text(`${client.email || ''}`)
            .text(`${client.telefoonnummer || ''}`)
@@ -255,7 +255,7 @@ export async function POST({ request }) {
             console.log(projectData.client.businessname);
             
             // Determine BTW based on client type
-            if (projectData.client.type === 'BedrijfZonderBTW') {
+            if (projectData.client.type === 'Bouwbedrijf') {
                 // Business without BTW - show "BTW Verlegd"
                 doc.text(`BTW Verlegd: € 0,00`, 50, doc.y, { align: 'right'})
                 totalPriceWithTax = totalPrice;
@@ -274,7 +274,7 @@ export async function POST({ request }) {
             .stroke(2)
             doc.font(TimesNewRomanBold)
             doc.moveDown(0.5)
-            doc.text(`Totaal incl. BTW:(*) € ${formatPrice(totalPriceWithTax)}`, 50, doc.y, { align: 'right'})
+            doc.text(`Totaal  € ${formatPrice(totalPriceWithTax)}`, 50, doc.y, { align: 'right'})
             doc.font(TimesNewRoman)
             doc.moveDown(0.5);
             doc.moveTo(50, doc.y)
