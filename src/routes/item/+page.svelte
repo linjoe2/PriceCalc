@@ -66,10 +66,10 @@
     
     function addService(category: string) {
         if (newService.subcategory && newService.type && newService.price && newService.unit) {
-            // Calculate the orderIndex as a decimal
+            // Calculate the orderIndex as a zero-padded string
             const categoryIndex = Object.keys(services).indexOf(category) + 1;
             const subcategoryIndex = services[category].length + 1;
-            const order = parseFloat(`${categoryIndex}.${subcategoryIndex}`);
+            const order = `${String(categoryIndex).padStart(3, '0')}.${String(subcategoryIndex).padStart(3, '0')}`;
             services[category].push({ ...newService, order });
             resetNewService();
         }
@@ -235,10 +235,10 @@
     
     // Function to update the order index of services
     function updateOrderIndex(category: string) {
+        const categoryIndex = String(Object.keys(services).indexOf(category) + 1).padStart(3, '0');
         services[category].forEach((service, index) => {
-            const categoryIndex = Object.keys(services).indexOf(category) + 1;
-            const subcategoryIndex = index + 1;
-            service.order = parseFloat(`${categoryIndex}.${subcategoryIndex}`);
+            const subcategoryIndex = String(index + 1).padStart(3, '0');
+            service.order = `${categoryIndex}.${subcategoryIndex}`;
         });
     }
     
@@ -286,7 +286,7 @@
             for (const service of services[category]) {
                 console.log(service.order);
                 await databases.updateDocument(databaseId, collectionId, service.$id, {
-                    order: JSON.stringify(service.order)
+                    order: service.order
                 });
             }
             console.log(`Order changes saved for category: ${category}`);
@@ -386,13 +386,11 @@
         try {
             for (let i = 0; i < newOrder.length; i++) {
                 const category = newOrder[i];
+                const categoryIndex = String(i + 1).padStart(3, '0');
                 for (let j = 0; j < services[category].length; j++) {
                     const service = services[category][j];
-                    // Update the order index for each service
-                    const categoryIndex = i + 1;
-                    const subcategoryIndex = j + 1;
+                    const subcategoryIndex = String(j + 1).padStart(3, '0');
                     service.order = `${categoryIndex}.${subcategoryIndex}`;
-    
                     // Save the updated order to the database
                     await databases.updateDocument(databaseId, collectionId, service.$id, {
                         order: service.order
@@ -475,6 +473,8 @@
                             <td colspan="5" class="px-6 py-4">
                                 <button 
                                     on:click={() => {
+                                        const categoryIndex = String(Object.keys(services).indexOf(category) + 1).padStart(3, '0');
+                                        const subcategoryIndex = String(serviceList.length + 1).padStart(3, '0');
                                         serviceToEdit = {
                                             subcategory: '',
                                             type: '',
@@ -482,7 +482,7 @@
                                             unit: '',
                                             tasks: [],
                                             category,
-                                            order: `${Object.keys(services).indexOf(category) + 1}.${serviceList.length + 1}`
+                                            order: `${categoryIndex}.${subcategoryIndex}`
                                         };
                                         isEditDialogOpen = true;
                                     }}
@@ -521,7 +521,8 @@
                             class="w-full px-3 py-2 rounded-md border">
                             <option value="m¹">m¹</option>
                             <option value="m²">m²</option>
-                            <option value="stuk">stuk</option>
+                            <option value="m³">m³</option>
+                            <option value="st.">st.</option>
                             <option value="uur">uur</option>
                         </select>
                         <CreateTasks bind:tasks={serviceToEdit.tasks} />

@@ -141,7 +141,7 @@ export async function POST({ request }) {
             .font(TimesNewRomanBold)
             .text(`Offertedatum:`)
             .font(TimesNewRoman)
-            .text(`${new Date(projectData.createdAt).toLocaleDateString('nl-NL')}`)
+            .text(`${new Date().toLocaleDateString('nl-NL')}`)
            .moveDown(0.5);
 
         //boxes top
@@ -458,7 +458,7 @@ for( let i = range.start; i <  (range.start + range.count); i++) {
 
         // Save to Appwrite storage
         try {
-            const file = new File([pdfBuffer], `O-${projectData.projectNumber} ${projectData.client.adress} ${projectData.client.woonplaats}.pdf`, {
+            const file = new File([pdfBuffer], `O-${projectData.projectNumber}_${ projectData.adress? projectData.adress: projectData.client.adress}_${projectData.adress? projectData.client.woonplaats: ''}.pdf`, {
                 type: 'application/pdf'
             });
 

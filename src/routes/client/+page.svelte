@@ -83,7 +83,6 @@
                     <Table.Head>Type</Table.Head>
                     <Table.Head>Bedrijfsnaam</Table.Head>
                     <Table.Head>Adres</Table.Head>
-                    <Table.Head>Huisnummer</Table.Head>
                     <Table.Head>Postcode</Table.Head>
                     <Table.Head>Plaats</Table.Head>
                 </Table.Row>
@@ -95,7 +94,6 @@
                         <Table.Cell>{client.type}</Table.Cell>
                         <Table.Cell>{client.businessname}</Table.Cell>
                         <Table.Cell>{client.adress}</Table.Cell>
-                        <Table.Cell>{client.huisnummer}</Table.Cell>
                         <Table.Cell>{client.postcode}</Table.Cell>
                         <Table.Cell>{client.woonplaats}</Table.Cell>
                     </Table.Row>

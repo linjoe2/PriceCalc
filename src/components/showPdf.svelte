@@ -21,16 +21,24 @@
             '67a166f6000319210c64',  // bucket ID
             projectData.$id
         );
-        
+
+        // Fetch the file as a Blob
+        const response = await fetch(pdfUrl.toString());
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+
         // Create a temporary link for PDF download
         const link = document.createElement('a');
-        link.href = pdfUrl.toString();
-        link.target = '_blank';
+        link.href = url;
+        link.download = `O-${projectData.projectNumber} ${projectData.adress || projectData.client.adress + " "+  projectData.client.postcode + " "+ projectData.client.woonplaats}.pdf`;
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
         
         console.log(projectData);
         const subject = `O-${projectData.projectNumber} ${projectData.adress || projectData.client.adress + " "+  projectData.client.postcode + " "+ projectData.client.woonplaats}`;
-        const body = `Beste ${projectData.client.name}
+        const body = `Beste ${projectData.client.name},
 
 Hartelijk dank voor uw offerte aanvraag, met genoegen bieden wij u vrijblijvend onze offerte aan. Heeft u vragen of opmerkingen naar aanleiding van onze aanbieding, neem dan gerust contact met ons op.
 Indien u gebruik wenst te maken van onze offerte, verzoeken wij u vriendelijk het akkoord te verstrekken door eenvoudigweg met "akkoord" te reageren op deze e-mail.
@@ -40,8 +48,8 @@ Vertrouwende u voldoende te hebben geïnformeerd.
 
 Met vriendelijke groet,
  
-John Fenenga
-0614805120
+Aaron van de Worp | Projectleider
+06 - 16 433 466
 
 JHF Bouw BV – Dakdekkers
 Dukdalfweg 16
