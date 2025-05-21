@@ -1,9 +1,21 @@
 <script lang="ts">
   import type { Project } from '$lib/types';
-
+  import { Databases } from 'node-appwrite';
+  import { client } from '$lib/appwrite';
   export let projectData: Project;
 
+  const databases = new Databases(client);
+  const databaseId = 'PriceCalc'; // Your database ID
+  const projectsCollectionId = '67362a9400133ceb48ac'; // Your collection ID
+
+
   async function sendWithDocumenso() {
+    if(projectData.documenso !== null) {
+      alert('Document al verstuurd');
+      // open the documenso link
+      window.open(projectData.documenso, '_blank');
+      return;
+    }
     try {
       const response = await fetch('/api/send-documenso', {
         method: 'POST',
@@ -17,13 +29,34 @@
         throw new Error('Document niet succesvol verstuurd');
       }
 
-      alert('Document succesvol verstuurd!');
-      console.log(response.text());
+      const data = await response.json();
+
+      const documensoId = data.id;
+      const signUrl = data.url;
+
+      projectData.signurl = signUrl;
+      projectData.documenso = `https://sign.toekomst.org/t/jhf-bouw/documents/${documensoId}`;
+
+      sendPDF(projectData.documenso);
+      updateProjectStatus();
+      // alert('Document succesvol verstuurd!');
+      // Save the updated project data
+      console.log(data);
     } catch (error) {
       console.error('Error sending document:', error);
       alert('Error bij het versturen van het document. Probeer het opnieuw.');
     }
   }
+
+  async function updateProjectStatus() { 
+    try {
+      await databases.updateDocument(databaseId, projectsCollectionId, projectData.$id, { documenso: projectData.documenso, signurl: projectData.signurl });
+      console.log('Project status updated successfully');
+    } catch (error) {
+      console.error('Error updating project status:', error);
+    }
+  }
+
 
   async function sendPDF(url: string) {
         const pdfUrl = await storage.getFileDownload(
@@ -88,5 +121,5 @@ Dukdalfweg 16
   on:click={sendWithDocumenso}
   class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
 >
-  Verstuur offerte
+  Start ondertekening
 </button> 

@@ -41,7 +41,9 @@
         const body = `Beste ${projectData.client.name},
 
 Hartelijk dank voor uw offerte aanvraag, met genoegen bieden wij u vrijblijvend onze offerte aan. Heeft u vragen of opmerkingen naar aanleiding van onze aanbieding, neem dan gerust contact met ons op.
-Indien u gebruik wenst te maken van onze offerte, verzoeken wij u vriendelijk het akkoord te verstrekken door eenvoudigweg met "akkoord" te reageren op deze e-mail.
+Indien u gebruik wenst te maken van onze offerte, verzoeken wij u vriendelijk het akkoord te verstrekken door eenvoudigweg te ondertekenen via deze link:
+
+${projectData.signurl}
 
 Vertrouwende u voldoende te hebben geïnformeerd.
  
@@ -62,7 +64,7 @@ Dukdalfweg 16
         const encodedSubject = encodeURIComponent(subject);
         const encodedBody = encodeURIComponent(body);
         
-        const mailUrl= `mailto:${projectData.client.email||''};${projectData.client.subcontractors?.email||''}?subject=${encodedSubject}&body=${encodedBody}&cc=j.fenenga@jhfbouw.com`;
+        const mailUrl= `mailto:${projectData.client?.email};${projectData.client?.subcontractors?.email}?subject=${encodedSubject}&body=${encodedBody}&cc=j.fenenga@jhfbouw.com`;
         
         // Create a temporary link for email
         const mailLink = document.createElement('a');
@@ -74,4 +76,6 @@ Dukdalfweg 16
 </script>
 
 <button class="show-pdf-button border-2 border-black text-black px-4 py-2 rounded" on:click={showPDF}>Toon PDF</button>
-<button class="show-pdf-button border-2 border-black text-black px-4 py-2 rounded" on:click={sendPDF}>Verstuur PDF</button>
+{#if projectData.signurl !== null}
+<button class="show-pdf-button border-2 border-black text-black px-4 py-2 rounded" on:click={sendPDF}>Verstuur nogmaals</button>
+{/if}

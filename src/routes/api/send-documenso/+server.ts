@@ -172,7 +172,7 @@ export async function POST({ request }) {
       throw new Error(`Failed to send document: ${sendDocumentResponse.status}`);
     }
     // console.log(sendDocumentResponse);
-    return json({ success: true, url: documentData.recipients[0].signingUrl });
+    return json({ success: true, url: documentData.recipients[0].signingUrl, id: documentData.documentId });
   } catch (error) {
     console.error('Error sending document:', error);
     return json({ error: 'Failed to send document' }, { status: 500 });

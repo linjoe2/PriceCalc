@@ -44,6 +44,8 @@ export interface Project {
     progress?: number;
     description?: string;
     isEditingName?: boolean;
+    signurl?: string;
+    documenso?: string;
 }
 
 export interface PaymentSchedule {
