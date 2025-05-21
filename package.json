@@ -44,6 +44,7 @@
   "description": "Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).",
   "main": "eslint.config.js",
   "dependencies": {
+    "@documenso/embed-svelte": "^0.2.2",
     "@documenso/sdk-typescript": "^0.2.0",
     "@sveltejs/adapter-node": "^5.2.9",
     "acorn": "^8.14.0",

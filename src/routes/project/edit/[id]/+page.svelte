@@ -17,6 +17,7 @@
   import ProjectTask from '../../../../components/ProjectTask.svelte';
   import ClientSearch from '../../../../components/ClientSearch.svelte';
   import { ArrowUp, ArrowDown } from 'lucide-svelte';
+  import { ShoppingCart } from 'lucide-svelte';
   let isSaving = false;
   let projectId = $page.params.id;
   const databases = new Databases(client);
@@ -43,6 +44,18 @@
   let phone = '';
   let email = '';
   let projectData: Project | null = null;
+  let showSummary = false;
+  let isMobile = false;
+
+  function checkMobile() {
+    isMobile = window.innerWidth < 768;
+  }
+
+  onMount(() => {
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  });
 
   onMount(async () => {
     try {
@@ -471,6 +484,19 @@
     project.isEditingName = false;
     projects = [...projects];
   }
+
+  $: allSelectedItems = projects.flatMap(project => 
+    (project.items || []).map(item => ({
+      ...item,
+      projectName: project.name
+    }))
+  );
+
+  $: selectedItemsByProject = allSelectedItems.reduce((acc, item) => {
+    if (!acc[item.projectName]) acc[item.projectName] = [];
+    acc[item.projectName].push(item);
+    return acc;
+  }, {} as Record<string, typeof allSelectedItems>);
 </script>
   
     <div class="flex flex-col md:flex-row">
@@ -803,3 +829,62 @@
   </div>
 {/if}
 <SavingAnimation isVisible={isSaving} />
+
+{#if isMobile && allSelectedItems.length > 0}
+  <button
+    class="fixed left-4 bottom-4 z-50 bg-blue-600 text-white rounded-full p-4 shadow-lg flex items-center justify-center"
+    on:click={() => showSummary = !showSummary}
+    aria-label="Toon samenvatting"
+  >
+    {#if showSummary}
+      Sluit
+    {:else}
+      <span class="relative">
+        <ShoppingCart size={28} />
+        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2">
+          {allSelectedItems.length}
+        </span>
+      </span>
+    {/if}
+  </button>
+{/if}
+
+{#if allSelectedItems.length > 0 && (!isMobile || showSummary)}
+  <div class="fixed left-4 bottom-4 z-50 bg-white border border-gray-300 rounded-lg shadow-lg p-4 w-70 max-h-96 overflow-y-auto">
+    {#if isMobile}
+    <button class="top-2 right-2 text-gray-500 hover:text-gray-800 float-right" on:click={() => showSummary = false} aria-label="Sluit samenvatting" type="button">
+      x
+    </button>
+    {/if}
+    <h3 class="font-bold mb-2">Geselecteerde items</h3>
+    {#each Object.entries(selectedItemsByProject) as [projectName, items]}
+      <div class="mb-2">
+        <div class="font-semibold text-blue-700 mb-1">{projectName}</div>
+        <ul>
+          {#each items as item (item.category + item.subcategory + item.type)}
+            <li class="flex justify-between items-center border-b py-1 text-sm">
+              <div>
+                <!-- <span class="font-medium">{item.category}:</span> -->
+                <span class="ml-1">{item.subcategory}<br> {item.type}</span>
+                <span class="ml-1 text-gray-500">({item.quantity}x)</span>
+              </div>
+              <div>
+                €{(typeof item.price === 'string' ? parseFloat(item.price) : item.price).toLocaleString('nl-NL', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+              </div>
+            </li>
+          {/each}
+        </ul>
+      </div>
+    {/each}
+    <div class="mt-2 font-bold flex justify-between">
+      <span>Totaal:</span>
+      <span>
+        €
+        {allSelectedItems.reduce((sum, item) => {
+          const price = typeof item.price === 'string' ? parseFloat(item.price) : item.price;
+          return sum + (price * item.quantity);
+        }, 0).toLocaleString('nl-NL', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+      </span>
+    </div>
+  </div>
+{/if}

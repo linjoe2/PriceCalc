@@ -28,7 +28,7 @@
     import { chatwootContact } from "../stores/userStore";
     import FileText from "lucide-svelte/icons/file-text";
     import CreateProject from "../components/createProject.svelte";
-
+    import Hammer from "lucide-svelte/icons/hammer";
     $: pathSegments = $page.url.pathname.split('/').filter(Boolean);
     interface LoggedInUser {
         name: string;
@@ -159,7 +159,7 @@
             href="/project"
             class={`text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${activeRoute === 'project' ? 'bg-primary text-white' : 'hover:bg-primary'}`}
           >
-            <ShoppingCart class="h-4 w-4" />
+            <Hammer class="h-4 w-4" />
             Projecten
             <!-- <Badge
               class="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full"

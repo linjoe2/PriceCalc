@@ -2,9 +2,9 @@
   import { Databases, Query } from 'appwrite';
   import { client } from '$lib/appwrite';
   import { onMount } from 'svelte';
-  const databases = new Databases(client);
   // Get the latest 5 clients
   const getLatestClients = async () => {
+  const databases = new Databases(client);
     try {
         const response = await databases.listDocuments( 
       'PriceCalc',

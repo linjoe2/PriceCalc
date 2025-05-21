@@ -161,8 +161,8 @@ export async function POST({ request }) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        sendEmail: true,
-        sendCompletionEmails: true
+        sendEmail: false,
+        sendCompletionEmails: false
       })
     });
 
@@ -171,8 +171,8 @@ export async function POST({ request }) {
       console.error('Failed to send document:', errorText);
       throw new Error(`Failed to send document: ${sendDocumentResponse.status}`);
     }
-
-    return json({ success: true });
+    // console.log(sendDocumentResponse);
+    return json({ success: true, url: documentData.recipients[0].signingUrl });
   } catch (error) {
     console.error('Error sending document:', error);
     return json({ error: 'Failed to send document' }, { status: 500 });

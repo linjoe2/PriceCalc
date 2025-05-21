@@ -168,14 +168,14 @@
           class="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           on:change="{(e) => updateProjectStatus((e.target as HTMLSelectElement).value)}"
         >
-          <option value="opstellen offerte">Opstellen offerte</option>
-          <option value="offerte verstuurd">offerte verstuurd</option>
-          <option value="akkoord">akkoord</option>
-          <option value="niet gegund">niet gegund</option>
-          <option value="aanbetaling">aanbetaling</option>
-          <option value="werkvoorbereiding">werkvoorbereiding</option>
-          <option value="tusentijdse factuur">tussentijdse factuur</option>
-          <option value="opgeleverd">opgeleverd</option>
+          <option value="Opstellen offerte">Opstellen offerte</option>
+          <option value="Offerte verstuurd">Offerte verstuurd</option>
+          <option value="Akkoord">Akkoord</option>
+          <option value="Niet gegund">Niet gegund</option>
+          <option value="Aanbetaling">Aanbetaling</option>
+          <option value="Werkvoorbereiding">Werkvoorbereiding</option>
+          <option value="Tussentijdse factuur">Tussentijdse factuur</option>
+          <option value="Opgeleverd">Opgeleverd</option>
           <option value="Eindfactuur">Eindfactuur</option>
           <option value="100% opgeleverd">100% opgeleverd</option>
         </select>
