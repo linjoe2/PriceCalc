@@ -51,16 +51,16 @@ export async function POST({ request }) {
           //   name: "JHF Bouw",
           //   role: "CC",
           // },
-          // {
-          //   email: "administratie@jhfbouw.com",
-          //   name: "JHF Bouw Administratie",
-          //   role: "CC",
-          // },
-          // {
-          //   email: "j.fenenga@jhfbouw.com",
-          //   name: "John Fenenga",
-          //   role: "CC",
-          // }
+          {
+            email: "administratie@jhfbouw.com",
+            name: "JHF Bouw Administratie",
+            role: "CC",
+          },
+          {
+            email: "j.fenenga@jhfbouw.com",
+            name: "John Fenenga",
+            role: "CC",
+          }
         ],
         meta: {
          timezone: "Europe/Amsterdam",
