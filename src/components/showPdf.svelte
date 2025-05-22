@@ -22,19 +22,8 @@
             projectData.$id
         );
 
-        // Fetch the file as a Blob
-        const response = await fetch(pdfUrl.toString());
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-
-        // Create a temporary link for PDF download
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `O-${projectData.projectNumber} ${projectData.adress || projectData.client.adress + " "+  projectData.client.postcode + " "+ projectData.client.woonplaats}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
+        // Open the PDF in a new browser tab
+        window.open(pdfUrl.toString() + "&nocache=" + new Date().getTime(), '_blank');
         
         console.log(projectData);
         const subject = `O-${projectData.projectNumber} ${projectData.adress || projectData.client.adress + " "+  projectData.client.postcode + " "+ projectData.client.woonplaats}`;
