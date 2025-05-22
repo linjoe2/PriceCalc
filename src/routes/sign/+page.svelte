@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { onMount } from 'svelte';
   let mounted = false;
   import { EmbedDirectTemplate } from '@documenso/embed-svelte';
@@ -12,4 +12,4 @@
 
 <!-- {#if mounted}
   <EmbedDirectTemplate {token} />
-{/if} -->
+{/if} --> -->
