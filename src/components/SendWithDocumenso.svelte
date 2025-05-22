@@ -37,7 +37,7 @@
       projectData.signurl = signUrl;
       projectData.documenso = `https://sign.toekomst.org/t/jhf-bouw/documents/${documensoId}`;
 
-      sendPDF(projectData.documenso);
+      sendPDF(projectData.signurl || '');
       updateProjectStatus();
       // alert('Document succesvol verstuurd!');
       // Save the updated project data
@@ -101,6 +101,7 @@ Dukdalfweg 16
         // Create a temporary link for email
         const mailLink = document.createElement('a');
         mailLink.href = mailUrl;
+        // mailLink.target = '_blank';
         mailLink.click();
         
         console.log(mailUrl);
@@ -112,13 +113,13 @@ Dukdalfweg 16
   on:click={sendWithDocumenso}
   class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
 >
-  Start ondertekening
+  Verstuur offerte
 </button> 
 {:else}
 <a
   href={projectData.documenso}
   target="_blank"
-  class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+  class="w-full sm:w-auto align-center text-center inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
 >
   Bekijk ondertekening
 </a>
