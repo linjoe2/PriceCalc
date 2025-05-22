@@ -196,12 +196,12 @@
       
       <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
         <ShowPdf 
-          projectData={projectData} 
+          bind:projectData={projectData} 
           on:pdfGenerated={handlePdfGenerated}
         />
-        <AddToGoogleAgenda projectData={projectData} />
+        <AddToGoogleAgenda bind:projectData={projectData} />
         <SendWithDocumenso 
-          {projectData}
+          bind:projectData={projectData}
           {pdfBlob}
         />
         <button

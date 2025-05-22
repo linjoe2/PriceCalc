@@ -1,13 +1,13 @@
 <script lang="ts">
   import type { Project } from '$lib/types';
-  import { Databases } from 'node-appwrite';
+  import { Databases, Storage } from 'appwrite';
   import { client } from '$lib/appwrite';
   export let projectData: Project;
 
   const databases = new Databases(client);
   const databaseId = 'PriceCalc'; // Your database ID
   const projectsCollectionId = '67362a9400133ceb48ac'; // Your collection ID
-
+  const storage = new Storage(client);
 
   async function sendWithDocumenso() {
     if(projectData.documenso !== null) {
@@ -64,19 +64,9 @@
             projectData.$id
         );
 
-        // Fetch the file as a Blob
-        // const response = await fetch(pdfUrl.toString());
-        // const blob = await response.blob();
-        //  url = window.URL.createObjectURL(blob);
-
-        // Create a temporary link for PDF download
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `O-${projectData.projectNumber} ${projectData.adress || projectData.client.adress + " "+  projectData.client.postcode + " "+ projectData.client.woonplaats}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
+        // Open the PDF in a new browser tab
+        window.open(pdfUrl.toString() + "&nocache=" + new Date().getTime(), '_blank');
+        // console.log(pdfUrl.toString());
         
         console.log(projectData);
         const subject = `O-${projectData.projectNumber} ${projectData.adress || projectData.client.adress + " "+  projectData.client.postcode + " "+ projectData.client.woonplaats}`;
@@ -106,7 +96,7 @@ Dukdalfweg 16
         const encodedSubject = encodeURIComponent(subject);
         const encodedBody = encodeURIComponent(body);
         
-        const mailUrl= `mailto:${projectData.client.email||''};${projectData.client.subcontractors?.email||''}?subject=${encodedSubject}&body=${encodedBody}&cc=j.fenenga@jhfbouw.com`;
+        const mailUrl= `mailto:${projectData.client?.email || ''};${projectData.client?.subcontractors?.email || ''}?subject=${encodedSubject}&body=${encodedBody}&cc=j.fenenga@jhfbouw.com`;
         
         // Create a temporary link for email
         const mailLink = document.createElement('a');
@@ -117,9 +107,19 @@ Dukdalfweg 16
     }
 </script>
 
+{#if projectData.documenso === null}
 <button
   on:click={sendWithDocumenso}
   class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
 >
   Start ondertekening
 </button> 
+{:else}
+<a
+  href={projectData.documenso}
+  target="_blank"
+  class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+>
+  Bekijk ondertekening
+</a>
+{/if}
