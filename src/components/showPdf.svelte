@@ -22,15 +22,21 @@
             projectData.$id
         );
 
-        // Open the PDF in a new browser tab
-        // window.open(pdfUrl.toString() + "&nocache=" + new Date().getTime(), '_blank');
-        const link = document.createElement('a');
-        link.href = pdfUrl.toString();
-        link.target = '_blank';
-        link.click();
+        // Fetch the file as a blob
+        const response = await fetch(pdfUrl.toString(), { credentials: 'include' });
+        const blob = await response.blob();
 
-        
-        console.log(projectData);
+        // Create a temporary link to trigger the download
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `O-${projectData.projectNumber} ${projectData.adress || projectData.client.adress + " "+  projectData.client.postcode + " "+ projectData.client.woonplaats}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Clean up the object URL
+        URL.revokeObjectURL(link.href);
+
         const subject = `O-${projectData.projectNumber} ${projectData.adress || projectData.client.adress + " "+  projectData.client.postcode + " "+ projectData.client.woonplaats}`;
         const body = `Beste ${projectData.client.name},
 
@@ -61,12 +67,6 @@ Dukdalfweg 16
         const mailUrl= `mailto:${projectData.client?.email};${projectData.client?.subcontractors?.email}?subject=${encodedSubject}&body=${encodedBody}&cc=j.fenenga@jhfbouw.com`;
         window.open(mailUrl, '_blank');
        
-        // Create a temporary link for email
-        // const mailLink = document.createElement('a');
-        // mailLink.href = mailUrl;
-        // mailLink.target = '_blank'; 
-        // mailLink.click();
-        
         console.log(mailUrl);
     }
 </script>

@@ -58,25 +58,34 @@
   }
 
 
-  async function sendPDF(url: string) {
+  async function sendPDF() {
         const pdfUrl = await storage.getFileDownload(
             '67a166f6000319210c64',  // bucket ID
             projectData.$id
         );
 
-        // Open the PDF in a new browser tab
-        // window.open(pdfUrl.toString() + "&nocache=" + new Date().getTime(), '_blank');
-        // console.log(pdfUrl.toString());
-        window.open(pdfUrl.toString(), '_blank');
-        
-        console.log(projectData);
-        const subject = `O-${projectData.projectNumber} ${projectData.adress || projectData.client.adress + " "+  projectData.client.postcode + " " + projectData.client.woonplaats}`;
+        // Fetch the file as a blob
+        const response = await fetch(pdfUrl.toString(), { credentials: 'include' });
+        const blob = await response.blob();
+
+        // Create a temporary link to trigger the download
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `O-${projectData.projectNumber} ${projectData.adress || projectData.client.adress + " "+  projectData.client.postcode + " "+ projectData.client.woonplaats}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Clean up the object URL
+        URL.revokeObjectURL(link.href);
+
+        const subject = `O-${projectData.projectNumber} ${projectData.adress || projectData.client.adress + " "+  projectData.client.postcode + " "+ projectData.client.woonplaats}`;
         const body = `Beste ${projectData.client.name},
 
 Hartelijk dank voor uw offerte aanvraag, met genoegen bieden wij u vrijblijvend onze offerte aan. Heeft u vragen of opmerkingen naar aanleiding van onze aanbieding, neem dan gerust contact met ons op.
 Indien u gebruik wenst te maken van onze offerte, verzoeken wij u vriendelijk het akkoord te verstrekken door eenvoudigweg te ondertekenen via onderstaande link:
+${projectData.signurl}
 
-${url}
 
 Vertrouwende u voldoende te hebben geïnformeerd.
  
@@ -97,15 +106,9 @@ Dukdalfweg 16
         const encodedSubject = encodeURIComponent(subject);
         const encodedBody = encodeURIComponent(body);
         
-        const mailUrl= `mailto:${projectData.client?.email || ''};${projectData.client?.subcontractors?.email || ''}?subject=${encodedSubject}&body=${encodedBody}&cc=j.fenenga@jhfbouw.com`;
+        const mailUrl= `mailto:${projectData.client?.email};${projectData.client?.subcontractors?.email}?subject=${encodedSubject}&body=${encodedBody}&cc=j.fenenga@jhfbouw.com`;
         window.open(mailUrl, '_blank');
-        
-        // Create a temporary link for email
-        // const mailLink = document.createElement('a');
-        // mailLink.href = mailUrl;
-        // mailLink.target = '_blank';
-        // mailLink.click();
-        
+       
         console.log(mailUrl);
     }
 </script>
