@@ -31,8 +31,7 @@
 
 Hartelijk dank voor uw offerte aanvraag, met genoegen bieden wij u vrijblijvend onze offerte aan. Heeft u vragen of opmerkingen naar aanleiding van onze aanbieding, neem dan gerust contact met ons op.
 Indien u gebruik wenst te maken van onze offerte, verzoeken wij u vriendelijk het akkoord te verstrekken door eenvoudigweg te ondertekenen via deze link:
-
-<a href="${projectData.signurl}" target="_blank">${projectData.signurl}</a>
+${projectData.signurl}
 
 
 Vertrouwende u voldoende te hebben geïnformeerd.
@@ -55,12 +54,13 @@ Dukdalfweg 16
         const encodedBody = encodeURIComponent(body);
         
         const mailUrl= `mailto:${projectData.client?.email};${projectData.client?.subcontractors?.email}?subject=${encodedSubject}&body=${encodedBody}&cc=j.fenenga@jhfbouw.com`;
-        
+        window.open(mailUrl, '_blank');
+       
         // Create a temporary link for email
-        const mailLink = document.createElement('a');
-        mailLink.href = mailUrl;
+        // const mailLink = document.createElement('a');
+        // mailLink.href = mailUrl;
         // mailLink.target = '_blank'; 
-        mailLink.click();
+        // mailLink.click();
         
         console.log(mailUrl);
     }

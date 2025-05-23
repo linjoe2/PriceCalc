@@ -97,12 +97,13 @@ Dukdalfweg 16
         const encodedBody = encodeURIComponent(body);
         
         const mailUrl= `mailto:${projectData.client?.email || ''};${projectData.client?.subcontractors?.email || ''}?subject=${encodedSubject}&body=${encodedBody}&cc=j.fenenga@jhfbouw.com`;
+        window.open(mailUrl, '_blank');
         
         // Create a temporary link for email
-        const mailLink = document.createElement('a');
-        mailLink.href = mailUrl;
+        // const mailLink = document.createElement('a');
+        // mailLink.href = mailUrl;
         // mailLink.target = '_blank';
-        mailLink.click();
+        // mailLink.click();
         
         console.log(mailUrl);
     }
