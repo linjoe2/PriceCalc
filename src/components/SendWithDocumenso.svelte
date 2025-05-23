@@ -65,15 +65,16 @@
         );
 
         // Open the PDF in a new browser tab
-        window.open(pdfUrl.toString() + "&nocache=" + new Date().getTime(), '_blank');
+        // window.open(pdfUrl.toString() + "&nocache=" + new Date().getTime(), '_blank');
         // console.log(pdfUrl.toString());
+        window.open(pdfUrl.toString(), '_blank');
         
         console.log(projectData);
-        const subject = `O-${projectData.projectNumber} ${projectData.adress || projectData.client.adress + " "+  projectData.client.postcode + " "+ projectData.client.woonplaats}`;
+        const subject = `O-${projectData.projectNumber} ${projectData.adress || projectData.client.adress + " "+  projectData.client.postcode + " " + projectData.client.woonplaats}`;
         const body = `Beste ${projectData.client.name},
 
 Hartelijk dank voor uw offerte aanvraag, met genoegen bieden wij u vrijblijvend onze offerte aan. Heeft u vragen of opmerkingen naar aanleiding van onze aanbieding, neem dan gerust contact met ons op.
-Indien u gebruik wenst te maken van onze offerte, verzoeken wij u vriendelijk het akkoord te verstrekken door eenvoudigweg te ondertekenen via deze link:
+Indien u gebruik wenst te maken van onze offerte, verzoeken wij u vriendelijk het akkoord te verstrekken door eenvoudigweg te ondertekenen via onderstaande link:
 
 ${url}
 
