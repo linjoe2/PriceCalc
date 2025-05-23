@@ -42,20 +42,10 @@
 
 Hartelijk dank voor uw offerte aanvraag, met genoegen bieden wij u vrijblijvend onze offerte aan. Heeft u vragen of opmerkingen naar aanleiding van onze aanbieding, neem dan gerust contact met ons op.
 Indien u gebruik wenst te maken van onze offerte, verzoeken wij u vriendelijk het akkoord te verstrekken door eenvoudigweg te ondertekenen via onderstaande link:
+
 ${projectData.signurl}
 
 
-Vertrouwende u voldoende te hebben geïnformeerd.
- 
-
-Met vriendelijke groet,
- 
-Aaron van de Worp | Projectleider
-06 - 16 433 466
-
-JHF Bouw BV – Dakdekkers
-Dukdalfweg 16
-1041 BD Amsterdam
 
 
 
