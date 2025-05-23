@@ -8,6 +8,7 @@
     };
     export let isAdmin = false;
 
+    
     let btw21 = 0.21;
 
     // Add function to automatically set payment schedule based on price

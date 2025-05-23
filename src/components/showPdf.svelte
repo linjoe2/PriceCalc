@@ -23,7 +23,12 @@
         );
 
         // Open the PDF in a new browser tab
-        window.open(pdfUrl.toString() + "&nocache=" + new Date().getTime(), '_blank');
+        // window.open(pdfUrl.toString() + "&nocache=" + new Date().getTime(), '_blank');
+        const link = document.createElement('a');
+        link.href = pdfUrl.toString();
+        link.target = '_blank';
+        link.click();
+
         
         console.log(projectData);
         const subject = `O-${projectData.projectNumber} ${projectData.adress || projectData.client.adress + " "+  projectData.client.postcode + " "+ projectData.client.woonplaats}`;
